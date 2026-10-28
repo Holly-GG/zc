@@ -9,6 +9,7 @@ def main():
     parser.add_argument("--smoke",action="store_true")
     parser.add_argument("--suite-smoke",action="store_true")
     parser.add_argument("--motion-smoke",action="store_true")
+    parser.add_argument("--desktop-smoke",action="store_true")
     args=parser.parse_args()
     if args.probe:args.probe.parent.mkdir(parents=True,exist_ok=True)
     if sys.platform=="win32":
@@ -26,6 +27,25 @@ def main():
     if font_id>=0:app.setFont(QFont(QFontDatabase.applicationFontFamilies(font_id)[0],10))
     window=PetWindow(Settings(args.settings),args.probe)
     window.show()
+    if args.desktop_smoke:
+        def desktop_smoke():
+            try:
+                from niangao.life.catalog import BY_ID
+                from niangao.life.item_art import item_pixmap
+                window.open_life();ui=window.life_window
+                assert ui.stack.count()==8 and not any("3D" in ui.nav.item(i).text() for i in range(8))
+                assert ui.width()<=900 and window.bubble.width()<244
+                assert all(not item_pixmap(id,96).isNull() for id in BY_ID)
+                ui.profile_fields["personality"].setPlainText("慢热但亲人");ui.profile_fields["habits"].setPlainText("爱喝清水");ui.save_profile()
+                assert ui.client.profile_provider()["identity"]["habits"]=="爱喝清水"
+                assert window.desktop.place("water_fountain")[0]
+                uid=next(iter(window.desktop.widgets));w=window.desktop.widgets[uid]
+                assert window.desktop.activate(uid) and w.record["water"]==80
+                window.desktop.refill(uid);assert w.record["water"]==100
+                window.desktop.clear();assert not window.desktop.widgets
+                print("DESKTOP_SMOKE passed: 8 pages, no 3D space, 44 product images, mandatory profile, fountain drink/refill and cleanup",flush=True);window.close()
+            except Exception:traceback.print_exc();app.exit(1)
+        QTimer.singleShot(1200,desktop_smoke)
     if args.motion_smoke:
         def motion_smoke():
             try:
@@ -54,7 +74,7 @@ def main():
                 print("LIFE_SMOKE passed: 8 pages, care/action, task, diary",flush=True);window.close()
             except Exception:traceback.print_exc();app.exit(1)
         QTimer.singleShot(1200,suite_smoke)
-    elif not args.smoke and not args.probe and not args.motion_smoke:
+    elif not args.smoke and not args.probe and not args.motion_smoke and not args.desktop_smoke:
         QTimer.singleShot(700,window.open_life)
     if args.smoke:
         def smoke():

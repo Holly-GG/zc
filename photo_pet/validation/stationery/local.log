@@ -1,0 +1,8 @@
+2026-10-29 Asia/Shanghai — stationery/profile/desktop-items revision
+55 unit and Qt/API/interaction tests PASS.
+Real X11 OS input: backpack card dragged outside dashboard places a fountain PASS.
+Real desktop item transparent corner reaches independent lower window PASS.
+Actual dashboard cleanup button removes own props PASS.
+Actual dashboard captured at 860x650; no 3D page; separate shop/backpack and profile editor reviewed.
+All 44 SVG product renderers tested; Niangao stationery illustrations reviewed for mask, blue eyes, asymmetric blaze and nose-side brown point.
+Windows workflow gates release on packaged resource smoke and native prop click/drag, water use, backpack drag and cleanup.

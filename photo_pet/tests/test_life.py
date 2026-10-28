@@ -74,7 +74,7 @@ def test_api_optin_mock_and_redirect(tmp_path):
     server=HTTPServer(("127.0.0.1",0),Handler);thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
     try:
         vault=SecretVault(tmp_path/"key");vault.save("test-key");settings=dict(enabled=False,base_url=f"http://127.0.0.1:{server.server_port}/v1",model="test")
-        client=AIClient(settings,vault)
+        client=AIClient(settings,vault,LifeEngine(tmp_path/"profile.json").profile_snapshot)
         with pytest.raises(ValueError):client.chat("hi","开心")
         assert not received;settings["enabled"]=True;assert client.chat("hi","开心")=="hello";assert received[-1]["messages"][-1]["content"]=="hi"
         settings["base_url"]=f"http://127.0.0.1:{server.server_port}/redirect"

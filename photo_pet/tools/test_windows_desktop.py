@@ -105,6 +105,41 @@ try:
         time.sleep(.1)
     check(state()['state'] in ('keyboard_paw','peek_screen','typing_nod'),'opt-in keyboard activity invokes photo response')
     close(pet)
+    # Owned real desktop props: same OS-input method as the cat, independent underlay.
+    life_data=json.loads(life_path.read_text(encoding='utf-8'));life_data['preferences']['input_link']=False
+    life_data['desktop_items']=[dict(uid='native-water',item='water_fountain',x=350,y=350,width=112,water=100)]
+    life_path.write_text(json.dumps(life_data),encoding='utf-8');probe.unlink();pet=launch();time.sleep(.3)
+    def prop_handle():return u.FindWindowW(None,'年糕物件 · native-water')
+    def prop_rect():
+        r=w.RECT();check(bool(prop_handle()),'native fountain window exists');assert u.GetWindowRect(prop_handle(),ctypes.byref(r));return r
+    pr=prop_rect();n=count();click(pr.left+2,pr.top+2)
+    check(count()==n+1,'fountain transparent corner reaches independent lower app')
+    n=count();click(pr.left+56,pr.top+75)
+    data=json.loads(life_path.read_text(encoding='utf-8'))
+    check(count()==n and data['desktop_items'][0]['water']==80,'fountain body click drinks and decreases stored water')
+    bx,by=pr.left+56,pr.top+75;u.SetCursorPos(bx,by);mouse(2);time.sleep(.12);u.SetCursorPos(bx-45,by-30);time.sleep(.25);mouse(4);time.sleep(.3)
+    data=json.loads(life_path.read_text(encoding='utf-8'));check(data['desktop_items'][0]['x']!=350,'native desktop prop left drag persists')
+    # Open dashboard from its existing eighth selectable cat context-menu entry.
+    click(*body(),button='right')
+    for _ in range(8):key(0x28)
+    key(0x0D)
+    for _ in range(60):
+        if state().get('dashboard'):break
+        time.sleep(.1)
+    dash=state().get('dashboard');check(bool(dash),'native menu opens compact dashboard')
+    click(*dash['nav']['3']);time.sleep(.3);dash=state()['dashboard']
+    # First clear the restored fountain using the actual dashboard button.
+    click(*dash['clear']);time.sleep(.25)
+    check(not state()['desktop_props'],'one-click clear removes own props without closing underlay')
+    dash=state()['dashboard'];source=dash['bag_cards']['water_fountain'];x,y,dw,dh=dash['rect']
+    candidates=[(25,730),(u.GetSystemMetrics(0)-25,150),(25,80),(u.GetSystemMetrics(0)-25,u.GetSystemMetrics(1)-160)]
+    target=next(pt for pt in candidates if not (x<=pt[0]<=x+dw and y<=pt[1]<=y+dh))
+    u.SetCursorPos(*source);mouse(2);time.sleep(.12);u.SetCursorPos(source[0]+18,source[1]+18);time.sleep(.15);u.SetCursorPos(*target);time.sleep(.25);mouse(4);time.sleep(.5)
+    check(any(v['item']=='water_fountain' for v in state()['desktop_props']),'real backpack-image drag to desktop places fountain')
+    dash=state()['dashboard'];click(*dash['clear']);time.sleep(.25)
+    data=json.loads(life_path.read_text(encoding='utf-8'))
+    check(not state()['desktop_props'] and data['inventory']['water_fountain']==1,'cleanup returns placement to inventory without deleting owned stock')
+    close(pet)
     print('WINDOWS_DESKTOP_RESULT passed; native Win32 mouse input and window bounds verified on this runner',flush=True)
 except Exception as exc:
     print('::error::Windows desktop test failed: '+str(exc).replace('\n',' '),flush=True)

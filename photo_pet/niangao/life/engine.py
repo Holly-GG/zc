@@ -13,7 +13,7 @@ class LifeEngine:
     def __init__(self,path,clock=None,wall=None):
         self.path=Path(path);self.clock=clock or time.monotonic;self.wall=wall or time.time
         self.last_tick=self.clock();self.last_save=self.last_tick;self.cooldowns={};self.focus_deadline=None;self.error="";self.network_today=None
-        self.data={"version":2,"birth_date":"2021-02-28","coins":150,"xp":0,"stats":dict(satiety=82,cleanliness=90,energy=85,mood=80,health=95),
+        self.data={"version":3,"profile":{},"desktop_items":[],"desktop_starter":False,"birth_date":"2021-02-28","coins":150,"xp":0,"stats":dict(satiety=82,cleanliness=90,energy=85,mood=80,health=95),
           "inventory":{"fish":2,"bed":1,"bowl":1},"events":[],"diaries":{},"tasks":[],"mood_history":[],"badges":[],"daily":{},
           "age_override":None,"age_frozen":False,"scene":"desk","layouts":{},"layout_presets":{},
           "focus":{"duration":25,"remaining":1500,"active":False,"cycles":0},"travel":None,"postcards":[],
@@ -27,6 +27,10 @@ class LifeEngine:
                 if isinstance(parsed,dict):self._merge(self.data,parsed)
             except (OSError,ValueError) as exc:self.error="生活数据损坏，已回退默认值："+str(exc)
         self._validate()
+        if not self.data["desktop_starter"]:
+            for id in ("food_bowl","water_bowl","water_fountain","brush","wash_basin","ball","litter","health_kit"):
+                self.data["inventory"][id]=self.data["inventory"].get(id,0)+1
+            self.data["desktop_starter"]=True
         elapsed=max(0,min(8*3600,self.wall()-float(self.data.get("last_wall",self.wall()))))
         self._decay(elapsed,False);self.data["last_wall"]=self.wall()
         self.data["focus"]["active"]=False
@@ -37,9 +41,24 @@ class LifeEngine:
                 if isinstance(target[key],dict) and isinstance(source[key],dict):LifeEngine._merge(target[key],source[key])
                 elif isinstance(target[key],dict):continue
                 else:target[key]=source[key]
-        for key in ("inventory","diaries","layouts","layout_presets","daily"):
+        for key in ("inventory","diaries","layouts","layout_presets","daily","profile"):
             if key in target and isinstance(source.get(key),dict):target[key]=source[key]
+    def profile_snapshot(self):
+        from .profile import snapshot
+        return snapshot(self)
     def _validate(self):
+        self.data["version"]=3
+        if not isinstance(self.data["desktop_starter"],bool):self.data["desktop_starter"]=False
+        from .profile import sanitize_profile
+        self.data["profile"]=sanitize_profile(self.data.get("profile"))
+        if not isinstance(self.data["desktop_items"],list):self.data["desktop_items"]=[]
+        self.data["desktop_items"]=[v for v in self.data["desktop_items"] if isinstance(v,dict)
+            and isinstance(v.get("uid"),str) and v.get("item") in BY_ID and
+            all(isinstance(v.get(k), (int,float)) and math.isfinite(v[k]) for k in ("x","y"))][:32]
+        for v in self.data["desktop_items"]:
+            for k,default in (("water",100),("width",120)):
+                value=v.get(k,default);v[k]=max(0,min(100,value)) if k=="water" and isinstance(value,(int,float)) and math.isfinite(value) else max(80,min(180,value)) if k=="width" and isinstance(value,(int,float)) and math.isfinite(value) else default
+
         for key in STAT_NAMES:
             v=self.data["stats"].get(key,80)
             self.data["stats"][key]=max(0,min(100,float(v))) if isinstance(v,(int,float)) and math.isfinite(v) else 80
@@ -47,7 +66,7 @@ class LifeEngine:
             v=self.data[key];self.data[key]=max(0,int(v)) if isinstance(v,(int,float)) and math.isfinite(v) else 0
         for key in ("events","tasks","mood_history","badges","postcards"):
             if not isinstance(self.data[key],list):self.data[key]=[]
-        for key in ("inventory","diaries","layouts","layout_presets","daily"):
+        for key in ("inventory","diaries","layouts","layout_presets","daily","profile"):
             if not isinstance(self.data[key],dict):self.data[key]={}
         for key,val in list(self.data["inventory"].items()):
             self.data["inventory"][key]=max(0,int(val)) if isinstance(val,(int,float)) and math.isfinite(val) else 0
@@ -146,7 +165,7 @@ class LifeEngine:
             now=self.clock()
             if now-self.cooldowns.get("toy",-1e12)<20:return False,"刚玩过玩具，让年糕休息一下"
             self.cooldowns["toy"]=now
-        if kind=="furniture":return False,"请到家园中摆放"
+        if kind=="furniture":return False,"请拖到桌面摆放"
         if kind=="room":self.data["scene"]=id.replace("room_","")
         elif kind=="age_freeze":self.data["age_override"]=self.age()["effective_months"];self.data["age_frozen"]=True
         elif kind=="age_kitten":self.data["age_override"]=6;self.data["age_frozen"]=True

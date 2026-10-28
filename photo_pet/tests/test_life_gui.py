@@ -19,8 +19,10 @@ def test_dashboard_real_buttons_and_assets(tmp_path):
     ui.care("brush","groom");assert pet.behaviour.state=="groom"
     ui.task_input.setText("完成一次测试");ui.add_task();assert ui.tasks.count()==1
     ui.generate_diary();assert "梳理" in ui.diary_text.toPlainText()
-    ui.place_furniture();assert len(pet.life.data["layouts"]["desk"])==1
-    ui.preset.setText("测试布局");ui.save_layout();ui.remove_furniture();ui.load_layout();assert len(pet.life.data["layouts"]["desk"])==1
+    assert not any("3D" in ui.nav.item(i).text() for i in range(ui.nav.count()))
+    assert ui.nav.item(2).text()=="年糕小铺" and ui.nav.item(3).text()=="我的背包"
+    ui.place_or_use("bed");assert any(w.id=="bed" for w in pet.desktop.widgets.values())
+    pet.desktop.clear();assert not pet.desktop.widgets
     ui.chat_input.setText("小棕点");ui.send_chat();assert "本地回应" in ui.chat_log.toPlainText();assert pet.life.data["badges"]
     pet.close();app.processEvents()
 def test_background_result_runs_on_gui_thread():
@@ -30,10 +32,3 @@ def test_background_result_runs_on_gui_thread():
         QTest.qWait(10)
         if results:break
     assert results and results[0][0]=="ok" and results[0][1]==app.thread()
-def test_glb_structure():
-    from niangao.life.glb import read_glb
-    from niangao.art import asset_path
-    doc,binary=read_glb(asset_path("models/niangao-experimental.glb"))
-    names=[v.get("name") for v in doc["nodes"]]
-    assert "PinkNose" in names and "SignatureBrownNoseSpot" in names and "GroomedFur_Ribbons" in names
-    for view in doc["bufferViews"]:assert view.get("byteOffset",0)+view["byteLength"]<=len(binary)

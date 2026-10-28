@@ -29,5 +29,19 @@ CATALOG=[
  item("affection","好感礼盒","道具",35,effect={"mood":30}),item("stars","星光边饰","特效",60,"effect",ready=False,note="特效贴合尚未校验，不出售"),item("petals","花瓣边饰","特效",60,"effect",ready=False,note="特效贴合尚未校验，不出售"),
  item("room_garden","花园草地","空间",150,"room"),item("room_balcony","阳台","空间",120,"room"),item("room_kitchen","厨房","空间",120,"room"),
  item("material_pack","自定义立绘包","素材",0,"import",note="通过设置导入 PNG，不运行陌生代码")]
+RETIRED_ROOMS={x["id"]:x for x in CATALOG if x["kind"]=="room"}
+CATALOG=[x for x in CATALOG if x["kind"]!="room"]
+CATALOG.extend([
+ item("food_bowl","年糕粮碗","照料",25,"furniture",note="可放到桌面，点击补充基础餐"),
+ item("water_bowl","清水小碗","照料",20,"furniture",note="有水位与涟漪，右键可补水"),
+ item("water_fountain","猫耳自动饮水机","照料",65,"furniture",note="循环水流与水位；没水时暂停，右键补水"),
+ item("brush","软毛梳","照料",22,"furniture",note="摆到桌面，点击给年糕梳毛"),
+ item("wash_basin","泡泡洗澡盆","照料",45,"furniture",note="点击进行虚拟清洁"),
+ item("health_kit","安心照料包（虚拟）","照料",35,"furniture",note="游戏内健康照料，不替代兽医诊断"),
+ item("water_bottle","随身补水瓶","食品",8,effect={"health":2},note="虚拟补水用品，可摆放与使用")])
 BY_ID={x["id"]:x for x in CATALOG}
+def is_placeable(id):
+    it=BY_ID.get(id)
+    return bool(it and it["ready"] and it["kind"] not in ("import","room"))
+
 SCENES={"desk":"书桌","living":"客厅","bedroom":"卧室","garden":"花园草地","balcony":"阳台","kitchen":"厨房"}

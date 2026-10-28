@@ -9,26 +9,40 @@ from PySide6.QtWidgets import (QMainWindow,QWidget,QVBoxLayout,QHBoxLayout,QGrid
     QLineEdit,QTextEdit,QCheckBox,QCalendarWidget,QFileDialog,QDateEdit,QGroupBox,QFormLayout)
 from ..art import asset_path
 from .engine import STAT_NAMES
-from .catalog import BY_ID,SCENES
+from .catalog import BY_ID,is_placeable
+from .profile import sanitize_profile
+from .item_art import item_pixmap
+from ..desktop_items import ItemDragCard
 from .ai import SecretVault,AIClient,checked_base
 from .jobs import run_job
 STYLE="""
-QMainWindow,QWidget {background:#EFF6F1;color:#305E63;font-size:14px;}
-QLabel#hero {font-size:28px;font-weight:700;} QLabel#sub {color:#698478;}
-QPushButton {background:#40A387;color:white;border:0;border-radius:8px;padding:10px 16px;}
-QPushButton:hover {background:#305E63;} QPushButton:disabled {background:#cdd9d0;color:#6c8278;}
-QLineEdit,QTextEdit,QTextBrowser,QSpinBox,QDoubleSpinBox,QComboBox,QDateEdit {background:white;border:1px solid #b5d7cd;border-radius:6px;padding:7px;}
-QListWidget {background:#305E63;color:#EFF6F1;border:0;border-radius:12px;padding:8px;}
-QListWidget::item {padding:15px 10px;margin:3px;} QListWidget::item:selected {background:#40A387;border-radius:8px;}
-QGroupBox {border:1px solid #b5d7cd;border-radius:10px;margin-top:14px;padding:14px;}
-QGroupBox::title {subcontrol-origin:margin;left:15px;padding:0 5px;}
-QProgressBar {border:0;background:#dbe6df;border-radius:6px;min-height:19px;text-align:center;}
-QProgressBar::chunk {background:#8CCCCA;border-radius:6px;}
-QCheckBox {padding:5px;} QScrollArea {border:0;}
+QMainWindow,QWidget#lifeRoot {background:#fffaf0;color:#342d2b;}
+QWidget {color:#342d2b;font-size:13px;}
+QLabel {background:transparent;} QLabel#hero {font-size:22px;font-weight:700;} QLabel#sub {color:#75685d;}
+QPushButton {background:#bad9c8;border:2px solid #342d2b;border-radius:11px;padding:8px 12px;font-weight:600;}
+QPushButton:hover {background:#f8dfa0;} QPushButton:pressed {background:#efc0b9;}
+QPushButton:disabled {background:#e7e3d7;color:#9b9387;border-color:#b9b2a6;}
+QLineEdit,QTextEdit,QTextBrowser,QSpinBox,QDoubleSpinBox,QComboBox,QDateEdit {background:#fffef8;border:1.5px solid #66584e;border-radius:8px;padding:6px;}
+QListWidget {outline:none;background:#fffef8;border:2px solid #342d2b;border-radius:12px;padding:4px;}
+QListWidget::item {padding:9px 7px;margin:2px;} QListWidget::item:selected {background:#f8dfa0;border-radius:7px;color:#342d2b;}
+QListWidget#navigation {background:#c5dfcf;border:2px solid #342d2b;} QListWidget#navigation::item {padding:12px 5px;}
+QGroupBox {background:#fffdf5;border:2px solid #342d2b;border-radius:14px;margin-top:14px;padding:12px;}
+QGroupBox::title {subcontrol-origin:margin;left:13px;padding:0 5px;background:#fffaf0;font-weight:600;}
+QFrame#itemCard {background:#fffdf5;border:2px solid #342d2b;border-radius:14px;}
+QProgressBar {background:#e4ebe0;border:1px solid #342d2b;border-radius:6px;min-height:17px;text-align:center;}
+QProgressBar::chunk {background:#a8d2c0;border-radius:5px;}
+QCheckBox {padding:4px;} QScrollArea {border:0;background:transparent;} QScrollBar:vertical {width:10px;background:#f2eddf;}
+QScrollBar::handle:vertical {background:#bad9c8;border-radius:5px;min-height:25px;}
 """
+class PaperPage(QWidget):
+    def paintEvent(self,event):
+        p=QPainter(self);p.fillRect(self.rect(),QColor("#fffaf0"));p.setPen(QColor("#eee9dd"))
+        for x in range(0,self.width(),22):p.drawLine(x,0,x,self.height())
+        for y in range(0,self.height(),22):p.drawLine(0,y,self.width(),y)
+        p.end()
 from ..interaction.actions import ACTIONS as MOTIONS,MOOD_POOLS,SOUNDS
 ACTIONS={key:info.label for key,info in MOTIONS.items()}
-PENDING=["跳上真实家具","攀爬猫树","服饰穿戴","幼猫/老年独立模型","完整 3D 骨骼走跑"]
+PENDING=["跳上真实家具","攀爬猫树","服饰穿戴","幼猫/老年独立模型","更连贯的长帧动作"]
 class MoodCurve(QWidget):
     def __init__(self,engine):super().__init__();self.engine=engine;self.setMinimumHeight(110)
     def paintEvent(self,event):
@@ -44,29 +58,35 @@ class MoodCurve(QWidget):
         p.end()
 class LifeWindow(QMainWindow):
     def __init__(self,pet):
-        super().__init__();self.pet=pet;self.engine=pet.life;self.home=None;self.setWindowTitle("年糕生活馆 · NIANGAO");self.resize(1100,780);self.setMinimumSize(880,620);self.setStyleSheet(STYLE)
-        self.vault=SecretVault(self.engine.path.parent/"api-key.dpapi");self.client=AIClient(self.engine.data["ai"],self.vault);self.history=[]
-        base=QWidget();self.setCentralWidget(base);outer=QVBoxLayout(base);row=QHBoxLayout();outer.addLayout(row)
-        self.nav=QListWidget();self.nav.setFixedWidth(180);self.stack=QStackedWidget();row.addWidget(self.nav);row.addWidget(self.stack,1)
+        super().__init__();self.pet=pet;self.engine=pet.life;self.setWindowTitle("年糕生活馆 · NIANGAO");area=self.screen().availableGeometry();width=min(860,area.width()-24);height=min(650,area.height()-56);self.resize(width,height);self.setMinimumSize(min(740,width),min(540,height));self.setStyleSheet(STYLE)
+        self.vault=SecretVault(self.engine.path.parent/"api-key.dpapi");self.client=AIClient(self.engine.data["ai"],self.vault,self.engine.profile_snapshot);self.history=[]
+        base=QWidget();base.setObjectName("lifeRoot");self.setCentralWidget(base);outer=QVBoxLayout(base);row=QHBoxLayout();outer.addLayout(row)
+        self.nav=QListWidget();self.nav.setFixedWidth(132);self.nav.setObjectName("navigation");self.stack=QStackedWidget();row.addWidget(self.nav);row.addWidget(self.stack,1)
         self.status=QLabel("本地保存 · 年糕的照片形象始终保留");self.status.setWordWrap(True);outer.addWidget(self.status)
-        builders=[("陪伴总览",self.overview),("照料与动作",self.care_page),("3D 小家",self.home_page),("商城与背包",self.shop_page),
-                  ("专注与待办",self.focus_page),("和年糕聊天",self.chat_page),("年糕日记",self.diary_page),("设置与图鉴",self.settings_page)]
+        builders=[("陪伴总览",self.overview),("照料与动作",self.care_page),("年糕小铺",self.shop_page),("我的背包",self.backpack_page),
+                  ("专注与待办",self.focus_page),("和年糕聊天",self.chat_page),("年糕日记",self.diary_page),("性格与设置",self.settings_page)]
         for name,builder in builders:
-            self.nav.addItem(name);page=QWidget();layout=QVBoxLayout(page);builder(layout);layout.addStretch()
+            self.nav.addItem(name);page=PaperPage();layout=QVBoxLayout(page);builder(layout);layout.addStretch()
             scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setWidget(page);self.stack.addWidget(scroll)
         self.nav.currentRowChanged.connect(self.stack.setCurrentIndex);self.nav.setCurrentRow(0)
+        self.pet.desktop.changed.connect(self.refresh_inventory)
         self.timer=QTimer(self);self.timer.timeout.connect(self.refresh);self.timer.start(1000);self.refresh()
     def title(self,layout,title,subtitle=""):
-        label=QLabel(title);label.setObjectName("hero");layout.addWidget(label)
+        row=QHBoxLayout();layout.addLayout(row);texts=QVBoxLayout();row.addLayout(texts,1)
+        label=QLabel(title);label.setObjectName("hero");texts.addWidget(label)
         if subtitle:
-            label=QLabel(subtitle);label.setObjectName("sub");label.setWordWrap(True);layout.addWidget(label)
+            label=QLabel(subtitle);label.setObjectName("sub");label.setWordWrap(True);texts.addWidget(label)
+        art="care" if any(v in title for v in ("照顾","水","照料")) else "shop" if any(v in title for v in ("补给","小铺","背包")) else "diary" if any(v in title for v in ("日记","专注","休息")) else "welcome"
+        image=QLabel();image.setFixedSize(84,80)
+        path=asset_path("ui/"+art+".webp")
+        image.setPixmap((QPixmap(str(path)) if path.exists() else item_pixmap("food_bowl",80)).scaled(84,80,Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation));row.addWidget(image)
     def button(self,layout,text,callback):
         b=QPushButton(text);b.clicked.connect(lambda _checked=False:callback());layout.addWidget(b);return b
     def notice(self,text):self.status.setText(str(text))
     def result(self,result):self.notice(result[1]);self.refresh()
     def overview(self,l):
         self.title(l,"你好，今天也有年糕陪你","真实生日 · 照料记录 · 小小的陪伴奖励")
-        row=QHBoxLayout();l.addLayout(row);photo=QLabel();photo.setPixmap(QPixmap(str(asset_path("niangao-idle.png"))).scaled(190,230,Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation));row.addWidget(photo)
+        row=QHBoxLayout();l.addLayout(row);photo=QLabel();photo.setPixmap((QPixmap(str(asset_path("ui/welcome.webp"))) if asset_path("ui/welcome.webp").exists() else item_pixmap("food_bowl",130)).scaled(135,155,Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation));row.addWidget(photo)
         box=QVBoxLayout();row.addLayout(box,1);self.age_label=QLabel();self.age_label.setWordWrap(True);box.addWidget(self.age_label)
         self.summary=QLabel();box.addWidget(self.summary);self.bars={}
         for key,name in STAT_NAMES.items():
@@ -79,11 +99,12 @@ class LifeWindow(QMainWindow):
         for i,(key,text,action) in enumerate([("meal","基础餐","feed"),("water","喝水","idle"),("pet","摸摸头","pet"),("play","逗猫玩","play_bow"),
              ("brush","梳毛","groom"),("bath","虚拟清洁","groom"),("litter","清猫砂","idle"),("rest","休息","sleep"),("checkup","虚拟健康照料","idle")]):
             b=QPushButton(text);grid.addWidget(b,i//3,i%3);b.clicked.connect(lambda checked=False,k=key,a=action:self.care(k,a))
+        self.care_objects(l)
         group=QGroupBox("动作与表情图鉴 · 照片关键帧");g=QVBoxLayout(group);l.addWidget(group)
-        label=QLabel("轻点：摸头；按住约 0.85 秒：轻啃指尖；左键拖拽：抱起；Shift + 左键滑动：抚摸；双击：戳一下。\n四帧照片补全不是完整 3D 骨骼动画，较大变姿仍有跳变。");label.setWordWrap(True);g.addWidget(label)
+        label=QLabel("轻点：摸头；按住约 0.85 秒：轻啃指尖；左键拖拽：抱起；Shift + 左键滑动：抚摸；双击：戳一下。\n照片关键帧表现动作，较大变姿仍有跳变。");label.setWordWrap(True);g.addWidget(label)
         self.motion_group=QComboBox();self.motion_group.addItems(["全部"]+sorted(set(info.group for info in MOTIONS.values())));g.addWidget(self.motion_group)
-        self.motion_list=QListWidget();self.motion_list.setMinimumHeight(260);self.motion_list.currentRowChanged.connect(self.motion_selected);g.addWidget(self.motion_list)
-        self.motion_preview=QLabel("关键帧预览");self.motion_preview.setAlignment(Qt.AlignmentFlag.AlignCenter);self.motion_preview.setMinimumHeight(210);g.addWidget(self.motion_preview)
+        self.motion_list=QListWidget();self.motion_list.setMinimumHeight(200);self.motion_list.currentRowChanged.connect(self.motion_selected);g.addWidget(self.motion_list)
+        self.motion_preview=QLabel("关键帧预览");self.motion_preview.setAlignment(Qt.AlignmentFlag.AlignCenter);self.motion_preview.setMinimumHeight(155);g.addWidget(self.motion_preview)
         self.motion_note=QLabel();self.motion_note.setWordWrap(True);g.addWidget(self.motion_note)
         row=QHBoxLayout();g.addLayout(row);self.button(row,"播放选中动作",self.play_selected_motion);self.button(row,"蓄力 → 扑抓 → 躲闪",self.pet.tease)
         self.motion_group.currentTextChanged.connect(self.render_motions);self.render_motions()
@@ -104,7 +125,7 @@ class LifeWindow(QMainWindow):
         if i<0:return
         info=MOTIONS[self.motion_ids[i]]
         frames=self.pet.art.frames.get(info.resource)
-        if frames:self.motion_preview.setPixmap(QPixmap.fromImage(frames[min(1,len(frames)-1)]).scaled(340,210,Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
+        if frames:self.motion_preview.setPixmap(QPixmap.fromImage(frames[min(1,len(frames)-1)]).scaled(280,155,Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
         self.motion_note.setText(info.note or "独立姿态资源；基于年糕参考照片的 AI 补全，非真实动作录像。")
     def play_selected_motion(self):
         i=self.motion_list.currentRow()
@@ -116,143 +137,71 @@ class LifeWindow(QMainWindow):
         self.pet.perform_action(random.choice(MOOD_POOLS.get(mood,MOOD_POOLS["平静"])))
         self.notice("情绪动作体验："+mood+"；不修改养成数值")
     def care(self,key,action):
-        ok,text=self.engine.care(key);self.notice(text)
-        if ok:
-            if key=="meal":self.pet.feed()
-            elif key=="pet":self.pet.pet_head()
-            elif key=="play":self.pet.tease()
-            else:self.pet.perform_action(action)
-            self.pet.bubble.speak(text,self.pet.rect_global(),self.pet.areas())
+        mapping={"meal":"food_bowl","water":"water_bowl","play":"ball","brush":"brush","bath":"wash_basin","litter":"litter","rest":"bed","checkup":"health_kit"}
+        if key in mapping:
+            id=mapping[key];uid=next((uid for uid,w in self.pet.desktop.widgets.items() if w.id==id or key=="water" and w.id=="water_fountain"),None)
+            if uid is None:
+                ok,text=self.pet.desktop.place(id);self.notice(text)
+                if not ok:return
+                uid=next(uid for uid,w in self.pet.desktop.widgets.items() if w.id==id)
+            ok=self.pet.desktop.activate(uid);self.notice("年糕正在使用 "+BY_ID[self.pet.desktop.widgets[uid].id]["name"] if ok else "稍等一会儿；空水碗可右键加满")
+        else:
+            ok,text=self.engine.care(key);self.notice(text)
+            if ok:self.pet.pet_head() if key=="pet" else self.pet.perform_action(action)
         self.refresh()
-    def home_page(self,l):
-        self.title(l,"年糕的 3D 小家 · 实验版","照片桌宠保持原样。这里是程序建模的实验猫，不是照片扫描复原；有方向的毛束不是最终真实长毛。")
-        row=QHBoxLayout();l.addLayout(row);self.scene_combo=QComboBox()
-        for key,name in SCENES.items():self.scene_combo.addItem(name,key)
-        self.scene_combo.setCurrentIndex(self.scene_combo.findData(self.engine.data["scene"]));row.addWidget(self.scene_combo)
-        self.button(row,"进入空间",self.change_scene);self.button(row,"启动实时 3D",self.start_home)
-        self.home_host=QVBoxLayout();l.addLayout(self.home_host);self.preview=QLabel();self.preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.preview.setPixmap(QPixmap(str(asset_path("models/niangao-3d-preview.png"))).scaled(430,430,Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation));self.home_host.addWidget(self.preview)
-        self.furniture=QComboBox();l.addWidget(self.furniture);self.update_furniture()
-        row=QHBoxLayout();l.addLayout(row);self.button(row,"摆放背包家具",self.place_furniture);self.button(row,"删除选中家具",self.remove_furniture);self.button(row,"镜头看年糕",lambda:self.home.focus_cat() if self.home else self.notice("请先启动实时 3D"))
-        self.placed=QComboBox();self.placed.currentIndexChanged.connect(self.select_furniture);l.addWidget(self.placed)
-        row=QHBoxLayout();l.addLayout(row);self.rotation=QSpinBox();self.rotation.setRange(0,359);self.rotation.setSuffix("°");row.addWidget(QLabel("旋转"));row.addWidget(self.rotation)
-        self.scale=QDoubleSpinBox();self.scale.setRange(.5,1.8);self.scale.setSingleStep(.1);self.scale.setValue(1);row.addWidget(QLabel("缩放"));row.addWidget(self.scale)
-        self.button(row,"应用变换",self.transform_furniture)
-        self.place_mode=QCheckBox("摆放模式：拖动选中家具；0.25 米网格吸附，阻止家具重叠与侵入猫咪保留区");self.place_mode.toggled.connect(self.placement_mode);l.addWidget(self.place_mode)
-        row=QHBoxLayout();l.addLayout(row);self.preset=QLineEdit();self.preset.setPlaceholderText("布局名称");row.addWidget(self.preset)
-        self.button(row,"保存布局",self.save_layout);self.button(row,"恢复布局",self.load_layout);self.update_placed()
-    def change_scene(self):
-        ok,text=self.engine.set_scene(self.scene_combo.currentData());self.notice(text)
-        if ok:
-            if self.home:self.home.rebuild()
-            self.update_placed()
-    def start_home(self):
-        if self.home:return
-        try:
-            from .home3d import Home3D
-            self.home=Home3D(self.engine,self.notice);self.preview.hide();self.home_host.addWidget(self.home);self.notice("实时 3D 已启动；鼠标左键环绕，滚轮缩放。模型未绑定完整骨骼。")
-        except Exception as exc:self.notice("实时 3D 不可用，保留静态渲染预览："+str(exc)[:180])
-    def update_furniture(self):
-        self.furniture.clear()
-        for id,count in self.engine.data["inventory"].items():
-            if count and id in BY_ID and BY_ID[id]["kind"]=="furniture":self.furniture.addItem(BY_ID[id]["name"]+" ×"+str(count),id)
-    def update_placed(self):
-        self.placed.clear()
-        for it in self.engine.data["layouts"].get(self.engine.data["scene"],[]):self.placed.addItem(BY_ID[it["type"]]["name"],it["id"])
-    def select_furniture(self):
-        id=self.placed.currentData()
-        if self.home:self.home.selected=id
-        for it in self.engine.data["layouts"].get(self.engine.data["scene"],[]):
-            if it["id"]==id:self.rotation.setValue(int(it.get("rotation",0)));self.scale.setValue(it.get("scale",1))
-    def placement_mode(self,value):
-        if self.home:self.home.placement=value;self.home.orbit.setEnabled(not value)
-    def place_furniture(self):
-        from .layout import valid_placement
-        id=self.furniture.currentData()
-        if not id:return
-        items=self.engine.data["layouts"].setdefault(self.engine.data["scene"],[])
-        if sum(it["type"]==id for it in items)>=self.engine.data["inventory"].get(id,0):return self.notice("这件家具已经全部摆放")
-        for x,z in [(x/2,z/2) for x in range(-6,7) for z in range(-6,7)]:
-            it=dict(id=uuid.uuid4().hex,type=id,x=x,z=z,rotation=0,scale=1)
-            obstacles=self.home.builtin_obstacles() if self.home else self.builtin_obstacles()
-            if valid_placement(it,items+obstacles)[0]:
-                items.append(it);self.engine.save()
-                if self.home:self.home.add_entity(it)
-                self.update_placed();self.placed.setCurrentIndex(self.placed.count()-1);return self.notice("家具已放入房间；开启摆放模式可拖动")
-        self.notice("没有足够空地，请移除部分家具")
-    def builtin_obstacles(self):
-        scene=self.engine.data["scene"]
-        return [dict(id="builtin",type="builtin",x=0 if scene=="kitchen" else -1.8,z=-2.6,scale=2.05 if scene=="kitchen" else 1,rotation=0)] if scene in ("desk","living","bedroom","kitchen") else []
-    def remove_furniture(self):
-        items=self.engine.data["layouts"].get(self.engine.data["scene"],[]);id=self.placed.currentData()
-        items[:]=[it for it in items if it["id"]!=id];self.engine.save()
-        if self.home:self.home.rebuild()
-        self.update_placed()
-    def transform_furniture(self):
-        from .layout import valid_placement
-        items=self.engine.data["layouts"].get(self.engine.data["scene"],[])
-        for i,it in enumerate(items):
-            if it["id"]==self.placed.currentData():
-                candidate=dict(it,rotation=self.rotation.value(),scale=self.scale.value());ok,text=valid_placement(candidate,items+self.builtin_obstacles())
-                if ok:
-                    if self.home:self.home.move_item(candidate)
-                    else:items[i]=candidate
-                    self.engine.save();self.notice("变换已保存")
-                else:self.notice(text)
-    def save_layout(self):
-        name=self.preset.text().strip()[:40]
-        if not name:return self.notice("请填写布局名称")
-        import copy
-        self.engine.data["layout_presets"][name]={"scene":self.engine.data["scene"],"items":copy.deepcopy(self.engine.data["layouts"].get(self.engine.data["scene"],[]))}
-        self.engine.save();self.notice("布局已保存")
-    def load_layout(self):
-        import copy
-        record=self.engine.data["layout_presets"].get(self.preset.text().strip())
-        if not record or record["scene"]!=self.engine.data["scene"]:return self.notice("当前空间没有这个布局")
-        from .layout import valid_placement
-        good=[]
-        for item in record["items"]:
-            try:
-                if not valid_placement(item,good+self.builtin_obstacles())[0]:return self.notice("布局存在家具重叠，未恢复")
-                if sum(it["type"]==item["type"] for it in good)>=self.engine.data["inventory"].get(item["type"],0):return self.notice("背包家具不足，未恢复")
-                good.append(copy.deepcopy(item))
-            except (KeyError,TypeError,ValueError):return self.notice("布局文件损坏，未恢复")
-        self.engine.data["layouts"][record["scene"]]=good;self.engine.save()
-        if self.home:self.home.rebuild()
-        self.update_placed();self.notice("布局已恢复")
     def shop_page(self,l):
-        self.title(l,"小鱼干补给站","金币只存在本地游戏内，不涉及真实付款。未完成服饰绑定的商品不可购买。")
-        self.shop_filter=QComboBox();self.shop_filter.addItems(["全部"]+sorted(set(it["category"] for it in BY_ID.values())));self.shop_filter.currentTextChanged.connect(self.render_shop);l.addWidget(self.shop_filter)
-        self.shop_list=QListWidget();self.shop_list.setMinimumHeight(350);self.shop_list.currentRowChanged.connect(self.shop_selection);l.addWidget(self.shop_list)
-        self.shop_info=QLabel();self.shop_info.setWordWrap(True);l.addWidget(self.shop_info);row=QHBoxLayout();l.addLayout(row)
-        self.buy_button=self.button(row,"购买",self.buy_item);self.use_button=self.button(row,"使用背包物品",self.use_item);self.render_shop()
+        self.title(l,"年糕的小小补给铺","每件物品都有独立手绘实物图。购买后到背包拖出来，一起布置桌面。")
+        self.shop_wallet=QLabel();l.addWidget(self.shop_wallet)
+        self.shop_filter=QComboBox();self.shop_filter.addItems(["全部"]+sorted(set(v["category"] for v in BY_ID.values())))
+        self.shop_filter.currentTextChanged.connect(self.render_shop);l.addWidget(self.shop_filter)
+        self.shop_container=QWidget();self.shop_grid=QGridLayout(self.shop_container);self.shop_grid.setContentsMargins(0,4,0,4);l.addWidget(self.shop_container)
+        self.render_shop()
+    def clear_grid(self,grid):
+        while grid.count():
+            item=grid.takeAt(0)
+            if item.widget():item.widget().deleteLater()
     def render_shop(self):
-        self.shop_ids=[id for id,it in BY_ID.items() if self.shop_filter.currentText()=="全部" or it["category"]==self.shop_filter.currentText()]
-        self.shop_list.clear()
-        for id in self.shop_ids:
-            it=BY_ID[id];self.shop_list.addItem(f'{it["name"]}   ·   {it["price"]} 金币   ·   背包 {self.engine.data["inventory"].get(id,0)}'+("   [待适配]" if not it["ready"] else ""))
-        self.shop_list.setCurrentRow(0)
-    def shop_selection(self):
-        row=self.shop_list.currentRow()
-        if row<0 or row>=len(self.shop_ids):return
-        id=self.shop_ids[row];it=BY_ID[id];ok,reason=self.engine.can_buy(id)
-        self.shop_info.setText(it["note"] or reason or "已准备，可购买");self.buy_button.setEnabled(ok);self.use_button.setEnabled(it["ready"] and self.engine.data["inventory"].get(id,0)>0)
-    def buy_item(self):
-        row=self.shop_list.currentRow()
-        if row>=0:self.result(self.engine.buy(self.shop_ids[row]));self.render_shop();self.update_furniture()
-    def use_item(self):
-        row=self.shop_list.currentRow()
-        if row<0:return
-        id=self.shop_ids[row];ok,text=self.engine.use(id);self.notice(text)
-        if ok:
-            kind=BY_ID[id]["kind"]
-            if kind=="consumable":self.pet.perform_action("feed")
-            elif kind=="toy":self.pet.director.sequence([("chew_toy",3),("swat",2.5)],self.pet.play_step)
-            elif kind=="room":
-                self.scene_combo.setCurrentIndex(self.scene_combo.findData(self.engine.data["scene"]))
-                if self.home:self.home.rebuild()
-                self.update_placed()
-        self.render_shop();self.refresh()
+        self.clear_grid(self.shop_grid);self.shop_cards={}
+        ids=[id for id,v in BY_ID.items() if self.shop_filter.currentText()=="全部" or v["category"]==self.shop_filter.currentText()]
+        for i,id in enumerate(ids):
+            card=ItemDragCard(id,self.pet,self,"购买",lambda item=id:self.buy_item(item))
+            card.button.setEnabled(self.engine.can_buy(id)[0]);card.button.setToolTip(self.engine.can_buy(id)[1]);card.detail.setText(str(BY_ID[id]["price"])+" 金币\n"+("已拥有 "+str(self.engine.data["inventory"].get(id,0)) if BY_ID[id]["ready"] else "待适配 · 不出售"))
+            self.shop_grid.addWidget(card,i//3,i%3);self.shop_cards[id]=card
+    def buy_item(self,id):
+        self.result(self.engine.buy(id));self.render_shop();self.render_backpack()
+    def backpack_page(self,l):
+        self.title(l,"我的年糕小背包","按住物品图像，拖到生活馆窗口外再松开。只摆放已拥有的物品，Esc 可取消。")
+        row=QHBoxLayout();l.addLayout(row);self.clear_desktop_button=self.button(row,"一键清理桌面摆件",self.pet.desktop.clear)
+        self.desktop_count=QLabel();row.addWidget(self.desktop_count)
+        self.bag_container=QWidget();self.bag_grid=QGridLayout(self.bag_container);self.bag_grid.setContentsMargins(0,4,0,4);l.addWidget(self.bag_container);self.render_backpack()
+    def render_backpack(self):
+        if not hasattr(self,"bag_grid"):return
+        self.clear_grid(self.bag_grid);self.bag_cards={}
+        ids=[id for id,n in self.engine.data["inventory"].items() if n>0 and id in BY_ID]
+        for i,id in enumerate(ids):
+            card=ItemDragCard(id,self.pet,self,"放到桌面" if is_placeable(id) else "使用",lambda item=id:self.place_or_use(item))
+            count=self.engine.data["inventory"].get(id,0);available=self.pet.desktop.available(id)
+            card.detail.setText("拥有 "+str(count)+" · 可摆 "+str(available))
+            card.button.setEnabled(BY_ID[id]["ready"] and (available>0 or not is_placeable(id)))
+            self.bag_grid.addWidget(card,i//3,i%3);self.bag_cards[id]=card
+        self.desktop_count.setText("桌面已摆 "+str(len(self.pet.desktop.widgets))+" 件")
+    def place_or_use(self,id):
+        if is_placeable(id):self.result(self.pet.desktop.place(id))
+        else:self.result(self.engine.use(id))
+        self.render_backpack()
+    def refresh_inventory(self):
+        if hasattr(self,"bag_grid"):self.render_backpack()
+        if hasattr(self,"shop_cards"):
+            for id,card in self.shop_cards.items():
+                card.button.setEnabled(self.engine.can_buy(id)[0])
+        self.refresh()
+    def care_objects(self,l):
+        group=QGroupBox("把照料用品摆到桌面");g=QGridLayout(group);l.addWidget(group)
+        ids=["food_bowl","water_bowl","water_fountain","wand","ball","brush","wash_basin","litter","bed","health_kit"]
+        for i,id in enumerate(ids):
+            card=ItemDragCard(id,self.pet,self,"摆放",lambda item=id:self.result(self.pet.desktop.place(item)))
+            card.detail.setText("拖出可摆放 · 点击实物互动");g.addWidget(card,i//3,i%3)
+        self.button(l,"一键清理桌面摆件",self.pet.desktop.clear)
     def focus_page(self,l):
         self.title(l,"一起认真，一起休息","计时依据实际经过时间；退出后暂停，不补发离线专注奖励。")
         self.focus_label=QLabel();self.focus_label.setObjectName("hero");l.addWidget(self.focus_label);row=QHBoxLayout();l.addLayout(row)
@@ -276,7 +225,7 @@ class LifeWindow(QMainWindow):
         if self.engine.add_task(self.task_input.text()):self.task_input.clear();self.render_tasks()
     def chat_page(self,l):
         self.title(l,"说给年糕听","默认使用本地简短回应。仅主动启用 API 后才发送聊天文字；不读取应用内容或键盘文本。")
-        self.chat_log=QTextBrowser();self.chat_log.setMinimumHeight(370);l.addWidget(self.chat_log);self.chat_input=QLineEdit();self.chat_input.setPlaceholderText("今天发生了什么？");self.chat_input.returnPressed.connect(self.send_chat);l.addWidget(self.chat_input)
+        self.chat_log=QTextBrowser();self.chat_log.setMinimumHeight(250);l.addWidget(self.chat_log);self.chat_input=QLineEdit();self.chat_input.setPlaceholderText("今天发生了什么？");self.chat_input.returnPressed.connect(self.send_chat);l.addWidget(self.chat_input)
         self.chat_send=self.button(l,"发送",self.send_chat)
     def send_chat(self):
         text=self.chat_input.text().strip()[:2000]
@@ -327,6 +276,15 @@ class LifeWindow(QMainWindow):
     def set_pref(self,key,value):self.engine.data["preferences"][key]=value;self.engine.save()
     def settings_page(self,l):
         self.title(l,"只为你和年糕","数据保存在用户目录。默认不联网、不监听全局键盘、不自动启动。")
+        group=QGroupBox("年糕的性格与习惯 · 每次 API 请求强制读取");form=QFormLayout(group);l.addWidget(group);self.profile_fields={}
+        profile=sanitize_profile(self.engine.data["profile"])
+        for key,label in [("personality","性格"),("habits","日常习惯"),("likes","喜欢什么"),("dislikes","不喜欢什么"),("speaking_style","说话风格"),("owner_name","主人的称呼"),("notes","其他真实观察")]:
+            field=QTextEdit() if key in ("personality","habits","notes") else QLineEdit()
+            if isinstance(field,QTextEdit):field.setMaximumHeight(82);field.setPlainText(profile[key])
+            else:field.setText(profile[key])
+            field.setPlaceholderText("可留空；未填写的内容不会假装已知");form.addRow(label,field);self.profile_fields[key]=field
+        self.button(form,"保存年糕档案",self.save_profile)
+        note=QLabel("聊天与 AI 日记每次联网前都重新读取档案、生日计算的真实年龄和当前状态；换 Key 也不能跳过。留空会标记未知。");note.setWordWrap(True);form.addRow(note)
         self.title(l,"生日与体验年龄")
         self.birth=QDateEdit(QDate.fromString(self.engine.data["birth_date"],"yyyy-MM-dd"));self.birth.setCalendarPopup(True);self.birth.setMaximumDate(QDate.currentDate());l.addWidget(self.birth)
         self.button(l,"保存生日",self.save_birth);self.button(l,"恢复真实年龄",self.reset_age)
@@ -346,8 +304,8 @@ class LifeWindow(QMainWindow):
         row.addWidget(self.sound_choice);self.button(row,"试听已选音效",self.preview_sound);self.button(row,"立即停止音效",self.pet.audio.stop)
         label=QLabel("仅检测是否按键，不安装键盘钩子、不读取屏幕内容。声音在本机合成，可随时静音。系统音量通知、联网天气与开机启动仍未接入。");label.setWordWrap(True);sound_layout.addWidget(label)
         group=QGroupBox("可选联网 AI · OpenAI 兼容接口");f=QFormLayout(group);l.addWidget(group)
-        self.ai_enabled=QCheckBox("允许发送主动输入的聊天文字");self.ai_enabled.setChecked(self.engine.data["ai"]["enabled"]);f.addRow(self.ai_enabled)
-        self.ai_diary=QCheckBox("另行允许发送游戏事件用于 AI 日记");self.ai_diary.setChecked(self.engine.data["ai"]["diary_enabled"]);f.addRow(self.ai_diary)
+        self.ai_enabled=QCheckBox("允许发送聊天文字及年糕档案");self.ai_enabled.setChecked(self.engine.data["ai"]["enabled"]);f.addRow(self.ai_enabled)
+        self.ai_diary=QCheckBox("另行允许发送游戏事件及年糕档案用于 AI 日记");self.ai_diary.setChecked(self.engine.data["ai"]["diary_enabled"]);f.addRow(self.ai_diary)
         self.base_url=QLineEdit(self.engine.data["ai"]["base_url"]);f.addRow("API 地址",self.base_url);self.model=QLineEdit(self.engine.data["ai"]["model"]);f.addRow("模型",self.model)
         self.key=QLineEdit();self.key.setEchoMode(QLineEdit.EchoMode.Password);self.key.setPlaceholderText("留空保留旧密钥；Windows 使用当前用户 DPAPI 加密");f.addRow("API Key",self.key)
         self.button(f,"保存 API 配置",self.save_ai);self.button(f,"删除密钥",lambda:(self.vault.clear(),self.notice("密钥已删除")))
@@ -360,10 +318,15 @@ class LifeWindow(QMainWindow):
     def preview_sound(self):
         ok=self.pet.audio.play(self.sound_choice.currentData(),True)
         self.notice("正在试听合成音效" if ok else "请先开启声音并调高音量；自动播放需要 Windows 音频设备")
+    def save_profile(self):
+        values={key:(field.toPlainText() if isinstance(field,QTextEdit) else field.text()) for key,field in self.profile_fields.items()}
+        self.engine.data["profile"]=sanitize_profile(dict(self.engine.data["profile"],**values))
+        self.engine.save();self.history.clear();self.notice("性格习惯已保存；每次 API 回复前都会重新读取")
     def save_birth(self):self.engine.data["birth_date"]=self.birth.date().toString("yyyy-MM-dd");self.engine.save();self.refresh();self.notice("生日已更新")
     def reset_age(self):self.engine.data["age_override"]=None;self.engine.data["age_frozen"]=False;self.engine.save();self.refresh()
     def save_ai(self):
         try:
+            self.save_profile();self.engine.profile_snapshot()
             base=checked_base(self.base_url.text())
             if not self.model.text().strip():raise ValueError("模型名不能为空")
             if self.key.text().strip():self.vault.save(self.key.text());self.key.clear()
@@ -394,10 +357,12 @@ class LifeWindow(QMainWindow):
         if day:
             try:self.dday_label.setText("距 "+day+"："+str((date.fromisoformat(day)-e.today()).days)+" 天")
             except ValueError:self.dday_label.setText("倒计时日期无效")
-        self.shop_selection()
+        if hasattr(self,"shop_wallet"):self.shop_wallet.setText("小鱼干基金："+str(self.engine.data["coins"])+" 金币")
+        if hasattr(self,"desktop_count"):self.desktop_count.setText("桌面已摆 "+str(len(self.pet.desktop.widgets))+" 件")
+        if hasattr(self,"shop_cards"):
+            for id,card in self.shop_cards.items():card.button.setEnabled(self.engine.can_buy(id)[0])
     def closeEvent(self,event):
         self.engine.save();event.ignore();self.hide()
     def shutdown(self):
         self.timer.stop()
-        if self.home:self.home.close()
         self.hide()

@@ -9,7 +9,7 @@ class SpeechBubble(QWidget):
         super().__init__(None,Qt.WindowType.ToolTip|Qt.WindowType.FramelessWindowHint|Qt.WindowType.WindowStaysOnTopHint|Qt.WindowType.WindowTransparentForInput)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
-        self.resize(244,82);self.text=""
+        self.resize(210,74);self.text=""
         self.timer=QTimer(self);self.timer.setSingleShot(True);self.timer.timeout.connect(self.hide)
     def speak(self,text,pet,areas,seconds=3.5):
         self.text=text
@@ -21,10 +21,10 @@ class SpeechBubble(QWidget):
         self.move(round(position[0]),round(position[1]));return True
     def paintEvent(self,event):
         p=QPainter(self);p.setRenderHint(QPainter.RenderHint.Antialiasing)
-        p.setPen(QColor(PALETTE["aqua"]));p.setBrush(QColor(PALETTE["milk"]))
-        p.drawRoundedRect(QRectF(1,1,self.width()-2,self.height()-2),18,18)
+        p.setPen(QColor("#342d2b"));p.setBrush(QColor("#fffaf0"))
+        p.drawRoundedRect(QRectF(1,1,self.width()-2,self.height()-2),13,13)
         p.setPen(QColor(PALETTE["jade"]));p.setFont(QFont("Microsoft YaHei",9,QFont.Weight.Bold))
         p.drawText(16,24,"年糕 · NIANGAO")
-        p.setPen(QColor(PALETTE["ink"]));p.setFont(QFont("Microsoft YaHei",10))
-        p.drawText(QRectF(16,32,self.width()-32,self.height()-38),Qt.TextFlag.TextWordWrap,self.text)
+        p.setPen(QColor(PALETTE["ink"]));p.setFont(QFont("Microsoft YaHei",9))
+        p.drawText(QRectF(12,29,self.width()-32,self.height()-34),Qt.TextFlag.TextWordWrap,self.text)
         p.end()

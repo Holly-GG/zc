@@ -62,6 +62,14 @@ jobs:
           if (-not $process.WaitForExit(120000)) { $process.Kill(); throw 'Motion smoke timeout' }
           if ($process.ExitCode -ne 0) { throw "Motion smoke failed: $($process.ExitCode)" }
           'Packaged 47 actions, 32 new pose resources and 9 sound families PASS' | Set-Content test-results/motion-smoke.log
+      - name: Packaged stationery desktop smoke
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          $process = Start-Process -FilePath ./dist/Niangao-PhotoPet.exe -ArgumentList '--desktop-smoke','--settings',"$env:RUNNER_TEMP/stationery-smoke/settings.json",'--probe',"$env:RUNNER_TEMP/stationery-smoke/probe.json" -PassThru
+          if (-not $process.WaitForExit(120000)) { $process.Kill(); throw 'Desktop smoke timeout' }
+          if ($process.ExitCode -ne 0) { throw "Desktop smoke failed: $($process.ExitCode)" }
+          'Packaged 44 images, no 3D space, mandatory profile, fountain and cleanup PASS' | Set-Content test-results/stationery-smoke.log
       - name: Native Windows desktop acceptance
         run: |
           python tools/test_windows_desktop.py --exe dist/Niangao-PhotoPet.exe --output test-results/native 2>&1 | Tee-Object test-results/windows-desktop.log
