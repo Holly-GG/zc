@@ -166,26 +166,30 @@ class ItemDragCard(QFrame):
         self.setToolTip("按住图像拖到生活馆窗口外摆放；Esc 取消。"+BY_ID[id]["note"])
     def mousePressEvent(self,event):
         if event.button()==Qt.MouseButton.LeftButton:
-            self.pet.autonomy.click();self.start=event.globalPosition().toPoint();self.cancelled=False;self.setFocus();event.accept()
+            self.pet.autonomy.click();self.start=event.globalPosition().toPoint();self.cancelled=False;self.setFocus();self.grabMouse();
+            if self.pet.probe:self.pet.drag_debug={"item":self.id,"press":[self.start.x(),self.start.y()]}
+            event.accept()
     def mouseMoveEvent(self,event):
         if self.start is None or self.cancelled:return
         point=event.globalPosition().toPoint()
         if self.ghost is None and (point-self.start).manhattanLength()>6:
             if self.pet.desktop.available(self.id)<1 or not is_placeable(self.id):self.host.notice("请先购买 / 收回该物品再拖放");self.cancelled=True;return
-            self.ghost=QLabel(None,Qt.WindowType.ToolTip|Qt.WindowType.FramelessWindowHint|Qt.WindowType.WindowTransparentForInput)
-            self.ghost.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground);self.ghost.setPixmap(item_pixmap(self.id,88));self.ghost.show()
+            self.ghost=QLabel(None,Qt.WindowType.Tool|Qt.WindowType.FramelessWindowHint|Qt.WindowType.WindowStaysOnTopHint|Qt.WindowType.WindowTransparentForInput)
+            self.ghost.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground);self.ghost.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating);self.ghost.setPixmap(item_pixmap(self.id,88));self.ghost.show();self.grabMouse()
+            if self.pet.probe:self.pet.drag_debug["ghost"]=True
         if self.ghost:self.ghost.move(point-QPoint(44,44))
     def mouseReleaseEvent(self,event):
         if event.button()!=Qt.MouseButton.LeftButton:return
         point=event.globalPosition().toPoint();dragged=self.ghost is not None
-        self.clear_ghost()
+        self.clear_ghost();self.releaseMouse()
+        if self.pet.probe:self.pet.drag_debug.update(release=[point.x(),point.y()],cancelled=self.cancelled,was_drag=dragged,inside=self.host.frameGeometry().contains(point))
         if dragged and not self.cancelled:
             if self.host.frameGeometry().contains(point):self.host.notice("把图像拖到生活馆窗口外，再松开鼠标")
             else:self.host.result(self.pet.desktop.place(self.id,point))
         self.start=None
     def keyPressEvent(self,event):
-        if event.key()==Qt.Key.Key_Escape:self.cancelled=True;self.clear_ghost();self.start=None;event.accept()
+        if event.key()==Qt.Key.Key_Escape:self.cancelled=True;self.clear_ghost();self.releaseMouse();self.start=None;event.accept()
         else:super().keyPressEvent(event)
     def clear_ghost(self):
         if self.ghost:self.ghost.close();self.ghost.deleteLater();self.ghost=None
-    def closeEvent(self,event):self.clear_ghost();super().closeEvent(event)
+    def closeEvent(self,event):self.clear_ghost();self.releaseMouse();super().closeEvent(event)

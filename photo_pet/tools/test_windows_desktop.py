@@ -127,16 +127,17 @@ try:
         if state().get('dashboard'):break
         time.sleep(.1)
     dash=state().get('dashboard');check(bool(dash),'native menu opens compact dashboard')
-    click(*dash['nav']['3']);time.sleep(.3);dash=state()['dashboard']
+    def ui_point(point,dashboard):return tuple(round(v*dashboard.get('dpi',1)) for v in point)
+    click(*ui_point(dash['nav']['3'],dash));time.sleep(.3);dash=state()['dashboard']
     # First clear the restored fountain using the actual dashboard button.
-    click(*dash['clear']);time.sleep(.25)
+    click(*ui_point(dash['clear'],dash));time.sleep(.25)
     check(not state()['desktop_props'],'one-click clear removes own props without closing underlay')
-    dash=state()['dashboard'];source=dash['bag_cards']['water_fountain'];x,y,dw,dh=dash['rect']
+    dash=state()['dashboard'];source=ui_point(dash['bag_cards']['water_fountain'],dash);x,y,dw,dh=[v*dash.get('dpi',1) for v in dash['rect']]
     candidates=[(25,730),(u.GetSystemMetrics(0)-25,150),(25,80),(u.GetSystemMetrics(0)-25,u.GetSystemMetrics(1)-160)]
     target=next(pt for pt in candidates if not (x<=pt[0]<=x+dw and y<=pt[1]<=y+dh))
     u.SetCursorPos(*source);mouse(2);time.sleep(.12);u.SetCursorPos(source[0]+18,source[1]+18);time.sleep(.15);u.SetCursorPos(*target);time.sleep(.25);mouse(4);time.sleep(.5)
-    check(any(v['item']=='water_fountain' for v in state()['desktop_props']),'real backpack-image drag to desktop places fountain')
-    dash=state()['dashboard'];click(*dash['clear']);time.sleep(.25)
+    check(any(v['item']=='water_fountain' for v in state()['desktop_props']),'real backpack-image drag to desktop places fountain; source='+str(source)+' target='+str(target)+' drag='+str(state().get('card_drag'))+' props='+str(state().get('desktop_props'))+' dpi='+str(dash.get('dpi')))
+    dash=state()['dashboard'];click(*ui_point(dash['clear'],dash));time.sleep(.25)
     data=json.loads(life_path.read_text(encoding='utf-8'))
     check(not state()['desktop_props'] and data['inventory']['water_fountain']==1,'cleanup returns placement to inventory without deleting owned stock')
     close(pet)
