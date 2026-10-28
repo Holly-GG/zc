@@ -1,0 +1,9 @@
+2026-10-28 life dashboard upgrade
+Python 3.12 / PySide6 6.8.3 / Linux Xvfb software OpenGL
+Unit + Qt + life engine + localhost mock API: 44 passed
+Real X11 OS input: 8 passed (transparent corner, cat opaque region, drag, wheel, context menu, bubble separation, exit/save, restart)
+Real Qt3D framebuffer: 54 GLB meshes loaded, native window exposed, >30 unique sampled colors, manual scene/cat review.
+3D is a simplified experimental procedural model, not photogrammetry or final realistic fur.
+Linux window manager fullscreen priority interfered with initial input harness; ordinary-size underlay restored correct test coverage.
+Windows source ff87dff failed first body-click check because initial lazy atlas processing delayed the first interaction/probe.
+Source 8d2c423 predecodes all action atlases before first desktop frame; Windows native acceptance, packaged pet smoke and eight-page dashboard smoke passed.

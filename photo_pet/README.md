@@ -59,3 +59,12 @@ python tools/test_windows_desktop.py --exe dist/Niangao-PhotoPet.exe --output te
 exe 尚未进行商业代码签名，没有自动更新或安装器。Qt/PySide LGPL 许可文本、依赖说明随包提供。
 
 新增模块：life/engine.py 养成事务；age.py 年龄；catalog.py 商品；window.py 八页 UI；ai.py API/DPAPI；jobs.py 后台任务主线程回调；home3d.py 实时空间；glb.py 无骨骼 GLB 读取；layout.py 家具占地。Blender 4.3.2 构建模型，Qt3D 6.8.3 渲染；内嵌 OFL 中文字体子集。
+
+## 生活馆预览与 3D 验证
+
+![生活馆总览](validation/life-overview.png)
+
+真实 OpenGL 开发验收（需要桌面与 OpenGL 3.3，不能设置 offscreen）：
+python tools/test_home3d.py --output test-results/home3d
+
+该检查读取内置 GLB、确认 54 个网格及原生窗口非空画面；仍需人工检查形象与动作，不能代替毛发/骨骼碰撞验收。首次启动需要解包 Qt 库及预解码照片动作，请等待窗口出现。

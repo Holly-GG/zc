@@ -22,7 +22,7 @@ print('WINDOWS_ZIP',bundle,bundle.stat().st_size,sha)
 
 with zipfile.ZipFile(root/'dist/Niangao-3D-source.zip','w',zipfile.ZIP_DEFLATED) as z:
     for p in (root/'assets/models').glob('*'):
-        if p.is_file():z.write(p,'Niangao-3D/'+p.name)
-    z.write(root/'tools/modeling/build_niangao.py','Niangao-3D/build_niangao.py')
+        if p.is_file():z.write(p,'Niangao-3D/assets/models/'+p.name)
+    z.write(root/'tools/modeling/build_niangao.py','Niangao-3D/tools/modeling/build_niangao.py')
     z.write(root/'FEATURES.md','Niangao-3D/FEATURES.md')
 print('MODEL_SOURCE_ZIP',root/'dist/Niangao-3D-source.zip')
