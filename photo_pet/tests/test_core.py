@@ -45,6 +45,8 @@ def test_config_round_trip(tmp_path):
     config.data['position']=[123,456];config.data['width']=280
     assert config.save()
     assert Settings(config.path).data==config.data
+    config.data['width']=80
+    assert config.save() and Settings(config.path).data['width']==80
 
 def test_invalid_config_is_recoverable(tmp_path):
     p=tmp_path/'settings.json';p.write_text('{bad')

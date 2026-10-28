@@ -19,7 +19,7 @@ class Settings:
         except (OSError,ValueError) as exc: self.error=str(exc)
         width=self.data["width"]
         if not isinstance(width,(int,float)) or not math.isfinite(width): width=240
-        self.data["width"]=int(max(130,min(420,width)))
+        self.data["width"]=int(max(80,min(420,width)))
         for key in ("always_on_top","roaming"):
             if not isinstance(self.data[key],bool): self.data[key]=DEFAULTS[key]
         pos=self.data["position"]
