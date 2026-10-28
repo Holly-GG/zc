@@ -9,6 +9,10 @@ from .behaviour import Behaviour
 from .windows import WindowObstacles
 from .bubble import SpeechBubble,PALETTE
 from .dialogue import choose
+from .interaction.actions import ACTIONS
+from .interaction.director import Director
+from .interaction.audio import SoundPlayer
+from .interaction.input_link import KeyboardActivity
 
 MENU_STYLE="""
 QMenu {background:#EFF6F1;color:#305E63;border:1px solid #8CCCCA;padding:8px;font:14px 'Microsoft YaHei';}
@@ -28,6 +32,10 @@ class PetWindow(QWidget):
         from .life.engine import LifeEngine
         self.life=LifeEngine(self.settings.path.parent/"life.json");self.life_window=None
         self.art=CatArt();self.behaviour=Behaviour();self.observer=WindowObstacles()
+        self.director=Director();self.audio=SoundPlayer(self.settings.path.parent/"audio-cache",self.life.data["preferences"])
+        self.keyboard=KeyboardActivity();self.press_started=0;self.hold_fired=False;self.stroke_mode=False;self.poke_until=0
+        self.motion_started=time.monotonic();self.last_motion="idle";self.cursor_target=None;self.cursor_mode=False
+        self.setMouseTracking(True)
         self.bubble=SpeechBubble();self.obstacles=[];self.dragging=False;self.pressed=False;self.menu_open=False
         self.press_global=QPoint();self.drag_offset=QPoint();self.float_pos=(0.0,0.0)
         self.last_tick=time.monotonic();self.started=self.last_tick;self.last_edges=0;self.last_poll=0;self.last_speech=self.started
@@ -44,12 +52,63 @@ class PetWindow(QWidget):
         QTimer.singleShot(650,lambda:self.say("greet"))
 
     def pose_state(self,state):
-        key=("walk_left" if self.behaviour.facing_left else "walk") if state in ("walk","perch","play") else state
-        return self.art.ensure(key)
-    def perform_action(self,action,duration=5):
-        available=self.art.ensure(action)
-        if available!=action and action not in ("walk","idle","sleep"):return False
-        self.behaviour.action(action,None if action=="sleep" else duration);self.render_frame();return True
+        key=("walk_left" if self.behaviour.facing_left else "walk") if state in ("walk","perch","play","elegant_walk") else state
+        return self.art.ensure(ACTIONS[key].resource if key in ACTIONS else key)
+    def perform_action(self,action,duration=5,interrupt=True):
+        resource=ACTIONS[action].resource if action in ACTIONS else action
+        available=self.art.ensure(resource)
+        if available!=resource:return False
+        if interrupt:self.director.cancel();self.cursor_target=None;self.cursor_mode=False
+        self.behaviour.action(action,None if action=="sleep" else duration)
+        if action in ("walk","elegant_walk"):
+            area=nearest_area(self.x(),self.y(),self.areas())
+            self.behaviour.target=clamp_position(random.uniform(area.x,area.right),random.uniform(area.y,area.bottom),self.width(),self.height(),area)
+        self.motion_started=time.monotonic();self.last_motion=action
+        info=ACTIONS.get(action)
+        if info:
+            sound=info.sound
+            if sound in ("milk_meow","adult_meow","senior_meow"):
+                age=self.life.age()["effective_months"];sound="milk_meow" if age<3 else "senior_meow" if age>=120 else "adult_meow"
+            if sound:self.audio.play(sound)
+        self.render_frame();return True
+    def play_step(self,action,duration):return self.perform_action(action,duration,False)
+    def tease(self):self.director.tease(self.play_step)
+    def poke(self):
+        self.poke_until=time.monotonic()+.5;self.director.poke(self.play_step);self.say("poke")
+    def chase_cursor(self,force=False):
+        point=QCursor.pos();distance=math.hypot(point.x()-self.geometry().center().x(),point.y()-self.geometry().center().y())
+        if distance<=90 and not force:
+            self.cursor_mode=False;self.cursor_target=None
+            self.director.sequence([("rub_mouse",3),("tail_sway",2)],self.play_step);return True
+        if not force and distance>=650:return False
+        area=nearest_area(point.x(),point.y(),self.areas())
+        self.cursor_target=clamp_position(point.x()-self.width()/2-35,point.y()-self.height()/2+40,self.width(),self.height(),area)
+        self.cursor_mode=True;self.director.chase(self.play_step,random.random()<.35);return True
+    def motion_interactions(self,now,dt):
+        prefs=self.life.data["preferences"]
+        self.director.tick(self.play_step,self.dragging or self.pressed or self.menu_open)
+        if self.pressed and not self.dragging and not self.hold_fired and now-self.press_started>.85:
+            self.hold_fired=True;self.director.sequence([("nibble",2.5)],self.play_step)
+        if self.behaviour.state=="sleep":
+            if self.director.ready("snore",22):self.audio.play("snore")
+            return
+        if self.dragging or self.pressed or self.menu_open:return
+        if self.keyboard.poll(prefs["input_link"]) and self.director.ready("typing",4):
+            self.cursor_mode=False;self.cursor_target=None
+            self.director.sequence([(random.choice(["keyboard_paw","peek_screen","typing_nod"]),2.5)],self.play_step)
+        if prefs["cursor_chase"] and not self.director.active and self.director.ready("cursor",9):self.chase_cursor()
+        if self.cursor_mode and self.cursor_target and self.behaviour.state in ("stalk","pounce"):
+            x,y=self.float_pos;tx,ty=self.cursor_target;dist=math.hypot(tx-x,ty-y);step=min(dist,(35 if self.behaviour.state=="stalk" else 170)*min(dt,.08))
+            if dist>1:
+                from .geometry import hits_edge
+                nx,ny=x+(tx-x)*step/dist,y+(ty-y)*step/dist
+                area=nearest_area(x,y,self.areas());nx,ny=clamp_position(nx,ny,self.width(),self.height(),area)
+                if not hits_edge(self.rect_global(),Rect(nx,ny,self.width(),self.height()),self.obstacles):
+                    self.float_pos=nx,ny;self.move(round(nx),round(ny))
+        if not self.director.active:
+            self.cursor_mode=False;self.cursor_target=None
+        allowed=prefs["emotion_actions"] and self.settings.data["roaming"] and self.behaviour.state in ("idle","walk")
+        self.director.auto(self.life.mood,self.play_step,allowed)
     def open_life(self):
         if self.life_window is None:
             from .life.window import LifeWindow
@@ -84,6 +143,7 @@ class PetWindow(QWidget):
             self.repair_position();self.render_frame()
         if save:self.save()
     def height_for(self,width):
+        if self.dragging:return self.height()
         state=self.behaviour.state
         art_state=self.pose_state(state)
         ratio=max(frame.height()/frame.width() for frame in self.art.frames[art_state])
@@ -97,7 +157,12 @@ class PetWindow(QWidget):
             self.float_pos=(float(self.x()),float(self.y()))
         state=self.behaviour.state
         phase=time.monotonic()-self.started
-        frame=int(phase*(5 if state in ("walk","perch","play") else 3))%4 if state in ("walk","perch","play","pet","feed","groom","stretch","play_bow","yawn") else 0
+        art_state=self.pose_state(state)
+        if state!=self.last_motion:self.motion_started=time.monotonic();self.last_motion=state
+        elapsed=time.monotonic()-self.motion_started
+        count=len(self.art.frames[art_state])
+        frame=int(elapsed*(5 if state in ("walk","perch","play","elegant_walk") else 2.8))%count
+        if state=="mouth_lick":frame=[2,3,3,2][int(elapsed*3)%4]
         bob=int(round(math.sin(phase*(7 if state in ["pet","feed"] else 2))*1.5))
         art_state=self.pose_state(state)
         key=(art_state,frame,self.width(),self.height(),bob)
@@ -125,18 +190,20 @@ class PetWindow(QWidget):
         if now-self.last_speech>random.uniform(18,28) and self.behaviour.state!="sleep" and not self.menu_open:
             self.say("idle")
         self.render_frame()
+        self.motion_interactions(now,dt)
         if self.bubble.isVisible():self.bubble.place(self.rect_global(),self.areas())
         if self.probe:
             self.probe.write_text(json.dumps({"position":[self.x(),self.y()],"size":[self.width(),self.height()],"state":self.behaviour.state,"obstacles":len(self.obstacles),"native_obstacles":self.observer.supported,"counts":self.counts,"masked":not self.mask().isEmpty(),"bubble_visible":self.bubble.isVisible(),"bubble":[self.bubble.x(),self.bubble.y(),self.bubble.width(),self.bubble.height()],"provider_error":self.observer.last_error}),encoding="utf-8")
     def say(self,kind):
         self.last_speech=time.monotonic();self.bubble.speak(choose(kind),self.rect_global(),self.areas())
     def pet_head(self):
-        self.life.care("pet");self.counts["head_pet"]+=1;self.behaviour.action("pet",4);self.say("pet")
+        self.life.care("pet");self.counts["head_pet"]+=1;self.director.stroke(self.play_step);self.say("pet")
     def feed(self):
-        self.life.care("meal");self.counts["fed"]+=1;self.behaviour.action("feed",5);self.say("feed")
+        self.life.care("meal");self.counts["fed"]+=1;self.director.feed(self.play_step);self.say("feed")
     def toggle_sleep(self):
+        self.director.cancel();self.cursor_mode=False;self.cursor_target=None
         if self.behaviour.state=="sleep":self.behaviour.wake();self.say("wake")
-        else:self.behaviour.action("sleep");self.say("sleep")
+        else:self.perform_action("sleep");self.say("sleep")
         self.render_frame()
     def toggle_top(self):
         enabled=not self.settings.data["always_on_top"]
@@ -157,6 +224,8 @@ class PetWindow(QWidget):
         roam=menu.addAction("自由巡逻",self.toggle_roaming);roam.setCheckable(True);roam.setChecked(self.settings.data["roaming"])
         menu.addSeparator();menu.addAction("退出程序",self.close)
         menu.addAction("年糕生活馆 · 更多功能",self.open_life)
+        menu.addAction("逗年糕玩",self.tease)
+        menu.addAction("戳一下（也可双击）",self.poke)
         self.menu_open=True
         try:menu.exec(position)
         finally:self.menu_open=False;menu.deleteLater()
@@ -169,33 +238,52 @@ class PetWindow(QWidget):
         menu.addAction("摸摸头",self.pet_head);menu.addAction("喂吃的",self.feed);menu.addAction("睡觉 / 起床",self.toggle_sleep)
         menu.addSeparator();menu.addAction("退出程序",self.close)
         menu.addAction("年糕生活馆 · 更多功能",self.open_life)
+        menu.addAction("逗年糕玩",self.tease)
+        menu.addAction("戳一下（也可双击）",self.poke)
         self.tray.setContextMenu(menu);self.tray_menu=menu
         self.tray.show()
     def mousePressEvent(self,event):
         if event.button()==Qt.MouseButton.LeftButton:
-            self.pressed=True;self.press_global=event.globalPosition().toPoint();self.drag_offset=self.press_global-self.pos();event.accept()
+            self.pressed=True;self.press_started=time.monotonic();self.hold_fired=False;self.stroke_mode=bool(event.modifiers()&Qt.KeyboardModifier.ShiftModifier);self.press_global=event.globalPosition().toPoint();self.drag_offset=self.press_global-self.pos();event.accept()
         elif event.button()==Qt.MouseButton.RightButton:self.show_menu(event.globalPosition().toPoint())
     def mouseMoveEvent(self,event):
         if self.pressed:
             point=event.globalPosition().toPoint()
+            if self.stroke_mode:
+                if (point-self.press_global).manhattanLength()>3 and self.director.ready("stroke",1.5):self.director.stroke(self.play_step)
+                return
             if not self.dragging and (point-self.press_global).manhattanLength()>4:
-                self.dragging=True;self.say("drag")
+                self.dragging=True;self.director.cancel();self.cursor_mode=False;self.cursor_target=None
+                self.perform_action(random.choice(["hang","struggle","fear_ball"]),8)
+                self.say("drag")
             if self.dragging:
                 self.move(point-self.drag_offset);self.float_pos=(float(self.x()),float(self.y()))
     def mouseReleaseEvent(self,event):
         if event.button()==Qt.MouseButton.LeftButton and self.pressed:
             was_dragging=self.dragging;self.pressed=False;self.dragging=False
             if was_dragging:self.counts["dragged"]+=1;self.behaviour.action("idle",2);self.repair_position();self.save()
-            else:self.counts["clicked"]+=1;self.pet_head()
+            else:
+                self.counts["clicked"]+=1
+                if not self.hold_fired and not self.stroke_mode and time.monotonic()>self.poke_until:self.pet_head()
+    def mouseDoubleClickEvent(self,event):
+        if event.button()==Qt.MouseButton.LeftButton:
+            self.pressed=True;self.poke();event.accept()
     def wheelEvent(self,event):
         delta=event.angleDelta().y()
         if delta:self.resize_pet(self.width()*(1.09 if delta>0 else 1/1.09));self.say("resize")
         event.accept()
     def paintEvent(self,event):
         if self.pixmap:
-            p=QPainter(self);p.drawPixmap(0,0,self.pixmap);p.end()
+            p=QPainter(self);p.drawPixmap(0,0,self.pixmap)
+            if self.behaviour.state=="cursor_trophy":
+                from PySide6.QtGui import QColor
+                p.setPen(QColor("#305E63"));p.setBrush(QColor("#8CCCCA"))
+                from PySide6.QtGui import QPolygon
+                x,y=int(self.width()*.58),int(self.height()*.42)
+                p.drawPolygon(QPolygon([QPoint(x,y),QPoint(x+5,y+16),QPoint(x+9,y+10),QPoint(x+17,y+9)]))
+            p.end()
     def closeEvent(self,event):
-        self.timer.stop();self.save();self.life.focus_pause();self.life.save();self.bubble.close()
+        self.timer.stop();self.audio.stop();self.save();self.life.focus_pause();self.life.save();self.bubble.close()
         if self.life_window:self.life_window.shutdown()
         if self.tray:self.tray.hide()
         event.accept();QApplication.instance().quit()

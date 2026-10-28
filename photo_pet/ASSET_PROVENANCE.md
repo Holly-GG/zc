@@ -19,3 +19,12 @@ assets/actions/ 内 groom、stretch、feed、pet、play_bow、yawn 六组四帧 
 assets/models/：Blender 4.3.2 程序简化建模与有方向毛带，非照片扫描或最终写实模型。仅整体呼吸。源码 tools/modeling/build_niangao.py。
 
 assets/fonts/NiangaoSans.ttf：Google Fonts Noto Sans SC 的 400 字重子集，内部更名 Niangao UI Sans；OFL 1.1，许可 licenses/NOTO-OFL.txt。tools/subset_font.py 使用 fonttools 4.55.8，仅生成字体时需要。
+
+
+## 表情与动作补充
+
+assets/motion/a.webp 至 h.webp：根据年糕原有全身形象和用户新提供的脸部表情参考，由图像编辑工具生成 8 张透明照片补全图集。32 套动作共 128 个不同关键帧。采用无损 WebP 并校验非透明 RGBA 像素一致，保留原始生成文件，不覆盖旧图片。
+
+图集并非严格等格，tools/component_frames.py 按主要 Alpha 连通轮廓标注，运行时用逐帧区域隔离相邻猫咪；不通过几何翻转换朝向。该工序只分离图集帧，不重绘身体；微小游离胡须可能不保留。资源映射、共享变体和真实程度见 MOTIONS.md。
+
+九种音效由 niangao/interaction/audio.py 在本机用确定性信号合成，无外部录音；不是年糕实录，不声称具有真实录音品质。无录音授权或第三方音频样本依赖。

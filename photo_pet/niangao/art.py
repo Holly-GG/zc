@@ -1,8 +1,12 @@
 from pathlib import Path
+import json
 from PySide6.QtCore import QRect, QRectF, Qt
-from PySide6.QtGui import QImage, QPixmap, QPainter
+from PySide6.QtGui import QImage, QPixmap, QPainter, QRegion
 
-def asset_path(name):return Path(__file__).resolve().parent.parent/"assets"/name
+def asset_path(name):
+    path=Path(__file__).resolve().parent.parent/"assets"/name
+    if path.suffix==".png" and not path.exists() and path.with_suffix(".webp").exists():return path.with_suffix(".webp")
+    return path
 
 def alpha_bounds(image, threshold=30):
     rgba=image.convertToFormat(QImage.Format.Format_RGBA8888)
@@ -30,15 +34,42 @@ class CatArt:
             self.frames[state]=frames
         self.cache={}
         self.extra={key:("actions/"+key+".png",4) for key in ("groom","stretch","feed","pet","play_bow","yawn")}
+        self.motion_specs={}
+        manifest=asset_path("motion/atlases.json")
+        if manifest.exists():
+            try:self.motion_specs=json.loads(manifest.read_text(encoding="utf-8"))
+            except (OSError,ValueError):pass
+        self.atlases={}
+        for key,spec in self.motion_specs.items():self.extra[key]=(spec["file"],4)
         # Decode before first interactive frame: lazy alpha scans blocked mouse/probe processing.
         for key in self.extra:self.ensure(key)
+        self.atlases.clear()
 
     def ensure(self,state):
         if state in self.frames:return state
         if state not in self.extra:return "idle"
-        name,count=self.extra[state];atlas=QImage(str(asset_path(name)))
-        if atlas.isNull() or atlas.width()%count:return "idle"
-        frames=[atlas.copy(QRect(i*(atlas.width()//count),0,atlas.width()//count,atlas.height())) for i in range(count)]
+        name,count=self.extra[state];atlas=self.atlases.get(name)
+        if atlas is None:atlas=QImage(str(asset_path(name)));self.atlases[name]=atlas
+        if atlas.isNull():return "idle"
+        if state in self.motion_specs:
+            spec=self.motion_specs[state];rects=spec["rects"]
+            frames=[]
+            for index,rect in enumerate(rects):
+                source=atlas.copy(QRect(*rect));frame=QImage(source.size(),QImage.Format.Format_ARGB32);frame.fill(Qt.GlobalColor.transparent)
+                painter=QPainter(frame)
+                if "clips" in spec:
+                    clip=QRegion()
+                    for x,y,w in spec["clips"][index]:clip=clip.united(QRegion(QRect(x,y,w,1)))
+                    painter.setClipRegion(clip)
+                painter.drawImage(0,0,source);painter.end();frames.append(frame)
+            w=max(f.width() for f in frames);h=max(f.height() for f in frames);aligned=[]
+            for frame in frames:
+                canvas=QImage(w,h,QImage.Format.Format_ARGB32);canvas.fill(Qt.GlobalColor.transparent)
+                painter=QPainter(canvas);painter.drawImage((w-frame.width())//2,(h-frame.height())//2,frame);painter.end();aligned.append(canvas)
+            frames=aligned
+        else:
+            if atlas.width()%count:return "idle"
+            frames=[atlas.copy(QRect(i*(atlas.width()//count),0,atlas.width()//count,atlas.height())) for i in range(count)]
         try:
             bounds=alpha_bounds(frames[0])
             for frame in frames[1:]:bounds=bounds.united(alpha_bounds(frame))

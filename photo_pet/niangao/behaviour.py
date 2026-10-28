@@ -29,7 +29,7 @@ class Behaviour:
         if not enabled:
             if self.state!="idle" and now>=self.deadline:self.action("idle",2)
             return x,y
-        if self.state!="walk":
+        if self.state not in ("walk","elegant_walk"):
             if now < self.deadline:return x,y
             if self.state=="idle" and self.rng.random()<0.2:
                 self.action("play",self.rng.uniform(1.5,2.5));return x,y
@@ -43,7 +43,7 @@ class Behaviour:
         if abs(dx)>0.1:self.facing_left=dx<0
         distance=math.hypot(dx,dy)
         if distance<4:self.action("idle",self.rng.uniform(2,4));return x,y
-        step=min(distance,self.speed*dt)
+        step=min(distance,self.speed*dt*(.5 if self.state=="elegant_walk" else 1))
         nx,ny=clamp_position(x+dx/distance*step,y+dy/distance*step,width,height,area)
         old=Rect(x,y,width,height)
         candidate=Rect(nx,ny,width,height)

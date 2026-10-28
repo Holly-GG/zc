@@ -1,0 +1,50 @@
+{
+  "a": {
+    "source": "exec-d30cb578-a29a-4228-989c-76c350ba7c6d.png",
+    "source_sha256": "2236081a56ea6832aed9000c493fed10e0858064c64e69da7f5c7d7261823c01",
+    "webp_sha256": "b4080d128f96857143ba91690fc4d0f5a219da22a25f484ebdee8a636cab74e8",
+    "lossless_visible_pixels": true
+  },
+  "b": {
+    "source": "exec-2bbbbe27-4142-4d83-a5b2-590d6daf78c6.png",
+    "source_sha256": "0b56ab5da30f92c9c6252fe9198a0daf7e7c6865626c1664bffe91965a33fc46",
+    "webp_sha256": "1e027a3811521f16ad2053b1617ca7c6ae56aed04daa217f0a1fcac673cfc3af",
+    "lossless_visible_pixels": true
+  },
+  "c": {
+    "source": "exec-2cfbbe72-e9cd-44fa-a60d-555a5e4b68d4.png",
+    "source_sha256": "22304c7b29c3d8a697427933aa98af3938c1eb3ada0a49a8a18cb451e9f8d282",
+    "webp_sha256": "620884f4c714c4a6a7a61ce19dd366c1c29cbb91f1727792336e3282699d9bb2",
+    "lossless_visible_pixels": true
+  },
+  "d": {
+    "source": "exec-cc164663-c666-4359-bcc7-745c6f2bf910.png",
+    "source_sha256": "2db8227f6b206a29f752a68bf1da1c4bb0e7e4235bf685975fb46a57091fd372",
+    "webp_sha256": "d1f1a4dceb840045c34c5f77156d3686ed6d60531ba34ff7bae4a27877964304",
+    "lossless_visible_pixels": true
+  },
+  "e": {
+    "source": "exec-732a8252-42be-437f-89e3-ed2a88b451ca.png",
+    "source_sha256": "9017b2b36eb19f31886abcca898065e13d5d8f5cd160bc6931480361e07f19f0",
+    "webp_sha256": "1d9df497f9855778c38af5f84d8a941ee73c0212771f2456d42b6a7a35a924d1",
+    "lossless_visible_pixels": true
+  },
+  "f": {
+    "source": "exec-cc3ba358-36f2-43be-84a0-bbc807b4ae2a.png",
+    "source_sha256": "d0d52aafd44b506ca1df8cf1e86e0b7875331d34ce87bfad60a327233434641a",
+    "webp_sha256": "e5102285987c73b4d8501d469a62b9f5593a598c9a7efc033b2237a78fce8e41",
+    "lossless_visible_pixels": true
+  },
+  "g": {
+    "source": "exec-9ea2985b-3725-445c-a3e0-58bc83aaebd8.png",
+    "source_sha256": "051046ac9b43769f78fc6096311bbf25925e384a23c14996489d8c075c657839",
+    "webp_sha256": "d1667022c0eea518c7d18c34afd7a9cb40358d9d4c09956f607a8f98696000ba",
+    "lossless_visible_pixels": true
+  },
+  "h": {
+    "source": "exec-3aa8ca21-d128-46d0-8a77-19cfe2ed67bb.png",
+    "source_sha256": "f13bfbf1f105efede580a8779d95871fffeefc8dfbc284806d4264d756906dfe",
+    "webp_sha256": "05d812e3d494a40dc85ba0250cd18b8be38a49747228bf7c48c2438dd3c157a6",
+    "lossless_visible_pixels": true
+  }
+}

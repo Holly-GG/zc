@@ -8,7 +8,9 @@ def main():
     parser.add_argument("--probe",type=Path)
     parser.add_argument("--smoke",action="store_true")
     parser.add_argument("--suite-smoke",action="store_true")
+    parser.add_argument("--motion-smoke",action="store_true")
     args=parser.parse_args()
+    if args.probe:args.probe.parent.mkdir(parents=True,exist_ok=True)
     if sys.platform=="win32":
         import ctypes
         try:ctypes.windll.user32.SetProcessDpiAwarenessContext(ctypes.c_void_p(-4))
@@ -24,6 +26,21 @@ def main():
     if font_id>=0:app.setFont(QFont(QFontDatabase.applicationFontFamilies(font_id)[0],10))
     window=PetWindow(Settings(args.settings),args.probe)
     window.show()
+    if args.motion_smoke:
+        def motion_smoke():
+            try:
+                from niangao.interaction.actions import ACTIONS,ROWS,SOUNDS
+                from niangao.interaction.audio import synthesize
+                checked=0
+                for key,info in ACTIONS.items():
+                    assert window.perform_action(key),key
+                    for i in range(len(window.art.frames[info.resource])):
+                        pix,mask=window.art.render(info.resource,i,240,300);assert not mask.isNull();checked+=1
+                assert sum(len(v) for v in ROWS.values())==32
+                assert all(len(synthesize(k,20))>10000 for k in SOUNDS)
+                print("MOTION_SMOKE passed:",len(ACTIONS),"action IDs;",checked,"rendered frames; 9 PCM sound families",flush=True);window.close()
+            except Exception:traceback.print_exc();app.exit(1)
+        QTimer.singleShot(1200,motion_smoke)
     if args.suite_smoke:
         def suite_smoke():
             try:
@@ -37,7 +54,7 @@ def main():
                 print("LIFE_SMOKE passed: 8 pages, care/action, task, diary",flush=True);window.close()
             except Exception:traceback.print_exc();app.exit(1)
         QTimer.singleShot(1200,suite_smoke)
-    elif not args.smoke and not args.probe:
+    elif not args.smoke and not args.probe and not args.motion_smoke:
         QTimer.singleShot(700,window.open_life)
     if args.smoke:
         def smoke():

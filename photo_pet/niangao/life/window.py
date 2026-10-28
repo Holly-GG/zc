@@ -26,9 +26,9 @@ QProgressBar {border:0;background:#dbe6df;border-radius:6px;min-height:19px;text
 QProgressBar::chunk {background:#8CCCCA;border-radius:6px;}
 QCheckBox {padding:5px;} QScrollArea {border:0;}
 """
-ACTIONS={"idle":"安静陪伴","walk":"桌面散步","sleep":"蜷身睡觉","pet":"摸头回应","feed":"低头进食",
- "groom":"舔爪理毛","stretch":"伸懒腰","play_bow":"邀请玩耍","yawn":"打哈欠"}
-PENDING=["翻肚打滚","跳上家具","攀爬猫树","悬空拖拽挣扎","服饰穿戴","幼猫专属模型","老年专属模型","完整骨骼走跑"]
+from ..interaction.actions import ACTIONS as MOTIONS,MOOD_POOLS,SOUNDS
+ACTIONS={key:info.label for key,info in MOTIONS.items()}
+PENDING=["跳上真实家具","攀爬猫树","服饰穿戴","幼猫/老年独立模型","完整 3D 骨骼走跑"]
 class MoodCurve(QWidget):
     def __init__(self,engine):super().__init__();self.engine=engine;self.setMinimumHeight(110)
     def paintEvent(self,event):
@@ -79,13 +79,50 @@ class LifeWindow(QMainWindow):
         for i,(key,text,action) in enumerate([("meal","基础餐","feed"),("water","喝水","idle"),("pet","摸摸头","pet"),("play","逗猫玩","play_bow"),
              ("brush","梳毛","groom"),("bath","虚拟清洁","groom"),("litter","清猫砂","idle"),("rest","休息","sleep"),("checkup","虚拟健康照料","idle")]):
             b=QPushButton(text);grid.addWidget(b,i//3,i%3);b.clicked.connect(lambda checked=False,k=key,a=action:self.care(k,a))
-        group=QGroupBox("已准备的照片动作");g=QGridLayout(group);l.addWidget(group)
-        for i,(key,name) in enumerate(ACTIONS.items()):
-            b=QPushButton(name);g.addWidget(b,i//3,i%3);b.clicked.connect(lambda checked=False,a=key:self.pet.perform_action(a))
-        label=QLabel("待制作并校验的动作：\n"+"、".join(PENDING)+"\n这些动作尚未启用，避免以静止图冒充、穿模或改变年糕的鼻子特征。");label.setWordWrap(True);l.addWidget(label)
+        group=QGroupBox("动作与表情图鉴 · 照片关键帧");g=QVBoxLayout(group);l.addWidget(group)
+        label=QLabel("轻点：摸头；按住约 0.85 秒：轻啃指尖；左键拖拽：抱起；Shift + 左键滑动：抚摸；双击：戳一下。\n四帧照片补全不是完整 3D 骨骼动画，较大变姿仍有跳变。");label.setWordWrap(True);g.addWidget(label)
+        self.motion_group=QComboBox();self.motion_group.addItems(["全部"]+sorted(set(info.group for info in MOTIONS.values())));g.addWidget(self.motion_group)
+        self.motion_list=QListWidget();self.motion_list.setMinimumHeight(260);self.motion_list.currentRowChanged.connect(self.motion_selected);g.addWidget(self.motion_list)
+        self.motion_preview=QLabel("关键帧预览");self.motion_preview.setAlignment(Qt.AlignmentFlag.AlignCenter);self.motion_preview.setMinimumHeight(210);g.addWidget(self.motion_preview)
+        self.motion_note=QLabel();self.motion_note.setWordWrap(True);g.addWidget(self.motion_note)
+        row=QHBoxLayout();g.addLayout(row);self.button(row,"播放选中动作",self.play_selected_motion);self.button(row,"蓄力 → 扑抓 → 躲闪",self.pet.tease)
+        self.motion_group.currentTextChanged.connect(self.render_motions);self.render_motions()
+        row=QHBoxLayout();l.addLayout(row);self.mood_demo=QComboBox();self.mood_demo.addItem("跟随真实养成心情",None)
+        for mood in MOOD_POOLS:self.mood_demo.addItem(mood,mood)
+        row.addWidget(self.mood_demo);self.button(row,"体验情绪动作",self.preview_mood)
+        self.motion_current=QLabel();l.addWidget(self.motion_current)
+        label=QLabel("后续资源： "+"、".join(PENDING));label.setWordWrap(True);l.addWidget(label)
+    def render_motions(self):
+        self.motion_ids=[key for key,info in MOTIONS.items() if self.motion_group.currentText()=="全部" or info.group==self.motion_group.currentText()]
+        self.motion_list.clear()
+        for key in self.motion_ids:
+            info=MOTIONS[key];ready=self.pet.art.ensure(info.resource)==info.resource
+            self.motion_list.addItem(info.label+(" · 共享姿态变体" if info.note else " · 照片帧")+("" if ready else " [素材不可用]"))
+        self.motion_list.setCurrentRow(0)
+    def motion_selected(self):
+        i=self.motion_list.currentRow()
+        if i<0:return
+        info=MOTIONS[self.motion_ids[i]]
+        frames=self.pet.art.frames.get(info.resource)
+        if frames:self.motion_preview.setPixmap(QPixmap.fromImage(frames[min(1,len(frames)-1)]).scaled(340,210,Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
+        self.motion_note.setText(info.note or "独立姿态资源；基于年糕参考照片的 AI 补全，非真实动作录像。")
+    def play_selected_motion(self):
+        i=self.motion_list.currentRow()
+        if i>=0:
+            ok=self.pet.perform_action(self.motion_ids[i]);self.notice("正在播放："+MOTIONS[self.motion_ids[i]].label if ok else "该资源未通过加载，不会以静止图冒充")
+    def preview_mood(self):
+        self.pet.director.override=self.mood_demo.currentData();mood=self.pet.director.mood(self.engine.mood)
+        import random
+        self.pet.perform_action(random.choice(MOOD_POOLS.get(mood,MOOD_POOLS["平静"])))
+        self.notice("情绪动作体验："+mood+"；不修改养成数值")
     def care(self,key,action):
         ok,text=self.engine.care(key);self.notice(text)
-        if ok:self.pet.perform_action(action);self.pet.bubble.speak(text,self.pet.rect_global(),self.pet.areas())
+        if ok:
+            if key=="meal":self.pet.feed()
+            elif key=="pet":self.pet.pet_head()
+            elif key=="play":self.pet.tease()
+            else:self.pet.perform_action(action)
+            self.pet.bubble.speak(text,self.pet.rect_global(),self.pet.areas())
         self.refresh()
     def home_page(self,l):
         self.title(l,"年糕的 3D 小家 · 实验版","照片桌宠保持原样。这里是程序建模的实验猫，不是照片扫描复原；有方向的毛束不是最终真实长毛。")
@@ -210,7 +247,7 @@ class LifeWindow(QMainWindow):
         if ok:
             kind=BY_ID[id]["kind"]
             if kind=="consumable":self.pet.perform_action("feed")
-            elif kind=="toy":self.pet.perform_action("play_bow")
+            elif kind=="toy":self.pet.director.sequence([("chew_toy",3),("swat",2.5)],self.pet.play_step)
             elif kind=="room":
                 self.scene_combo.setCurrentIndex(self.scene_combo.findData(self.engine.data["scene"]))
                 if self.home:self.home.rebuild()
@@ -298,7 +335,16 @@ class LifeWindow(QMainWindow):
         for key,label in [("easter_eggs","允许彩蛋"),("network_time","用 AI 服务 HTTP 日期校准生日计算（失败用本机日期）")]:
             b=QCheckBox(label);b.setChecked(self.engine.data["preferences"][key]);b.toggled.connect(lambda v,k=key:self.set_pref(k,v));l.addWidget(b)
         self.button(l,"切换桌宠置顶",self.pet.toggle_top);self.button(l,"导入自定义透明 PNG（单姿态）",self.import_png)
-        l.addWidget(QLabel("音效、全局键鼠联动、系统音量通知、联网天气、开机启动：本版尚未接入。"))
+        sound_group=QGroupBox("动作联动与音效");sound_layout=QVBoxLayout(sound_group);l.addWidget(sound_group)
+        for key,label in [("emotion_actions","根据心情自主播放动作"),("cursor_chase","允许追逐 / 蹲守光标（不捕获或移动系统鼠标）"),
+                          ("input_link","允许打字联动：仅检测按键活动，不记录文字（Windows）"),("sound","启用合成示意音效（不是年糕真实录音）")]:
+            check=QCheckBox(label);check.setChecked(self.engine.data["preferences"][key]);check.toggled.connect(lambda value,k=key:self.interaction_pref(k,value));sound_layout.addWidget(check)
+        volume=QSpinBox();volume.setRange(0,100);volume.setValue(self.engine.data["preferences"]["volume"]);volume.setSuffix(" % 音效音量")
+        volume.valueChanged.connect(lambda value:self.interaction_pref("volume",value));sound_layout.addWidget(volume)
+        row=QHBoxLayout();sound_layout.addLayout(row);self.sound_choice=QComboBox()
+        for key,label in SOUNDS.items():self.sound_choice.addItem(label,key)
+        row.addWidget(self.sound_choice);self.button(row,"试听已选音效",self.preview_sound);self.button(row,"立即停止音效",self.pet.audio.stop)
+        label=QLabel("仅检测是否按键，不安装键盘钩子、不读取屏幕内容。声音在本机合成，可随时静音。系统音量通知、联网天气与开机启动仍未接入。");label.setWordWrap(True);sound_layout.addWidget(label)
         group=QGroupBox("可选联网 AI · OpenAI 兼容接口");f=QFormLayout(group);l.addWidget(group)
         self.ai_enabled=QCheckBox("允许发送主动输入的聊天文字");self.ai_enabled.setChecked(self.engine.data["ai"]["enabled"]);f.addRow(self.ai_enabled)
         self.ai_diary=QCheckBox("另行允许发送游戏事件用于 AI 日记");self.ai_diary.setChecked(self.engine.data["ai"]["diary_enabled"]);f.addRow(self.ai_diary)
@@ -306,6 +352,14 @@ class LifeWindow(QMainWindow):
         self.key=QLineEdit();self.key.setEchoMode(QLineEdit.EchoMode.Password);self.key.setPlaceholderText("留空保留旧密钥；Windows 使用当前用户 DPAPI 加密");f.addRow("API Key",self.key)
         self.button(f,"保存 API 配置",self.save_ai);self.button(f,"删除密钥",lambda:(self.vault.clear(),self.notice("密钥已删除")))
         note=QLabel("未完成：服饰绑定、真实照片重建、幼年/老年独立模型、复杂家具攀爬、Live2D、移动端。默认照片动作由参考图 AI 补全；请以照片为长相依据。");note.setWordWrap(True);l.addWidget(note)
+    def interaction_pref(self,key,value):
+        self.set_pref(key,value)
+        if (key=="sound" and not value) or (key=="volume" and value==0):self.pet.audio.stop()
+        if key=="cursor_chase" and not value:self.pet.cursor_target=None;self.pet.cursor_mode=False
+        if key=="input_link" and value and not self.pet.keyboard.supported:self.notice("全局打字联动需要 Windows；当前平台仅可手动预览动作")
+    def preview_sound(self):
+        ok=self.pet.audio.play(self.sound_choice.currentData(),True)
+        self.notice("正在试听合成音效" if ok else "请先开启声音并调高音量；自动播放需要 Windows 音频设备")
     def save_birth(self):self.engine.data["birth_date"]=self.birth.date().toString("yyyy-MM-dd");self.engine.save();self.refresh();self.notice("生日已更新")
     def reset_age(self):self.engine.data["age_override"]=None;self.engine.data["age_frozen"]=False;self.engine.save();self.refresh()
     def save_ai(self):
@@ -327,6 +381,7 @@ class LifeWindow(QMainWindow):
             dest=self.engine.path.parent/"custom.png";image.save(str(dest));self.pet.art.frames["custom"]=[image];self.pet.perform_action("custom",30);self.notice("已导入单姿态，展示 30 秒；不会覆盖年糕原图")
         except (ValueError,OSError) as exc:self.notice(str(exc))
     def refresh(self):
+        self.motion_current.setText("当前动作："+MOTIONS.get(self.pet.behaviour.state,MOTIONS["idle"]).label+"  ·  体验情绪："+self.pet.director.mood(self.engine.mood))
         e=self.engine;a=e.age();self.age_label.setText("年糕 NIANGAO · 布偶猫 · 男孩子\n"+a["text"]+" · "+a["stage"]+" · 约人类 "+str(a["human_years"])+" 岁"+("\n体验年龄已冻结，真实生日仍保留" if e.data["age_frozen"] else ""))
         self.summary.setText(f'Lv.{e.level}  ·  经验 {e.data["xp"]}  ·  金币 {e.data["coins"]}  ·  心情 {e.mood}')
         for key,bar in self.bars.items():bar.setValue(round(e.data["stats"][key]))

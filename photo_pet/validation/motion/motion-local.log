@@ -1,0 +1,10 @@
+2026-10-29 Asia/Shanghai — Niangao emotion/action/sound upgrade
+Python 3.12, PySide6 6.8.3
+50 unit/Qt/life/API/interaction/audio tests PASS.
+32 independent new photographic pose resources, 128 distinct frames.
+Connected-component extraction preserves each frame's principal opaque silhouette; no neighboring sprite core included.
+All 128 frame opaque-area comparisons PASS; 4 GUI review sheets manually inspected.
+Motion resource smoke: 47 action IDs, 182 rendered frames including shared variants, 9 nonempty PCM sound families PASS.
+Linux X11 real mouse acceptance: 8 PASS (transparent input, body click, drag, wheel, menu, dialogue placement, exit and restore).
+Windows-specific audio output device and all customer GPU/DPI setups require local regression; synthesis is illustrative, not a Niangao recording.
+Windows build workflow additionally gates publication on packaged legacy/dashboard/motion smoke and native mouse/hold/opt-in key activity acceptance.

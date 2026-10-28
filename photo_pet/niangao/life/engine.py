@@ -17,7 +17,7 @@ class LifeEngine:
           "inventory":{"fish":2,"bed":1,"bowl":1},"events":[],"diaries":{},"tasks":[],"mood_history":[],"badges":[],"daily":{},
           "age_override":None,"age_frozen":False,"scene":"desk","layouts":{},"layout_presets":{},
           "focus":{"duration":25,"remaining":1500,"active":False,"cycles":0},"travel":None,"postcards":[],
-          "preferences":{"activity":60,"input_link":False,"cursor_chase":False,"sound":False,"volume":25,"diary_auto":False,"easter_eggs":True,
+          "preferences":{"activity":60,"input_link":False,"cursor_chase":False,"emotion_actions":True,"sound":False,"volume":25,"diary_auto":False,"easter_eggs":True,
              "reminders":True,"weather":False,"latitude":0.0,"longitude":0.0,"d_day":"","network_time":False,"first_opened":False},
           "ai":{"enabled":False,"diary_enabled":False,"base_url":"https://api.openai.com/v1","model":"gpt-4.1-mini"},
           "last_wall":self.wall(),"effect":""}
@@ -58,7 +58,7 @@ class LifeEngine:
         if not isinstance(self.data["last_wall"],(int,float)) or not math.isfinite(self.data["last_wall"]):self.data["last_wall"]=self.wall()
         for k,default in (("activity",60),("volume",25)):
             v=self.data["preferences"].get(k);self.data["preferences"][k]=max(0,min(100,int(v))) if isinstance(v,(int,float)) and math.isfinite(v) else default
-        for k in ("input_link","cursor_chase","sound","diary_auto","easter_eggs","reminders","weather","network_time","first_opened"):
+        for k in ("input_link","cursor_chase","emotion_actions","sound","diary_auto","easter_eggs","reminders","weather","network_time","first_opened"):
             if not isinstance(self.data["preferences"].get(k),bool):self.data["preferences"][k]=False
         if not isinstance(self.data["preferences"].get("d_day"),str):self.data["preferences"]["d_day"]=""
         for k in ("enabled","diary_enabled"):

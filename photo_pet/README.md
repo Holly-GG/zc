@@ -6,6 +6,8 @@ EXE 下载后可直接双击；ZIP 包解压后双击 `Niangao-PhotoPet.exe`；W
 
 新增八页生活馆：总览、照料动作、实验 3D 家园、商城背包、专注待办、聊天、日记和设置。右键猫咪或托盘可打开。[功能完成表与建模限制](FEATURES.md)。[Blender/GLB 下载](https://github.com/Holly-GG/zc/raw/refs/heads/windows-download/Niangao-3D-source.zip)。
 
+本次增加 [表情、47 个动作 ID 与音效说明](MOTIONS.md)：32 套新姿态共 128 个关键帧，拖拽抱起、长按轻啃、双击戳击、情绪适配和可选键鼠联动。声音为可关闭的本地合成示意，非年糕真实录音。
+
 ## 角色与使用
 
 角色来自用户提供的布偶猫参考照片，经 AI 图像编辑生成透明资产、爬行动画和睡觉姿态。蓝眼睛、深棕面罩/耳朵、不对称白纹、白胸腹/爪子和**鼻侧棕色小点**为重点；未对角色做左右翻转，以免反转标记。不可见爪子、尾巴和新姿态是推测性补全，不是原照片逐像素抠图，也不能保证完全复原不可见细节。详见 ASSET_PROVENANCE.md。
@@ -42,7 +44,7 @@ python tools/test_windows_desktop.py --exe dist/Niangao-PhotoPet.exe --output te
 
 该脚本在独立测试配置下移动鼠标并创建下层测试窗口，应在空闲测试桌面执行。自动化使用真实系统鼠标事件，不直接向下层发送伪造点击。
 
-依赖：Python 3.12、PySide6/Qt 6.8.3、PyInstaller 6.13.0；pytest 8.3.5 为测试依赖。exe 内嵌代码、图片和 Qt 动态库。许可见 licenses/；源码和构建脚本公开，可重新构建替换 Qt 库。默认不联网；联网 AI 须主动开启并提供密钥，不设置开机启动、不安装鼠标钩子。
+依赖：Python 3.12、PySide6/Qt 6.8.3、PyInstaller 6.13.0；pytest 8.3.5 为测试依赖。exe 内嵌代码、图片和 Qt 动态库。许可见 licenses/；源码和构建脚本公开，可重新构建替换 Qt 库。默认不联网；联网 AI 须主动开启并提供密钥，不设置开机启动、不安装鼠标或键盘钩子；全局按键活动与光标联动默认关闭。
 
 ## 模块
 
@@ -50,7 +52,7 @@ python tools/test_windows_desktop.py --exe dist/Niangao-PhotoPet.exe --output te
 
 ## 已知限制与验证范围
 
-本次基础/Qt/养成/API 测试 44 项、Linux X11 的 8 项真实桌面输入检查，以及 Windows 构建机上的 10 项原生桌面检查已通过，记录见 validation/。Windows 工作流另外要求打包 exe smoke、真实 Win32 点击穿透/拖动/滚轮/菜单/窗口枚举/退出恢复检查通过，才发布新的直链包。CI 结果以对应运行日志为准。
+本次基础/Qt/养成/API/动作/声音测试 50 项、Linux X11 的 8 项真实桌面输入检查，以及 Windows 构建机上的 10 项原生桌面检查已通过，记录见 validation/。Windows 工作流另外要求打包 exe smoke、真实 Win32 点击穿透/拖动/滚轮/菜单/窗口枚举/退出恢复检查通过，才发布新的直链包。CI 结果以对应运行日志为准。
 
 自动化 Windows runner 不是用户的每一种桌面环境；Windows 10/11 不同版本、150%/200% 混合 DPI、运行中拔插显示器、自动隐藏任务栏、各种受保护/游戏/远程应用仍需实机回归。位置会使用当前工作区修复；Windows 窗口检测若系统拒绝访问，日志记录错误并保留屏幕内巡逻。
 

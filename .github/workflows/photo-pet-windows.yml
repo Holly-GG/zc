@@ -54,6 +54,14 @@ jobs:
           if (-not $process.WaitForExit(90000)) { $process.Kill(); throw 'Life smoke timeout' }
           if ($process.ExitCode -ne 0) { throw "Life smoke failed: $($process.ExitCode)" }
           'Packaged life dashboard smoke PASS' | Set-Content test-results/life-smoke.log
+      - name: Packaged motion and sound resource smoke
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          $process = Start-Process -FilePath ./dist/Niangao-PhotoPet.exe -ArgumentList '--motion-smoke','--settings',"$env:RUNNER_TEMP/motion-smoke/settings.json",'--probe',"$env:RUNNER_TEMP/motion-smoke/probe.json" -PassThru
+          if (-not $process.WaitForExit(120000)) { $process.Kill(); throw 'Motion smoke timeout' }
+          if ($process.ExitCode -ne 0) { throw "Motion smoke failed: $($process.ExitCode)" }
+          'Packaged 47 actions, 32 new pose resources and 9 sound families PASS' | Set-Content test-results/motion-smoke.log
       - name: Native Windows desktop acceptance
         run: |
           python tools/test_windows_desktop.py --exe dist/Niangao-PhotoPet.exe --output test-results/native 2>&1 | Tee-Object test-results/windows-desktop.log

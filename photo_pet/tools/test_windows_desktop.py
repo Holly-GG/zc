@@ -86,8 +86,25 @@ try:
     if s['bubble_visible']:
         sys.path.insert(0,str(Path(__file__).resolve().parent.parent));from niangao.geometry import Rect
         check(not Rect(*s['position'],*s['size']).intersects(Rect(*s['bubble'])),'dialogue bubble avoids character')
+    # Hold over the real alpha silhouette: new input path must fire without an extra pet on release.
+    bx,by=body();u.SetCursorPos(bx,by);mouse(2);time.sleep(1.1)
+    check(state()['state']=='nibble','real held left-button triggers nibble photo action')
+    mouse(4);time.sleep(.15)
+    n=count();r=bounds();click(r.left+3,r.top+3)
+    check(count()==n+1,'transparent corner remains click-through during new action')
     close(pet);saved=json.loads(settings.read_text(encoding='utf-8'));check(saved['width']==s['size'][0],'normal exit saves configuration')
-    probe.unlink();pet=launch();check(state()['position']==saved['position'],'restart restores position');close(pet)
+    probe.unlink()
+    life_path=out/'life.json';life_data=json.loads(life_path.read_text(encoding='utf-8'))
+    life_data['preferences']['input_link']=True
+    life_path.write_text(json.dumps(life_data),encoding='utf-8')
+    pet=launch();check(state()['position']==saved['position'],'restart restores position')
+    # Explicitly enabled test profile: a held Shift generates activity, never text.
+    u.keybd_event(0x10,0,0,0);time.sleep(.3);u.keybd_event(0x10,0,2,0)
+    for _ in range(20):
+        if state()['state'] in ('keyboard_paw','peek_screen','typing_nod'):break
+        time.sleep(.1)
+    check(state()['state'] in ('keyboard_paw','peek_screen','typing_nod'),'opt-in keyboard activity invokes photo response')
+    close(pet)
     print('WINDOWS_DESKTOP_RESULT passed; native Win32 mouse input and window bounds verified on this runner',flush=True)
 except Exception as exc:
     print('::error::Windows desktop test failed: '+str(exc).replace('\n',' '),flush=True)
