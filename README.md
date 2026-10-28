@@ -1,6 +1,6 @@
 # 年糕 Windows 桌宠下载
 
-[直接下载照片版 Windows 桌宠](https://github.com/Holly-GG/zc/raw/refs/heads/windows-download/Niangao-PhotoPet-windows.zip)
+[直接下载 EXE](https://github.com/Holly-GG/zc/raw/refs/heads/windows-download/Niangao-PhotoPet.exe) · [下载 ZIP 备用包](https://github.com/Holly-GG/zc/raw/refs/heads/windows-download/Niangao-PhotoPet-windows.zip)
 
 解压后双击 Niangao-PhotoPet.exe，无需安装 Python 或 Godot。照片姿态为基于用户参考图的 AI 编辑补全，不是原图逐像素抠取。
 
