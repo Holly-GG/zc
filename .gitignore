@@ -1,0 +1,7 @@
+.godot/
+exports/windows/*
+!exports/windows/.gitkeep
+*.tmp
+exports/test-results/
+__pycache__/
+exports/*.zip

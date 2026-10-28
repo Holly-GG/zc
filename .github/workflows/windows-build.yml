@@ -1,0 +1,57 @@
+name: Build Niangao Windows
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: niangao-windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install verified Godot 4.6.3 and Windows templates
+        run: |
+          ./tools/bootstrap-windows.ps1 -Destination "$env:RUNNER_TEMP/NiangaoTools"
+          if (-not $env:GODOT_BIN -or -not (Test-Path $env:GODOT_BIN)) {
+            throw 'Godot console executable not found'
+          }
+          "GODOT_BIN=$env:GODOT_BIN" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+      - name: Import project and run basic tests
+        run: ./tools/run-tests.ps1
+      - name: Export Windows x64 exe
+        run: ./tools/export-windows.ps1
+      - name: Package standalone Windows download
+        run: ./tools/package-windows.ps1
+      - name: Upload Windows download
+        uses: actions/upload-artifact@v4
+        with:
+          name: Niangao-P0-Windows-x64
+          path: |
+            exports/windows/Niangao-P0-windows.zip
+            exports/windows/SHA256SUMS.txt
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
+      - name: Explain validation scope
+        run: |
+          @'
+          ## Windows download
+          Download **Niangao-P0-Windows-x64** from this run's Artifacts section.
+          Extract the artifact and then Niangao-P0-windows.zip; run Niangao-P0.exe.
+          Godot and Blender are not needed to run the exported program.
+
+          This build runs headless tests and exports Windows x64. It does not
+          validate native desktop mouse pass-through, DPI or monitor hotplug.
+          Wine pass-through failed in development; see docs/validation.md.
+          '@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8

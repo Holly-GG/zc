@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "character": {
+    "name": "Niangao",
+    "display_name": "年糕",
+    "sex": "male",
+    "birth_date": "2021-02-28",
+    "breed": "Ragdoll"
+  },
+  "window": {
+    "default_position": "primary_bottom_right",
+    "position": [],
+    "edge_margin": 16,
+    "always_on_top": true,
+    "mouse_passthrough": true
+  },
+  "volume": 0.7,
+  "animation_quality": "medium",
+  "fur_quality": "reserved_not_implemented",
+  "work_mode": false,
+  "sleep_mode": false,
+  "actions": {
+    "idle": {
+      "animation": "idle",
+      "resource": "procedural_PLACEHOLDER",
+      "implemented": true,
+      "status": "PLACEHOLDER"
+    },
+    "name_response": {
+      "animation": "",
+      "resource": null,
+      "implemented": false,
+      "status": "UNIMPLEMENTED"
+    },
+    "head_pet": {
+      "animation": "",
+      "resource": null,
+      "implemented": false,
+      "status": "UNIMPLEMENTED"
+    },
+    "play_bow": {
+      "animation": "",
+      "resource": null,
+      "implemented": false,
+      "status": "UNIMPLEMENTED"
+    },
+    "wand_chase": {
+      "animation": "",
+      "resource": null,
+      "implemented": false,
+      "status": "UNIMPLEMENTED"
+    },
+    "box_rest": {
+      "animation": "",
+      "resource": null,
+      "implemented": false,
+      "status": "UNIMPLEMENTED"
+    }
+  }
+}

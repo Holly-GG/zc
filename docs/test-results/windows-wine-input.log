@@ -1,0 +1,8 @@
+Actual run: Niangao-P0.exe under Wine 10, native Windows Godot backend.
+Position [904,364], size [360,420], generated polygon 664 vertices.
+Underlay baseline click incremented count from 0 to 1.
+Transparent corner at global [914,374] did NOT increment underlay count (1 -> 1).
+FAIL transparent click delivered to lower application.
+Same result with a separate Linux Godot underlay and separate Windows Godot underlay.
+Remaining assertions in that runner did not run after this failure.
+This is not a native Windows 10/11 result. Root cause remains unconfirmed.

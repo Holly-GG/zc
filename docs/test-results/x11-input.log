@@ -1,0 +1,8 @@
+initial {'events': {'APP_STARTED': 1}, 'polygon_points': 664, 'position': [650, 250], 'size': [360, 420], 'state': 'autonomous', 'ticks_ms': 4863, 'window_mode': 'alpha polygon / X11'}
+PASS transparent corner delivered to underlay
+PASS opaque character clicked; underlay unchanged
+PASS transparent silhouette concavity delivered
+PASS drag [650, 250] -> [570, 200]
+PASS graceful exit and position persisted
+PASS saved position restored on restart
+DESKTOP_RESULT passed=7 failed=0 (Linux X11 only)

@@ -1,0 +1,103 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS all 11 event IDs
+PASS event registration
+PASS dispatch once, duplicate registration ignored
+PASS unregister
+WARNING: Unknown event: INVALID
+     at: push_warning (core/variant/variant_utility.cpp:1034)
+     GDScript backtrace (most recent call first):
+         [0] dispatch (res://scripts/core/event_bus.gd:35)
+         [1] _run (res://tests/test_runner.gd:33)
+PASS unknown event rejected
+PASS bottom-right respects usable work area and margin
+PASS off-screen position repaired
+PASS negative-origin monitor
+PASS config saved in user directory
+PASS config restored
+PASS invalid saved coordinates rejected
+PASS type validation and volume bounds
+WARNING: Invalid user config; using defaults
+     at: push_warning (core/variant/variant_utility.cpp:1034)
+     GDScript backtrace (most recent call first):
+         [0] load_config (res://scripts/core/config_manager.gd:19)
+         [1] _run (res://tests/test_runner.gd:54)
+PASS corrupt JSON falls back to defaults
+PASS six action IDs
+PASS placeholder idle available
+PASS idle started
+PASS play interface
+PASS transition interface
+WARNING: name_response: UNIMPLEMENTED or missing animation resource
+     at: push_warning (core/variant/variant_utility.cpp:1034)
+     GDScript backtrace (most recent call first):
+         [0] error (res://scripts/core/log.gd:8)
+         [1] <anonymous lambda> (res://scripts/character/placeholder_cat.gd:62)
+         [2] _play (res://scripts/character/animation_controller.gd:28)
+         [3] play (res://scripts/character/animation_controller.gd:21)
+         [4] _run (res://tests/test_runner.gd:66)
+PASS missing action safely rejected: name_response
+WARNING: head_pet: UNIMPLEMENTED or missing animation resource
+     at: push_warning (core/variant/variant_utility.cpp:1034)
+     GDScript backtrace (most recent call first):
+         [0] error (res://scripts/core/log.gd:8)
+         [1] <anonymous lambda> (res://scripts/character/placeholder_cat.gd:62)
+         [2] _play (res://scripts/character/animation_controller.gd:28)
+         [3] play (res://scripts/character/animation_controller.gd:21)
+         [4] _run (res://tests/test_runner.gd:66)
+PASS missing action safely rejected: head_pet
+WARNING: play_bow: UNIMPLEMENTED or missing animation resource
+     at: push_warning (core/variant/variant_utility.cpp:1034)
+     GDScript backtrace (most recent call first):
+         [0] error (res://scripts/core/log.gd:8)
+         [1] <anonymous lambda> (res://scripts/character/placeholder_cat.gd:62)
+         [2] _play (res://scripts/character/animation_controller.gd:28)
+         [3] play (res://scripts/character/animation_controller.gd:21)
+         [4] _run (res://tests/test_runner.gd:66)
+PASS missing action safely rejected: play_bow
+WARNING: wand_chase: UNIMPLEMENTED or missing animation resource
+     at: push_warning (core/variant/variant_utility.cpp:1034)
+     GDScript backtrace (most recent call first):
+         [0] error (res://scripts/core/log.gd:8)
+         [1] <anonymous lambda> (res://scripts/character/placeholder_cat.gd:62)
+         [2] _play (res://scripts/character/animation_controller.gd:28)
+         [3] play (res://scripts/character/animation_controller.gd:21)
+         [4] _run (res://tests/test_runner.gd:66)
+PASS missing action safely rejected: wand_chase
+WARNING: box_rest: UNIMPLEMENTED or missing animation resource
+     at: push_warning (core/variant/variant_utility.cpp:1034)
+     GDScript backtrace (most recent call first):
+         [0] error (res://scripts/core/log.gd:8)
+         [1] <anonymous lambda> (res://scripts/character/placeholder_cat.gd:62)
+         [2] _play (res://scripts/character/animation_controller.gd:28)
+         [3] play (res://scripts/character/animation_controller.gd:21)
+         [4] _run (res://tests/test_runner.gd:66)
+PASS missing action safely rejected: box_rest
+WARNING: unknown: UNIMPLEMENTED or missing animation resource
+     at: push_warning (core/variant/variant_utility.cpp:1034)
+     GDScript backtrace (most recent call first):
+         [0] error (res://scripts/core/log.gd:8)
+         [1] <anonymous lambda> (res://scripts/character/placeholder_cat.gd:62)
+         [2] _play (res://scripts/character/animation_controller.gd:28)
+         [3] play (res://scripts/character/animation_controller.gd:21)
+         [4] _run (res://tests/test_runner.gd:66)
+PASS missing action safely rejected: unknown
+PASS missing mapped resource guarded
+PASS stop interface
+PASS null replacement rejected
+PASS Node3D replacement accepted
+PASS replacement hides placeholder and requires explicit animation mapping
+PASS connected alpha contour
+PASS opaque point inside input region
+PASS concave transparent cutout excluded (not bounding rectangle)
+PASS transparent corner excluded
+PASS entry ID mandatory
+PASS one request on valid entry
+PASS duplicate and concurrent entry do not reopen request
+PASS not expired before 60 actual seconds
+PASS 60s monotonic timeout without frame accumulation
+PASS expired entry cannot request twice
+PASS wrong entry feed ignored
+PASS feeding returns to autonomy
+PASS late feed respects elapsed-time deadline
+TEST_RESULT passed=42 failed=0
