@@ -2,7 +2,7 @@
 import json,uuid,sys
 from pathlib import Path
 from datetime import date
-from PySide6.QtCore import Qt,QTimer,QDate
+from PySide6.QtCore import Qt,QTimer,QDate,QEvent
 from PySide6.QtGui import QPixmap,QPainter,QColor
 from PySide6.QtWidgets import (QMainWindow,QWidget,QVBoxLayout,QHBoxLayout,QGridLayout,QLabel,QPushButton,
     QListWidget,QStackedWidget,QScrollArea,QProgressBar,QComboBox,QSpinBox,QDoubleSpinBox,QTextBrowser,
@@ -361,8 +361,14 @@ class LifeWindow(QMainWindow):
         if hasattr(self,"desktop_count"):self.desktop_count.setText("桌面已摆 "+str(len(self.pet.desktop.widgets))+" 件")
         if hasattr(self,"shop_cards"):
             for id,card in self.shop_cards.items():card.button.setEnabled(self.engine.can_buy(id)[0])
+    def changeEvent(self,event):
+        super().changeEvent(event)
+        if event.type()==QEvent.Type.ActivationChange and hasattr(self,"pet"):
+            from ..desktop_focus import prioritize_dashboard
+            prioritize_dashboard(self,self.isActiveWindow())
     def closeEvent(self,event):
-        self.engine.save();event.ignore();self.hide()
+        from ..desktop_focus import prioritize_dashboard
+        prioritize_dashboard(self,False);self.engine.save();event.ignore();self.hide()
     def shutdown(self):
         self.timer.stop()
         self.hide()

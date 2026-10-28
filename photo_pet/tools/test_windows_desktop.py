@@ -136,7 +136,7 @@ try:
     candidates=[(25,730),(u.GetSystemMetrics(0)-25,150),(25,80),(u.GetSystemMetrics(0)-25,u.GetSystemMetrics(1)-160)]
     target=next(pt for pt in candidates if not (x<=pt[0]<=x+dw and y<=pt[1]<=y+dh))
     u.SetCursorPos(*source);mouse(2);time.sleep(.12);u.SetCursorPos(source[0]+18,source[1]+18);time.sleep(.15);u.SetCursorPos(*target);time.sleep(.25);mouse(4);time.sleep(.5)
-    check(any(v['item']=='water_fountain' for v in state()['desktop_props']),'real backpack-image drag to desktop places fountain; source='+str(source)+' target='+str(target)+' drag='+str(state().get('card_drag'))+' props='+str(state().get('desktop_props'))+' dpi='+str(dash.get('dpi')))
+    check(any(v['item']=='water_fountain' for v in state()['desktop_props']),'real backpack-image drag to desktop places fountain; source='+str(source)+' target='+str(target)+' drag='+str(state().get('card_drag'))+' props='+str(state().get('desktop_props'))+' dpi='+str(dash.get('dpi'))+' pet='+str(state().get('position'))+' size='+str(state().get('size')))
     dash=state()['dashboard'];click(*ui_point(dash['clear'],dash));time.sleep(.25)
     data=json.loads(life_path.read_text(encoding='utf-8'))
     check(not state()['desktop_props'] and data['inventory']['water_fountain']==1,'cleanup returns placement to inventory without deleting owned stock')
