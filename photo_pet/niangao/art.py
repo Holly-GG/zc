@@ -29,9 +29,23 @@ class CatArt:
                 frames.append(frame.copy(alpha_bounds(frame)))
             self.frames[state]=frames
         self.cache={}
+        self.extra={key:("actions/"+key+".png",4) for key in ("groom","stretch","feed","pet","play_bow","yawn")}
+
+    def ensure(self,state):
+        if state in self.frames:return state
+        if state not in self.extra:return "idle"
+        name,count=self.extra[state];atlas=QImage(str(asset_path(name)))
+        if atlas.isNull() or atlas.width()%count:return "idle"
+        frames=[atlas.copy(QRect(i*(atlas.width()//count),0,atlas.width()//count,atlas.height())) for i in range(count)]
+        try:
+            bounds=alpha_bounds(frames[0])
+            for frame in frames[1:]:bounds=bounds.united(alpha_bounds(frame))
+            self.frames[state]=[frame.copy(bounds) for frame in frames]
+        except ValueError:return "idle"
+        return state
 
     def render(self,state,frame_index,width,height,bob=0):
-        state=state if state in self.frames else "idle"
+        state=self.ensure(state)
         frame_index%=len(self.frames[state])
         key=(state,frame_index,width,height,bob)
         if key in self.cache:return self.cache[key]

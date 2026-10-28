@@ -46,6 +46,14 @@ jobs:
           $process = Start-Process -FilePath ./dist/Niangao-PhotoPet.exe -ArgumentList '--smoke','--settings',"$env:RUNNER_TEMP/photo-smoke-settings.json",'--probe',"$env:RUNNER_TEMP/photo-smoke-probe.json" -PassThru -Wait
           if ($process.ExitCode -ne 0) { throw "Packaged smoke failed: $($process.ExitCode)" }
           'Packaged exe smoke PASS' | Set-Content test-results/exe-smoke.log
+      - name: Packaged life dashboard smoke
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          $process = Start-Process -FilePath ./dist/Niangao-PhotoPet.exe -ArgumentList '--suite-smoke','--settings',"$env:RUNNER_TEMP/life-smoke/settings.json",'--probe',"$env:RUNNER_TEMP/life-smoke-probe.json" -PassThru
+          if (-not $process.WaitForExit(90000)) { $process.Kill(); throw 'Life smoke timeout' }
+          if ($process.ExitCode -ne 0) { throw "Life smoke failed: $($process.ExitCode)" }
+          'Packaged life dashboard smoke PASS' | Set-Content test-results/life-smoke.log
       - name: Native Windows desktop acceptance
         run: |
           python tools/test_windows_desktop.py --exe dist/Niangao-PhotoPet.exe --output test-results/native 2>&1 | Tee-Object test-results/windows-desktop.log

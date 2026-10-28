@@ -7,6 +7,7 @@ def main():
     parser.add_argument("--settings",type=Path)
     parser.add_argument("--probe",type=Path)
     parser.add_argument("--smoke",action="store_true")
+    parser.add_argument("--suite-smoke",action="store_true")
     args=parser.parse_args()
     if sys.platform=="win32":
         import ctypes
@@ -17,8 +18,27 @@ def main():
     from niangao.config import Settings
     from niangao.pet import PetWindow
     app=QApplication(sys.argv[:1]);app.setApplicationName("NiangaoPhotoPet");app.setQuitOnLastWindowClosed(False)
+    from niangao.art import asset_path
+    from PySide6.QtGui import QFontDatabase,QFont
+    font_id=QFontDatabase.addApplicationFont(str(asset_path("fonts/NiangaoSans.ttf")))
+    if font_id>=0:app.setFont(QFont(QFontDatabase.applicationFontFamilies(font_id)[0],10))
     window=PetWindow(Settings(args.settings),args.probe)
     window.show()
+    if args.suite_smoke:
+        def suite_smoke():
+            try:
+                window.open_life();ui=window.life_window
+                assert ui.stack.count()==8
+                for i in range(8):ui.nav.setCurrentRow(i);app.processEvents()
+                ui.care("brush","groom");assert window.behaviour.state=="groom"
+                assert window.life.add_task("smoke task")
+                ui.generate_diary();assert ui.diary_text.toPlainText()
+                ui.grab().save(str((args.probe.parent if args.probe else Path.cwd())/"life-smoke.png"))
+                print("LIFE_SMOKE passed: 8 pages, care/action, task, diary",flush=True);window.close()
+            except Exception:traceback.print_exc();app.exit(1)
+        QTimer.singleShot(1200,suite_smoke)
+    elif not args.smoke and not args.probe:
+        QTimer.singleShot(700,window.open_life)
     if args.smoke:
         def smoke():
             try:

@@ -25,6 +25,8 @@ class PetWindow(QWidget):
         self.setWindowTitle("年糕 · 照片桌宠")
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        from .life.engine import LifeEngine
+        self.life=LifeEngine(self.settings.path.parent/"life.json");self.life_window=None
         self.art=CatArt();self.behaviour=Behaviour();self.observer=WindowObstacles()
         self.bubble=SpeechBubble();self.obstacles=[];self.dragging=False;self.pressed=False;self.menu_open=False
         self.press_global=QPoint();self.drag_offset=QPoint();self.float_pos=(0.0,0.0)
@@ -41,6 +43,18 @@ class PetWindow(QWidget):
         app=QApplication.instance();app.screenAdded.connect(lambda _s:self.repair_position());app.screenRemoved.connect(lambda _s:self.repair_position())
         QTimer.singleShot(650,lambda:self.say("greet"))
 
+    def pose_state(self,state):
+        key=("walk_left" if self.behaviour.facing_left else "walk") if state in ("walk","perch","play") else state
+        return self.art.ensure(key)
+    def perform_action(self,action,duration=5):
+        available=self.art.ensure(action)
+        if available!=action and action not in ("walk","idle","sleep"):return False
+        self.behaviour.action(action,None if action=="sleep" else duration);self.render_frame();return True
+    def open_life(self):
+        if self.life_window is None:
+            from .life.window import LifeWindow
+            self.life_window=LifeWindow(self)
+        self.life_window.show();self.life_window.raise_();self.life_window.activateWindow()
     def areas(self):
         result=[]
         for screen in QApplication.screens():
@@ -71,7 +85,7 @@ class PetWindow(QWidget):
         if save:self.save()
     def height_for(self,width):
         state=self.behaviour.state
-        art_state=("walk_left" if self.behaviour.facing_left else "walk") if state in ("walk","perch","play") else "sleep" if state=="sleep" else "idle"
+        art_state=self.pose_state(state)
         ratio=max(frame.height()/frame.width() for frame in self.art.frames[art_state])
         return max(50,int((width-16)*ratio+16))
     def render_frame(self):
@@ -83,9 +97,9 @@ class PetWindow(QWidget):
             self.float_pos=(float(self.x()),float(self.y()))
         state=self.behaviour.state
         phase=time.monotonic()-self.started
-        frame=int(phase*5)%4 if state in ("walk","perch","play") else 0
+        frame=int(phase*(5 if state in ("walk","perch","play") else 3))%4 if state in ("walk","perch","play","pet","feed","groom","stretch","play_bow","yawn") else 0
         bob=int(round(math.sin(phase*(7 if state in ["pet","feed"] else 2))*1.5))
-        art_state=("walk_left" if self.behaviour.facing_left else "walk") if state in ("walk","perch","play") else "sleep" if state=="sleep" else "idle"
+        art_state=self.pose_state(state)
         key=(art_state,frame,self.width(),self.height(),bob)
         if key==self.last_art_key:return
         self.last_art_key=key
@@ -96,11 +110,15 @@ class PetWindow(QWidget):
         now=time.monotonic();dt=now-self.last_tick;self.last_tick=now
         if now-self.last_poll>=1:
             self.last_poll=now
+            months=self.life.age()["effective_months"];activity=self.life.data["preferences"]["activity"]
+            self.behaviour.speed=(42 if months>=84 else 48 if months<3 else 66 if months<12 else 58)*(.4+activity/100)
+            for message in self.life.tick(self.behaviour.state=="sleep"):
+                self.bubble.speak(message,self.rect_global(),self.areas())
             self.obstacles=self.observer.query(self.screen_maps())
             if not self.dragging:self.repair_position()
         if not self.dragging and not self.pressed and not self.menu_open:
             area=nearest_area(self.x(),self.y(),self.areas())
-            self.float_pos=self.behaviour.tick(*self.float_pos,self.width(),self.height(),area,self.obstacles,dt,self.settings.data["roaming"])
+            self.float_pos=self.behaviour.tick(*self.float_pos,self.width(),self.height(),area,self.obstacles,dt,self.settings.data["roaming"] and self.life.data["preferences"]["activity"]>0)
             self.move(round(self.float_pos[0]),round(self.float_pos[1]))
             if self.behaviour.edge_contact and now-self.last_edges>8:
                 self.last_edges=now;self.say("edge")
@@ -113,9 +131,9 @@ class PetWindow(QWidget):
     def say(self,kind):
         self.last_speech=time.monotonic();self.bubble.speak(choose(kind),self.rect_global(),self.areas())
     def pet_head(self):
-        self.counts["head_pet"]+=1;self.behaviour.action("pet",4);self.say("pet")
+        self.life.care("pet");self.counts["head_pet"]+=1;self.behaviour.action("pet",4);self.say("pet")
     def feed(self):
-        self.counts["fed"]+=1;self.behaviour.action("feed",5);self.say("feed")
+        self.life.care("meal");self.counts["fed"]+=1;self.behaviour.action("feed",5);self.say("feed")
     def toggle_sleep(self):
         if self.behaviour.state=="sleep":self.behaviour.wake();self.say("wake")
         else:self.behaviour.action("sleep");self.say("sleep")
@@ -138,6 +156,7 @@ class PetWindow(QWidget):
         top=menu.addAction("置顶开关",self.toggle_top);top.setCheckable(True);top.setChecked(self.settings.data["always_on_top"])
         roam=menu.addAction("自由巡逻",self.toggle_roaming);roam.setCheckable(True);roam.setChecked(self.settings.data["roaming"])
         menu.addSeparator();menu.addAction("退出程序",self.close)
+        menu.addAction("年糕生活馆 · 更多功能",self.open_life)
         self.menu_open=True
         try:menu.exec(position)
         finally:self.menu_open=False;menu.deleteLater()
@@ -149,6 +168,7 @@ class PetWindow(QWidget):
         menu.addAction("年糕在哪里？",lambda:(self.show(),self.repair_position(),self.raise_(),self.say("greet")))
         menu.addAction("摸摸头",self.pet_head);menu.addAction("喂吃的",self.feed);menu.addAction("睡觉 / 起床",self.toggle_sleep)
         menu.addSeparator();menu.addAction("退出程序",self.close)
+        menu.addAction("年糕生活馆 · 更多功能",self.open_life)
         self.tray.setContextMenu(menu);self.tray_menu=menu
         self.tray.show()
     def mousePressEvent(self,event):
@@ -175,6 +195,7 @@ class PetWindow(QWidget):
         if self.pixmap:
             p=QPainter(self);p.drawPixmap(0,0,self.pixmap);p.end()
     def closeEvent(self,event):
-        self.timer.stop();self.save();self.bubble.close()
+        self.timer.stop();self.save();self.life.focus_pause();self.life.save();self.bubble.close()
+        if self.life_window:self.life_window.shutdown()
         if self.tray:self.tray.hide()
         event.accept();QApplication.instance().quit()

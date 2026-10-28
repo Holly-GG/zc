@@ -1,8 +1,10 @@
-# 年糕 · 照片桌宠
+# 年糕 · 照片桌宠与生活馆
 
 **[直接下载 EXE](https://github.com/Holly-GG/zc/raw/refs/heads/windows-download/Niangao-PhotoPet.exe)** · [ZIP 备用包](https://github.com/Holly-GG/zc/raw/refs/heads/windows-download/Niangao-PhotoPet-windows.zip)
 
 EXE 下载后可直接双击；ZIP 包解压后双击 `Niangao-PhotoPet.exe`；Windows 10/11 x64，不需要安装 Python、Godot、Blender。与旧 Godot 几何 P0 是两个独立程序，请运行新的 PhotoPet exe。
+
+新增八页生活馆：总览、照料动作、实验 3D 家园、商城背包、专注待办、聊天、日记和设置。右键猫咪或托盘可打开。[功能完成表与建模限制](FEATURES.md)。[Blender/GLB 下载](https://github.com/Holly-GG/zc/raw/refs/heads/windows-download/Niangao-3D-source.zip)。
 
 ## 角色与使用
 
@@ -40,7 +42,7 @@ python tools/test_windows_desktop.py --exe dist/Niangao-PhotoPet.exe --output te
 
 该脚本在独立测试配置下移动鼠标并创建下层测试窗口，应在空闲测试桌面执行。自动化使用真实系统鼠标事件，不直接向下层发送伪造点击。
 
-依赖：Python 3.12、PySide6/Qt 6.8.3、PyInstaller 6.13.0；pytest 8.3.5 为测试依赖。exe 内嵌代码、图片和 Qt 动态库。许可见 licenses/；源码和构建脚本公开，可重新构建替换 Qt 库。程序运行不联网、不设置开机启动、不安装鼠标钩子。
+依赖：Python 3.12、PySide6/Qt 6.8.3、PyInstaller 6.13.0；pytest 8.3.5 为测试依赖。exe 内嵌代码、图片和 Qt 动态库。许可见 licenses/；源码和构建脚本公开，可重新构建替换 Qt 库。默认不联网；联网 AI 须主动开启并提供密钥，不设置开机启动、不安装鼠标钩子。
 
 ## 模块
 
@@ -48,10 +50,12 @@ python tools/test_windows_desktop.py --exe dist/Niangao-PhotoPet.exe --output te
 
 ## 已知限制与验证范围
 
-基础/Qt 测试 21 项、Linux X11 的 8 项真实桌面输入检查，以及 Windows 构建机上的 10 项原生桌面检查已通过，记录见 validation/。Windows 工作流另外要求打包 exe smoke、真实 Win32 点击穿透/拖动/滚轮/菜单/窗口枚举/退出恢复检查通过，才发布新的直链包。CI 结果以对应运行日志为准。
+本次基础/Qt/养成/API 测试 44 项、Linux X11 的 8 项真实桌面输入检查，以及 Windows 构建机上的 10 项原生桌面检查已通过，记录见 validation/。Windows 工作流另外要求打包 exe smoke、真实 Win32 点击穿透/拖动/滚轮/菜单/窗口枚举/退出恢复检查通过，才发布新的直链包。CI 结果以对应运行日志为准。
 
 自动化 Windows runner 不是用户的每一种桌面环境；Windows 10/11 不同版本、150%/200% 混合 DPI、运行中拔插显示器、自动隐藏任务栏、各种受保护/游戏/远程应用仍需实机回归。位置会使用当前工作区修复；Windows 窗口检测若系统拒绝访问，日志记录错误并保留屏幕内巡逻。
 
-这是照片精灵动画，不是重新建模的 3D 猫，也没有真实骨骼/布料/长毛物理。走路与睡觉是基于照片生成的推测姿态，鼻点在小尺寸下可能只有数个像素。Qt Alpha 二值输入区域会略裁掉低 Alpha 胡须/毛边。未知窗口内部元素不作为障碍；没有屏幕内容识别或点击第三方应用。
+桌面形象是照片精灵动画；生活馆另有简化实验 3D 猫，无完整骨骼/布料/真实长毛物理。走路与睡觉是基于照片生成的推测姿态，鼻点在小尺寸下可能只有数个像素。Qt Alpha 二值输入区域会略裁掉低 Alpha 胡须/毛边。未知窗口内部元素不作为障碍；没有屏幕内容识别或点击第三方应用。
 
 exe 尚未进行商业代码签名，没有自动更新或安装器。Qt/PySide LGPL 许可文本、依赖说明随包提供。
+
+新增模块：life/engine.py 养成事务；age.py 年龄；catalog.py 商品；window.py 八页 UI；ai.py API/DPAPI；jobs.py 后台任务主线程回调；home3d.py 实时空间；glb.py 无骨骼 GLB 读取；layout.py 家具占地。Blender 4.3.2 构建模型，Qt3D 6.8.3 渲染；内嵌 OFL 中文字体子集。

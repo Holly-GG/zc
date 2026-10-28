@@ -10,3 +10,12 @@
 - `niangao-sleep.png`：1536×1024，RGBA，闭眼蜷睡，属于未在原照中出现的补全姿态。
 
 四肢步态和毛发外观不是物理模拟；少量毛边可能存在半透明颜色残留。用户若需要严格像素级原图抠图与更精准的活动姿态，需要原始照片文件和更多站立/背面/双侧/睡眠参考，并对生成帧逐张验收。真实照片优先于当前编辑结果。
+
+
+## 生活馆升级素材
+
+assets/actions/ 内 groom、stretch、feed、pet、play_bow、yawn 六组四帧 PNG，由图像编辑工具参考年糕生成。补全肢体是推测，不是从遮挡原图恢复；保持鼻旁棕点与不对称白纹、不镜像。统一裁剪，不交叉淡化；关键帧检查仍非所有缩放下无瑕疵保证。
+
+assets/models/：Blender 4.3.2 程序简化建模与有方向毛带，非照片扫描或最终写实模型。仅整体呼吸。源码 tools/modeling/build_niangao.py。
+
+assets/fonts/NiangaoSans.ttf：Google Fonts Noto Sans SC 的 400 字重子集，内部更名 Niangao UI Sans；OFL 1.1，许可 licenses/NOTO-OFL.txt。tools/subset_font.py 使用 fonttools 4.55.8，仅生成字体时需要。

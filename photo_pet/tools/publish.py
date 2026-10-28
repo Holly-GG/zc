@@ -15,7 +15,7 @@ with tempfile.TemporaryDirectory(prefix='niangao-publish-') as temporary:
     parent=run('rev-parse','FETCH_HEAD')
     run('read-tree',parent,env=env)
     paths=[('README.md',readme)]
-    paths.extend((name,dist/name) for name in ['Niangao-PhotoPet.exe','Niangao-PhotoPet-exe-SHA256.txt','Niangao-PhotoPet-windows.zip','Niangao-PhotoPet-SHA256SUMS.txt'])
+    paths.extend((name,dist/name) for name in ['Niangao-PhotoPet.exe','Niangao-PhotoPet-exe-SHA256.txt','Niangao-PhotoPet-windows.zip','Niangao-PhotoPet-SHA256SUMS.txt','Niangao-3D-source.zip'])
     for name,path in paths:
         oid=run('hash-object','-w',str(path));run('update-index','--add','--cacheinfo',f'100644,{oid},{name}',env=env)
     tree=run('write-tree',env=env)

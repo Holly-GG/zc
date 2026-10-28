@@ -1,0 +1,9 @@
+{
+  "status": "EXPERIMENTAL_NOT_FINAL_LIKENESS",
+  "fur_ribbon_count": 8230,
+  "fur_vertices": 49380,
+  "animation": "idle rigid breathing only; no clothing or jumping",
+  "source": "Procedural Blender geometry informed by photographs, not a scan",
+  "nose": "Pink triangle plus independent brown side spot",
+  "intersection_validation": "Static visual review only, not a guarantee for all poses"
+}
