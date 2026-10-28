@@ -29,7 +29,7 @@ class Director:
         self.next_auto=now+self.rng.uniform(12,25)
         return self.sequence([(self.rng.choice(MOOD_POOLS.get(self.mood(normal),MOOD_POOLS["平静"])),4)],play)
     def stroke(self,play):
-        return self.sequence([("pet",1.4),(self.rng.choice(["knead","rub_hand","purr_eyes"]),3.5)],play)
+        return self.sequence([("pet",1.4),(self.rng.choice(["knead","rub_hand","purr_eyes","roll"]),3.5)],play)
     def poke(self,play):
         return self.sequence([(self.rng.choice(["startle_jump","angry_shake","ignore","puff"]),2.4),("ear_flick",1.8)],play)
     def feed(self,play):return self.sequence([("feed",3),("mouth_lick",1.8),("leg_rub",2.5)],play)
