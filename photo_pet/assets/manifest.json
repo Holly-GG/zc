@@ -1,0 +1,19 @@
+{
+  "name": "年糕",
+  "breed": "Ragdoll",
+  "asset_origin": "AI image edits based on user photographs; inferred paws, tail and poses",
+  "nose_mark": "small brown point beside pink nose, viewer-right; no horizontal mirroring",
+  "palette": [
+    "#EFF6F1",
+    "#899F84",
+    "#8CCCCA",
+    "#40A387",
+    "#305E63"
+  ],
+  "assets": {
+    "niangao-idle.png": "f92076e47658d3e0f99254ffc239390ab0520326049047bdf8f51b5f4177271d",
+    "niangao-sleep.png": "063a6f2ec7da2e94bdc2dcadcc2fa5432ae2cb7f7696ceb991af89eee2c5483a",
+    "niangao-walk-left.png": "486c4fe091ef8269b3725b8fcaeaa2efa7ef60d377b441a1b8eb2717c0facbdd",
+    "niangao-walk.png": "0090f2eec0e82bd01c3836dffc58a101eec36a6e798b7397beedc318b83b09cf"
+  }
+}

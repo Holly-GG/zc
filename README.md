@@ -2,6 +2,13 @@
 
 This project is being developed with Codex.
 
+
+## 最新：年糕照片桌宠
+
+[直接下载照片版 Windows ZIP](https://github.com/Holly-GG/zc/raw/refs/heads/windows-download/Niangao-PhotoPet-windows.zip) · [照片版说明与源码](photo_pet/README.md)
+
+照片版提供自动巡逻、Windows 应用窗口外边界互动、中文气泡、右键摸头/投喂/睡觉/大小/置顶/退出以及滚轮缩放。照片姿态经 AI 去背景与推测补全，鼻侧棕点为重点，不宣称不可见部分完全准确。原 Godot P0 保留在下方。
+
 # 年糕 Niangao P0
 
 Windows 10/11 x64 桌面宠物第一阶段工程，Godot **4.6.3 stable** / GDScript / Compatibility 3D / JSON。**几何猫咪为 PLACEHOLDER，不是最终年糕模型。** 无复杂 AI 或真实 3D 家园。

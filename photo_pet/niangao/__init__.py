@@ -1,0 +1,1 @@
+"""Niangao photographic desktop companion."""

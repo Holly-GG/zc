@@ -1,0 +1,18 @@
+PySide6 / Shiboken6 / Qt 6.8.3: The Qt Company Ltd. and contributors.
+PySide6 and Qt dynamically linked libraries are provided under their applicable
+LGPL-3.0/GPL/commercial license alternatives. Official source and notices:
+https://code.qt.io/cgit/pyside/pyside-setup.git/
+https://code.qt.io/cgit/qt/qtbase.git/
+https://doc.qt.io/qt-6/licenses-used-in-qt.html
+
+PyInstaller 6.13.0: GPL with bootloader exception, permits distribution of the
+built application without imposing GPL on that application.
+https://github.com/pyinstaller/pyinstaller/blob/v6.13.0/COPYING.txt
+
+Python 3.12 runtime: Python Software Foundation License.
+https://docs.python.org/3/license.html
+
+Source and rebuild instructions for this application:
+https://github.com/Holly-GG/zc/tree/main/photo_pet
+The supplied source/build instructions allow rebuilding with replacement Qt
+libraries. No restriction on modifying or reverse engineering Qt is imposed.

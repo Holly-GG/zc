@@ -1,0 +1,9 @@
+PASS transparent corner reaches independent lower app
+PASS cat receives click without leaking to lower app
+PASS left-button drag
+PASS wheel resize
+PASS native right-click menu action
+PASS dialogue does not overlap cat
+PASS menu exit and config persistence
+PASS saved position restored
+PHOTO_X11_RESULT passed=8 failed=0

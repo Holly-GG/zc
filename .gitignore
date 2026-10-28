@@ -5,3 +5,9 @@ exports/windows/*
 exports/test-results/
 __pycache__/
 exports/*.zip
+photo_pet/build/
+photo_pet/dist/
+photo_pet/test-results/
+*.spec
+.pytest_cache/
+.venv/

@@ -1,0 +1,48 @@
+"""Windows single-file entry point; also supports Linux development."""
+import argparse,sys,traceback,os
+from pathlib import Path
+
+def main():
+    parser=argparse.ArgumentParser()
+    parser.add_argument("--settings",type=Path)
+    parser.add_argument("--probe",type=Path)
+    parser.add_argument("--smoke",action="store_true")
+    args=parser.parse_args()
+    if sys.platform=="win32":
+        import ctypes
+        try:ctypes.windll.user32.SetProcessDpiAwarenessContext(ctypes.c_void_p(-4))
+        except (AttributeError,OSError):pass
+    from PySide6.QtWidgets import QApplication
+    from PySide6.QtCore import QTimer
+    from niangao.config import Settings
+    from niangao.pet import PetWindow
+    app=QApplication(sys.argv[:1]);app.setApplicationName("NiangaoPhotoPet");app.setQuitOnLastWindowClosed(False)
+    window=PetWindow(Settings(args.settings),args.probe)
+    window.show()
+    if args.smoke:
+        def smoke():
+            try:
+                assert not window.mask().isEmpty()
+                assert window.windowFlags() & __import__('PySide6.QtCore',fromlist=['Qt']).Qt.WindowType.FramelessWindowHint
+                window.feed();window.pet_head();window.toggle_sleep()
+                assert window.behaviour.state=="sleep"
+                window.toggle_sleep();assert window.behaviour.state=="idle"
+                window.resize_pet(260)
+                window.grab().save(str((args.probe.parent if args.probe else Path.cwd())/'photo-smoke.png'))
+                assert not window.mask().contains(__import__('PySide6.QtCore',fromlist=['QPoint']).QPoint(0,0))
+                print("PHOTO_SMOKE passed: alpha region, frameless, interactions, sleep/wake, resize",flush=True)
+                window.close()
+            except Exception:
+                traceback.print_exc();app.exit(1)
+        QTimer.singleShot(1200,smoke)
+    return app.exec()
+
+if __name__=="__main__":
+    try:sys.exit(main())
+    except Exception:
+        log=Path(os.environ.get("APPDATA",str(Path.home())))/"NiangaoPhotoPet"/"crash.log"
+        log.parent.mkdir(parents=True,exist_ok=True);log.write_text(traceback.format_exc(),encoding="utf-8")
+        if sys.platform=="win32":
+            import ctypes
+            ctypes.windll.user32.MessageBoxW(None,"年糕启动失败，错误日志："+str(log),"年糕",0x10)
+        raise
