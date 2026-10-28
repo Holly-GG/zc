@@ -7,8 +7,8 @@ if '--underlay' in sys.argv:
     from PySide6.QtCore import Qt
     class Underlay(QWidget):
         def __init__(self,path):
-            super().__init__();self.path=Path(path);self.count=0
-            self.setWindowTitle('Niangao Photo Underlay');self.setGeometry(10,30,1100,700)
+            super().__init__(None,Qt.WindowType.FramelessWindowHint);self.path=Path(path);self.count=0
+            self.setWindowTitle('Niangao Photo Underlay');self.setGeometry(0,0,1440,1000)
             self.setStyleSheet('background:#8CCCCA;');self.write()
         def write(self):self.path.write_text(str(self.count))
         def mousePressEvent(self,event):

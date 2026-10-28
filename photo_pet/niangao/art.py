@@ -30,6 +30,8 @@ class CatArt:
             self.frames[state]=frames
         self.cache={}
         self.extra={key:("actions/"+key+".png",4) for key in ("groom","stretch","feed","pet","play_bow","yawn")}
+        # Decode before first interactive frame: lazy alpha scans blocked mouse/probe processing.
+        for key in self.extra:self.ensure(key)
 
     def ensure(self,state):
         if state in self.frames:return state

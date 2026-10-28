@@ -69,7 +69,10 @@ try:
     n=count();r=bounds();click(r.left+3,r.top+3)
     check(count()==n+1,'transparent corner click reaches lower application')
     n=count();before=state()['counts']['clicked'];click(*body())
-    check(count()==n and state()['counts']['clicked']==before+1,'cat click reaches pet without leaking to lower application')
+    for _ in range(40):
+        if state()['counts']['clicked']==before+1:break
+        time.sleep(.1)
+    check(count()==n and state()['counts']['clicked']==before+1,'cat click reaches pet without leaking to lower application; lower='+str((n,count()))+' state='+str(state())+' bounds='+str((r.left,r.top,r.right,r.bottom)))
     # The visible head is narrower than the overall silhouette.
     n=count();r=bounds();click(r.left+8,r.top+22)
     check(count()==n+1,'transparent point within pet bounding rectangle reaches lower application')
