@@ -71,7 +71,7 @@ class PetWindow(QWidget):
         if save:self.save()
     def height_for(self,width):
         state=self.behaviour.state
-        art_state=("walk_left" if self.behaviour.velocity[0]<-0.005 else "walk") if state=="walk" else "sleep" if state=="sleep" else "idle"
+        art_state=("walk_left" if self.behaviour.facing_left else "walk") if state in ("walk","perch","play") else "sleep" if state=="sleep" else "idle"
         ratio=max(frame.height()/frame.width() for frame in self.art.frames[art_state])
         return max(50,int((width-16)*ratio+16))
     def render_frame(self):
@@ -83,9 +83,9 @@ class PetWindow(QWidget):
             self.float_pos=(float(self.x()),float(self.y()))
         state=self.behaviour.state
         phase=time.monotonic()-self.started
-        frame=int(phase*5)%4 if state=="walk" else 0
+        frame=int(phase*5)%4 if state in ("walk","perch","play") else 0
         bob=int(round(math.sin(phase*(7 if state in ["pet","feed"] else 2))*1.5))
-        art_state=("walk_left" if self.behaviour.velocity[0]<-0.005 else "walk") if state=="walk" else "sleep" if state=="sleep" else "idle"
+        art_state=("walk_left" if self.behaviour.facing_left else "walk") if state in ("walk","perch","play") else "sleep" if state=="sleep" else "idle"
         key=(art_state,frame,self.width(),self.height(),bob)
         if key==self.last_art_key:return
         self.last_art_key=key

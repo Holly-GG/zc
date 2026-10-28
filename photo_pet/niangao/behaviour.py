@@ -10,6 +10,7 @@ class Behaviour:
         self.target=None
         self.velocity=(0.0,0.0)
         self.edge_contact=False
+        self.facing_left=False
         self.speed=58.0
 
     def action(self, name, seconds=4):
@@ -30,6 +31,8 @@ class Behaviour:
             return x,y
         if self.state!="walk":
             if now < self.deadline:return x,y
+            if self.state=="idle" and self.rng.random()<0.2:
+                self.action("play",self.rng.uniform(1.5,2.5));return x,y
             self.state="walk"
             self.deadline=now+self.rng.uniform(6,14)
             self.target=clamp_position(self.rng.uniform(area.x,area.right),self.rng.uniform(area.y,area.bottom),width,height,area)
@@ -37,6 +40,7 @@ class Behaviour:
             self.action("idle",self.rng.uniform(2,5));return x,y
         if self.target is None:self.action("idle",1);return x,y
         dx,dy=self.target[0]-x,self.target[1]-y
+        if abs(dx)>0.1:self.facing_left=dx<0
         distance=math.hypot(dx,dy)
         if distance<4:self.action("idle",self.rng.uniform(2,4));return x,y
         step=min(distance,self.speed*dt)

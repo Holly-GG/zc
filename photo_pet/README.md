@@ -1,15 +1,15 @@
 # 年糕 · 照片桌宠
 
-**[直接下载 Windows 运行包](https://github.com/Holly-GG/zc/raw/refs/heads/windows-download/Niangao-PhotoPet-windows.zip)**
+**[直接下载 EXE](https://github.com/Holly-GG/zc/raw/refs/heads/windows-download/Niangao-PhotoPet.exe)** · [ZIP 备用包](https://github.com/Holly-GG/zc/raw/refs/heads/windows-download/Niangao-PhotoPet-windows.zip)
 
-解压后双击 `Niangao-PhotoPet.exe`；Windows 10/11 x64，不需要安装 Python、Godot、Blender。与旧 Godot 几何 P0 是两个独立程序，请运行新的 PhotoPet exe。
+EXE 下载后可直接双击；ZIP 包解压后双击 `Niangao-PhotoPet.exe`；Windows 10/11 x64，不需要安装 Python、Godot、Blender。与旧 Godot 几何 P0 是两个独立程序，请运行新的 PhotoPet exe。
 
 ## 角色与使用
 
 角色来自用户提供的布偶猫参考照片，经 AI 图像编辑生成透明资产、爬行动画和睡觉姿态。蓝眼睛、深棕面罩/耳朵、不对称白纹、白胸腹/爪子和**鼻侧棕色小点**为重点；未对角色做左右翻转，以免反转标记。不可见爪子、尾巴和新姿态是推测性补全，不是原照片逐像素抠图，也不能保证完全复原不可见细节。详见 ASSET_PROVENANCE.md。
 
 - 默认透明、无边框、置顶；仅角色 Alpha 遮罩区域接收输入，透明区域传给下层应用。
-- 自动在当前显示器的可用工作区巡逻；使用左右各四帧照片补全步态，随机停留、玩耍和显示中文气泡。
+- 自动在当前显示器的可用工作区巡逻；使用左右各四帧照片补全步态，随机停留、原地摆爪玩耍和显示中文气泡。
 - Windows 原生 `EnumWindows` 每秒检测可见顶层应用的**外边界**；靠近边缘时绕行或停留玩耍。不会分析窗口内部按钮、图标或读取屏幕内容。最大化应用的内部仍可巡逻，边界才是障碍。
 - 左键拖动，轻点摸头；滚轮缩放。右键菜单：摸摸头、喂吃的、让它睡觉/叫它起床、调整大小、置顶开关、自由巡逻开关、退出程序。
 - 气泡使用独立透输入窗口，按上/右/左/下寻找不遮挡猫咪的位置；空间不足则不显示。
@@ -48,7 +48,7 @@ python tools/test_windows_desktop.py --exe dist/Niangao-PhotoPet.exe --output te
 
 ## 已知限制与验证范围
 
-基础/Qt 测试 21 项、Linux X11 的 8 项真实桌面输入检查已通过，记录见 validation/。Windows 工作流另外要求打包 exe smoke、真实 Win32 点击穿透/拖动/滚轮/菜单/窗口枚举/退出恢复检查通过，才发布新的直链包。CI 结果以对应运行日志为准。
+基础/Qt 测试 21 项、Linux X11 的 8 项真实桌面输入检查，以及 Windows 构建机上的 10 项原生桌面检查已通过，记录见 validation/。Windows 工作流另外要求打包 exe smoke、真实 Win32 点击穿透/拖动/滚轮/菜单/窗口枚举/退出恢复检查通过，才发布新的直链包。CI 结果以对应运行日志为准。
 
 自动化 Windows runner 不是用户的每一种桌面环境；Windows 10/11 不同版本、150%/200% 混合 DPI、运行中拔插显示器、自动隐藏任务栏、各种受保护/游戏/远程应用仍需实机回归。位置会使用当前工作区修复；Windows 窗口检测若系统拒绝访问，日志记录错误并保留屏幕内巡逻。
 

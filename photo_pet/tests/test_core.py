@@ -61,6 +61,9 @@ def test_state_timeout_uses_monotonic_clock():
     now[0]=105
     b.tick(50,50,240,312,area,[],0.05)
     assert b.state=='walk'
+    b.action('play',2);now[0]+=3
+    b.tick(50,50,240,312,area,[],0.05)
+    assert b.state=='walk'
 
 def test_sleep_cannot_move_until_woken():
     now=[100.0];b=Behaviour(clock=lambda:now[0]);b.action('sleep')

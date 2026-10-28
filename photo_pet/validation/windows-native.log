@@ -1,0 +1,11 @@
+PASS native EnumWindows detects independent window bounds
+PASS transparent corner click reaches lower application
+PASS cat click reaches pet without leaking to lower application
+PASS transparent point within pet bounding rectangle reaches lower application
+PASS left-button drag changes position
+PASS mouse wheel resizes pet
+PASS native right-click menu invokes head pet
+PASS dialogue bubble avoids character
+PASS normal exit saves configuration
+PASS restart restores position
+WINDOWS_DESKTOP_RESULT passed; native Win32 mouse input and window bounds verified on this runner
