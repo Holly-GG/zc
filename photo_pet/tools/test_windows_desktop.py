@@ -134,12 +134,24 @@ try:
     # First clear the restored fountain using the actual dashboard button.
     click(*ui_point(dash['clear'],dash));time.sleep(.25)
     check(not state()['desktop_props'],'one-click clear removes own props without closing underlay')
-    dash=state()['dashboard'];source=ui_point(dash['bag_cards']['water_fountain'],dash);x,y,dw,dh=[v*dash.get('dpi',1) for v in dash['rect']]
+    # The richer cards may put the fountain below the fold. Scroll with actual
+    # Win32 wheel events instead of dragging a clipped/off-screen card position.
+    for _ in range(30):
+        dash=state()['dashboard']
+        if 'water_fountain' in dash['bag_cards']:break
+        vx,vy,vw,vh=dash['viewport'];u.SetCursorPos(*ui_point([vx+vw*.8,vy+vh*.65],dash));mouse(0x0800,-120);time.sleep(.15)
+    check('water_fountain' in dash['bag_cards'],'backpack scrolling exposes a real visible product image')
+    source=ui_point(dash['bag_cards']['water_fountain'],dash);x,y,dw,dh=[v*dash.get('dpi',1) for v in dash['rect']]
     candidates=[(25,730),(u.GetSystemMetrics(0)-25,150),(25,80),(u.GetSystemMetrics(0)-25,u.GetSystemMetrics(1)-160)]
     target=next(pt for pt in candidates if not (x<=pt[0]<=x+dw and y<=pt[1]<=y+dh))
     u.SetCursorPos(*source);mouse(2);time.sleep(.12);u.SetCursorPos(source[0]+18,source[1]+18);time.sleep(.15);u.SetCursorPos(*target);time.sleep(.25);mouse(4);time.sleep(.5)
     check(any(v['item']=='water_fountain' for v in state()['desktop_props']),'real backpack-image drag to desktop places fountain; source='+str(source)+' target='+str(target)+' drag='+str(state().get('card_drag'))+' props='+str(state().get('desktop_props'))+' dpi='+str(dash.get('dpi'))+' pet='+str(state().get('position'))+' size='+str(state().get('size')))
-    dash=state()['dashboard'];click(*ui_point(dash['clear'],dash));time.sleep(.25)
+    for _ in range(30):
+        dash=state()['dashboard']
+        if dash['scroll']==0:break
+        vx,vy,vw,vh=dash['viewport'];u.SetCursorPos(*ui_point([vx+vw*.8,vy+vh*.65],dash));mouse(0x0800,120);time.sleep(.15)
+    check(dash['scroll']==0,'native wheel returns to the cleanup control')
+    click(*ui_point(dash['clear'],dash));time.sleep(.25)
     data=json.loads(life_path.read_text(encoding='utf-8'))
     check(not state()['desktop_props'] and data['inventory']['water_fountain']==1,'cleanup returns placement to inventory without deleting owned stock')
     close(pet)

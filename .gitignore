@@ -14,3 +14,8 @@ photo_pet/test-results/
 
 **/chat.sqlite3*
 **/chat_sessions/
+
+**/album.sqlite3*
+
+/album/
+photo_pet/album/

@@ -3,8 +3,8 @@ import random
 from functools import lru_cache
 from .art import asset_path
 from PySide6.QtCore import Qt,QRectF,QPointF
-from PySide6.QtGui import QColor,QPainter,QPainterPath,QPen,QLinearGradient,QPixmap
-from PySide6.QtWidgets import QWidget,QFrame,QLabel,QHBoxLayout,QVBoxLayout
+from PySide6.QtGui import QColor,QPainter,QPainterPath,QPen,QLinearGradient,QPixmap,QIcon
+from PySide6.QtWidgets import QWidget,QFrame,QLabel,QHBoxLayout,QVBoxLayout,QListWidget
 
 # Each chapter varies its paper, dominant wash, ornament and density.
 CHAPTERS=(
@@ -16,14 +16,16 @@ CHAPTERS=(
  dict(key='chat',number='VI',name='LETTERS TO NIANGAO',paper='#F8F7EF',wash='#B4D3EC',accent='#2A472F',motif='letter',density=0),
  dict(key='diary',number='VII',name='FIELD NOTES · MEMORIES',paper='#F3EFDF',wash='#92AB76',accent='#3C582C',motif='manuscript',density=.55),
  dict(key='settings',number='VIII',name='PORTRAIT & PARTICULARS',paper='#EEF0DF',wash='#839D45',accent='#2A472F',motif='seed',density=.35),
+ dict(key='album',number='IX',name='COLLECTED DAYS',paper='#F0F4ED',wash='#B4D3EC',accent='#3E7197',motif='coast',density=.3),
 )
 
 
-@lru_cache(maxsize=5)
+@lru_cache(maxsize=8)
 def decorative_asset(name):
     return QPixmap(str(asset_path('ui/botanical/'+name+'.webp')))
 
 def portrait(index):
+    if index==8:return QPixmap()
     atlas=decorative_asset('poses')
     if atlas.isNull():return QPixmap()
     # Read-only sprite view: illustrations remain separate from interactive controls.
@@ -39,7 +41,7 @@ def floral_frame(p,rect,quiet=False):
     # Nine-slice an ornament, never a screenshot: corners keep their proportions,
     # long notebook pages do not stretch flowers into tall vertical bands.
     sw,sh=image.width(),image.height();sx,sy=310,230
-    corner=34 if quiet else 61;edge=9 if quiet else 17
+    corner=min(34 if quiet else 61,rect.width()/2,rect.height()/2);edge=min(9 if quiet else 17,corner/2)
     x,y,w,h=rect.x(),rect.y(),rect.width(),rect.height()
     cells=[(QRectF(x,y,corner,corner),QRectF(0,0,sx,sy)),
       (QRectF(x+w-corner,y,corner,corner),QRectF(sw-sx,0,sx,sy)),
@@ -56,13 +58,15 @@ def floral_frame(p,rect,quiet=False):
 
 class HeroIllustration(QLabel):
     def __init__(self):
-        super().__init__();self.setMinimumWidth(165);self.setMaximumWidth(270);self.setMinimumHeight(225)
+        super().__init__();self.setMinimumWidth(165);self.setMinimumHeight(300)
     def paintEvent(self,event):
         p=QPainter(self);p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform);image=decorative_asset('hero')
+        scene=decorative_asset('moon-window')
+        if not scene.isNull():p.setOpacity(.75);p.drawPixmap(QRectF(self.rect()),scene,QRectF(scene.rect()));p.setOpacity(1)
         # Keep the full artwork and natural anatomy; no stretched character images.
         if not image.isNull():
             size=image.size();size.scale(self.size(),Qt.AspectRatioMode.KeepAspectRatio);r=QRectF((self.width()-size.width())/2,(self.height()-size.height())/2,size.width(),size.height());p.drawPixmap(r,image,QRectF(image.rect()))
-        p.end()
+        p.setPen(QColor('#66745C'));font=p.font();font.setPixelSize(11);p.setFont(font);p.drawText(QRectF(4,self.height()-22,self.width()-8,20),Qt.AlignmentFlag.AlignCenter,'年糕专属插画预览 · 待确认');p.end()
 
 def branch(p,x,y,size=70,angle=-25,color='#839D45',fern=False):
     p.save();p.translate(x,y);p.rotate(angle)
@@ -91,7 +95,7 @@ class PaperPage(QWidget):
     def paintEvent(self,event):
         p=QPainter(self);p.setRenderHint(QPainter.RenderHint.Antialiasing);c=self.chapter;p.fillRect(self.rect(),QColor(c['paper']))
         if c['density']:
-            p.save();p.setOpacity(.35);p.drawTiledPixmap(self.rect(),decorative_asset('paper'));p.restore()
+            p.save();p.setOpacity(.14);p.drawTiledPixmap(self.rect(),decorative_asset('paper'));p.restore()
             # Deterministic, low-contrast paper fibres; decoration is painted below widgets.
             rng=random.Random(1921)
             p.setPen(QPen(QColor(70,82,43,12),.6))
@@ -123,14 +127,20 @@ class PaperPage(QWidget):
 
 class ChapterHeading(QFrame):
     def __init__(self,index,title,subtitle,pixmap=None):
-        super().__init__();self.index=index;self.chapter=CHAPTERS[index];self.setObjectName('chapterHeading');self.setMinimumHeight(88 if index==0 else 134 if index!=5 else 88)
-        row=QHBoxLayout(self);row.setContentsMargins(18,18,14,17);text=QVBoxLayout();text.setSpacing(5);row.addLayout(text,1)
-        eyebrow=QLabel(self.chapter['number']+'  /  '+self.chapter['name']);eyebrow.setObjectName('eyebrow');text.addWidget(eyebrow)
+        super().__init__();self.index=index;self.chapter=CHAPTERS[index];self.setObjectName('chapterHeading');self.setMinimumHeight(116 if index==0 else 148 if index!=5 else 100)
+        row=QHBoxLayout(self);row.setContentsMargins(18,15,14,15);text=QVBoxLayout();text.setSpacing(3);row.addLayout(text,1)
+        eyebrow=QLabel(self.chapter['number']+'  /  NIANGAO JOURNAL');eyebrow.setObjectName('eyebrow');text.addWidget(eyebrow)
         label=QLabel(title);label.setWordWrap(True);label.setObjectName('hero');text.addWidget(label)
+        english=('Daily Life','Care & Play','The Little Shop','Forest Collection','Quiet Hours','Chat with Niangao','Magic Diary','Profile & Settings','Collected Days')[index]
+        script=QLabel(english);script.setObjectName('scriptTitle');text.addWidget(script)
         if subtitle:
             label=QLabel(subtitle);label.setWordWrap(True);label.setObjectName('sub');text.addWidget(label)
         if pixmap is not None and not pixmap.isNull() and index not in (0,5):
-            art=QLabel();art.setObjectName('chapterPortrait');art.setFixedSize(130,105);art.setAlignment(Qt.AlignmentFlag.AlignCenter);art.setPixmap(pixmap.scaled(art.size(),Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation));row.addWidget(art)
+            art_column=QVBoxLayout();art_column.setSpacing(0);row.addLayout(art_column)
+            art=QLabel();art.setObjectName('chapterPortrait');art.setFixedSize(112,85);art.setAlignment(Qt.AlignmentFlag.AlignCenter);art.setPixmap(pixmap.scaled(art.size(),Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation));art_column.addWidget(art)
+            badge=QLabel('插画待确认');badge.setObjectName('candidate');badge.setAlignment(Qt.AlignmentFlag.AlignCenter);art_column.addWidget(badge)
+        elif index==8:
+            pending=QLabel('年糕专属相册插画\n待制作');pending.setObjectName('candidate');pending.setAlignment(Qt.AlignmentFlag.AlignCenter);pending.setFixedWidth(125);row.addWidget(pending)
     def paintEvent(self,event):
         p=QPainter(self);p.setRenderHint(QPainter.RenderHint.Antialiasing);c=self.chapter;w,h=self.width(),self.height()
         p.fillRect(QRectF(2,4,w-4,h-5),QColor(42,71,47,12));p.fillRect(QRectF(0,0,w-3,h-5),QColor('#FCFAF0'))
@@ -153,7 +163,9 @@ class ChapterHeading(QFrame):
             branch(p,w-20,h-13,85,-20)
         else:branch(p,w-13,h-14,85,-18,c['accent'],c['motif']=='fern')
         # Semi-transparent washi, torn lower edge, and a tiny botanical wax seal.
-        if self.index!=0:floral_frame(p,QRectF(w-153,1,150,h-7))
+        if self.index in (2,3):
+            scene=decorative_asset('forest-collection');p.setOpacity(.5);p.drawPixmap(QRectF(w-145,4,140,h-10),scene,QRectF(scene.rect()));p.setOpacity(1)
+        elif self.index not in (0,5):floral_frame(p,QRectF(w-137,1,134,h-7),True)
         p.fillRect(QRectF(24,0,57,7),QColor(146,171,118,90))
         p.setPen(QPen(QColor('#3C582C'),.6));p.setBrush(QColor('#92AB76'));p.drawEllipse(QRectF(w-27,h-23,15,15));p.setPen(QPen(QColor('#E8E9C0'),.6));p.drawLine(QPointF(w-23,h-12),QPointF(w-17,h-20))
         p.setPen(QPen(QColor('#B6BE93'),.6));path=QPainterPath(QPointF(7,h-7))
@@ -163,4 +175,32 @@ class ChapterHeading(QFrame):
 
 class JournalSidebar(QFrame):
     def paintEvent(self,event):
-        super().paintEvent(event);p=QPainter(self);p.setRenderHint(QPainter.RenderHint.Antialiasing);floral_frame(p,QRectF(0,self.height()-70,self.width(),70));p.end()
+        super().paintEvent(event)
+        nav=self.findChild(QListWidget,'navigation')
+        if nav is None or nav.count()==0:return
+        last=nav.visualItemRect(nav.item(nav.count()-1)).bottom()+nav.y()
+        if self.height()-last<105:return
+        p=QPainter(self);p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform);image=decorative_asset('forest-collection');p.drawPixmap(QRectF(0,self.height()-100,self.width(),95),image,QRectF(image.rect()));p.end()
+
+
+def navigation_icon(index):
+    pixmap=QPixmap(24,24);pixmap.fill(Qt.GlobalColor.transparent);p=QPainter(pixmap);p.setRenderHint(QPainter.RenderHint.Antialiasing);p.setPen(QPen(QColor('#3C582C'),1.7,Qt.PenStyle.SolidLine,Qt.PenCapStyle.RoundCap,Qt.PenJoinStyle.RoundJoin));p.setBrush(Qt.BrushStyle.NoBrush)
+    if index==0:
+        path=QPainterPath(QPointF(3,11));path.lineTo(12,3);path.lineTo(21,11);path.moveTo(5,10);path.lineTo(5,21);path.lineTo(19,21);path.lineTo(19,10);path.moveTo(10,21);path.lineTo(10,14);path.lineTo(14,14);path.lineTo(14,21);p.drawPath(path)
+    elif index==1:
+        p.drawEllipse(QRectF(4,9,6,8));p.drawEllipse(QRectF(14,9,6,8));p.drawLine(7,3,7,6);p.drawLine(17,3,17,6);p.drawLine(12,6,12,9);p.drawLine(9,19,15,19)
+    elif index in (2,3):
+        p.drawRoundedRect(QRectF(4,8,16,13),2,2);p.drawArc(QRectF(8,2,8,12),0,180*16);p.drawLine(5,13,19,13)
+    elif index==4:
+        p.drawEllipse(QRectF(3,3,18,18));p.drawLine(12,6,12,12);p.drawLine(12,12,17,15)
+    elif index==5:
+        p.drawRoundedRect(QRectF(3,4,18,14),4,4);p.drawLine(7,18,5,22)
+        for x in (7,12,17):p.drawEllipse(QRectF(x-1,10,2,2))
+    elif index==6:
+        p.drawRoundedRect(QRectF(5,3,15,19),2,2);p.drawLine(8,3,8,22);p.drawLine(11,8,17,8);p.drawLine(11,12,17,12)
+    elif index==7:
+        p.drawEllipse(QRectF(4,4,16,16));p.drawEllipse(QRectF(9,9,6,6))
+        for x,y,xx,yy in ((12,1,12,4),(12,20,12,23),(1,12,4,12),(20,12,23,12)):p.drawLine(x,y,xx,yy)
+    else:
+        p.drawRoundedRect(QRectF(3,4,18,16),2,2);p.drawEllipse(QRectF(6,7,4,4));path=QPainterPath(QPointF(4,18));path.lineTo(11,11);path.lineTo(16,16);path.lineTo(20,12);p.drawPath(path)
+    p.end();return QIcon(pixmap)

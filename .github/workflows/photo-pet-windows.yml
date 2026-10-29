@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths:
       - 'photo_pet/**'
+      - 'fonts/**'
+      - 'Niangao-Fonts.zip'
       - '.github/workflows/photo-pet-windows.yml'
   workflow_dispatch:
 permissions:
@@ -82,6 +84,14 @@ jobs:
           if (-not $process.WaitForExit(120000)) { $process.Kill(); throw 'Expanded smoke timeout' }
           if ($process.ExitCode -ne 0) { throw "Expanded smoke failed: $($process.ExitCode)" }
           'Random idle work poses, local SQLite/JSON history, token quota, calendar and desktop routines PASS' | Set-Content test-results/expanded-smoke.log
+      - name: Packaged album and typography smoke
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          $process = Start-Process -FilePath ./dist/Niangao-PhotoPet.exe -ArgumentList '--album-smoke','--settings',"$env:RUNNER_TEMP/album-smoke/settings.json",'--probe',"$env:RUNNER_TEMP/album-smoke/probe.json" -PassThru
+          if (-not $process.WaitForExit(120000)) { $process.Kill(); throw 'Album smoke timeout' }
+          if ($process.ExitCode -ne 0) { throw "Album smoke failed: $($process.ExitCode)" }
+          'Packaged nine pages, three bundled fonts, async album import, date archive, SQLite persistence and original preservation PASS' | Set-Content test-results/album-smoke.log
       - name: Native Windows desktop acceptance
         run: |
           python tools/test_windows_desktop.py --exe dist/Niangao-PhotoPet.exe --output test-results/native 2>&1 | Tee-Object test-results/windows-desktop.log

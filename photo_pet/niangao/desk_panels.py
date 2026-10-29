@@ -130,7 +130,7 @@ class WorkPanel(DeskPanel):
 class FocusPanel(DeskPanel):
     def __init__(self,pet):
         super().__init__(pet,'年糕 · 专注与待办',(300,360),'focus_position')
-        self.clock=QLabel();self.clock.setStyleSheet('font-size:28px;color:#305e63');self.layout.addWidget(self.clock)
+        self.clock=QLabel();self.clock.setObjectName('focusClock');self.layout.addWidget(self.clock)
         row=QHBoxLayout();self.layout.addLayout(row);self.minutes=QSpinBox();self.minutes.setRange(1,180);self.minutes.setValue(25);self.minutes.setSuffix(' 分');row.addWidget(self.minutes)
         for title,fn in [('开始',lambda:pet.life.focus_start(self.minutes.value())),('暂停',pet.life.focus_pause),('继续',pet.life.focus_resume)]:
             button=QPushButton(title);button.clicked.connect(fn);row.addWidget(button)

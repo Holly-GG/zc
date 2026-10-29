@@ -1,7 +1,7 @@
 """Local application search. No screenshot, keyboard hook or API request."""
 from .life.catalog import BY_ID
 from .interaction.actions import ACTIONS
-PAGES=[('陪伴总览',0,'年龄 心情 状态'),('照料与动作',1,'喝水 喂食 梳毛 猫砂 动作 图鉴'),('年糕小铺',2,'商城 购买 商品'),('我的背包',3,'物品 库存 摆放'),('专注与待办',4,'任务 番茄钟 计时'),('和年糕聊天',5,'API 对话 聊天'),('年糕日记',6,'公历 农历 日历'),('性格与设置',7,'接口 密钥 DeepSeek 性格 习惯 生日 设置')]
+PAGES=[('陪伴总览',0,'年龄 心情 状态'),('照料与动作',1,'喝水 喂食 梳毛 猫砂 动作 图鉴'),('年糕小铺',2,'商城 购买 商品'),('我的背包',3,'物品 库存 摆放'),('专注与待办',4,'任务 番茄钟 计时'),('和年糕聊天',5,'API 对话 聊天'),('年糕日记',6,'公历 农历 日历'),('性格与设置',7,'接口 密钥 DeepSeek 性格 习惯 生日 设置'),('宠物相册',8,'照片 上传 导入 日期 归档 相册')]
 def search(query,tasks=()):
     words=str(query).strip().casefold().split()
     if not words:return []

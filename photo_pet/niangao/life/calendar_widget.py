@@ -19,11 +19,11 @@ class ChineseCalendar(QCalendarWidget):
         selected=day==self.selectedDate()
         painter.fillRect(rect,QColor(TOKENS["sky"] if selected else TOKENS["card"]))
         painter.setPen(QColor(TOKENS["ink"] if day.month()==self.monthShown() else "#A3AA91"))
-        font=QFont(painter.font());font.setPointSize(9);painter.setFont(font)
+        font=QFont(painter.font());font.setPixelSize(13);painter.setFont(font)
         painter.drawText(QRect(rect.x(),rect.y(),rect.width(),rect.height()//2),Qt.AlignmentFlag.AlignCenter,str(day.day()))
         value=date(day.year(),day.month(),day.day())
         try:label=lunar_label(value)
         except ValueError:label=""
-        font.setPointSize(7);painter.setFont(font);painter.setPen(QColor(TOKENS["forest"]))
+        font.setPixelSize(12);painter.setFont(font);painter.setPen(QColor(TOKENS["forest"]))
         painter.drawText(QRect(rect.x(),rect.y()+rect.height()//2,rect.width(),rect.height()//2),Qt.AlignmentFlag.AlignCenter,label)
         painter.restore()

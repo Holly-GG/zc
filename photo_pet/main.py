@@ -11,6 +11,7 @@ def main():
     parser.add_argument("--motion-smoke",action="store_true")
     parser.add_argument("--desktop-smoke",action="store_true")
     parser.add_argument("--expanded-smoke",action="store_true")
+    parser.add_argument("--album-smoke",action="store_true")
     args=parser.parse_args()
     if args.probe:args.probe.parent.mkdir(parents=True,exist_ok=True)
     if sys.platform=="win32":
@@ -22,12 +23,42 @@ def main():
     from niangao.config import Settings
     from niangao.pet import PetWindow
     app=QApplication(sys.argv[:1]);app.setApplicationName("NiangaoPhotoPet");app.setQuitOnLastWindowClosed(False)
-    from niangao.art import asset_path
-    from PySide6.QtGui import QFontDatabase,QFont
-    font_id=QFontDatabase.addApplicationFont(str(asset_path("fonts/NiangaoSans.ttf")))
-    if font_id>=0:app.setFont(QFont(QFontDatabase.applicationFontFamilies(font_id)[0],10))
+    from niangao.typography import install_fonts
+    loaded_fonts=install_fonts(app)
     window=PetWindow(Settings(args.settings),args.probe)
     window.show()
+    if args.album_smoke:
+        def album_smoke():
+            try:
+                from PySide6.QtGui import QImage,QColor
+                from PySide6.QtCore import QDate
+                from niangao.life.album import AlbumStore
+                assert set(loaded_fonts)=={'body','title','script'}
+                window.open_life();ui=window.life_window;assert ui.stack.count()==9
+                assert ui.nav.item(7).text()=='性格与设置' and ui.nav.item(8).text()=='宠物相册'
+                ui.nav.setCurrentRow(8);album=ui.album_widget
+                source=window.settings.path.parent/'album-smoke-source.png';image=QImage(100,80,QImage.Format.Format_RGB32);image.fill(QColor('#77AAD7'));assert image.save(str(source))
+                album.manual.setChecked(True);album.day.setDate(QDate(2024,2,29));album.import_paths([str(source)])
+                attempts=[0]
+                def complete():
+                    try:
+                        attempts[0]+=1
+                        if album.busy:
+                            assert attempts[0]<400,'album worker timeout'
+                            QTimer.singleShot(50,complete);return
+                        assert len(album.last_result['imported'])==1
+                        rows,total=album.store.query(month='2024-02');assert total==1
+                        record=rows[0];assert source.read_bytes()==album.store.owned(record['original']).read_bytes()
+                        assert album.store.owned(record['thumbnail']).exists()
+                        album.store.update(record['id'],'归档日期测试','2024-03-01','日常')
+                        assert AlbumStore(album.store.root).query(month='2024-03')[1]==1
+                        for i in range(9):
+                            ui.nav.setCurrentRow(i);app.processEvents();assert ui.stack.widget(i).horizontalScrollBar().maximum()==0
+                        print('ALBUM_SMOKE passed: 9 pages, 3 bundled fonts, async photo import, date folders, SQLite restart, originals preserved',flush=True);window.close()
+                    except Exception:traceback.print_exc();app.exit(1)
+                QTimer.singleShot(50,complete)
+            except Exception:traceback.print_exc();app.exit(1)
+        QTimer.singleShot(1200,album_smoke)
     if args.expanded_smoke:
         def expanded_smoke():
             try:
@@ -92,7 +123,7 @@ def main():
                 from niangao.life.catalog import BY_ID
                 from niangao.life.item_art import item_pixmap
                 window.open_life();ui=window.life_window
-                assert ui.stack.count()==8 and not any("3D" in ui.nav.item(i).text() for i in range(8))
+                assert ui.stack.count()==9 and not any("3D" in ui.nav.item(i).text() for i in range(9))
                 assert ui.width()<=900 and window.bubble.width()<244
                 assert all(not item_pixmap(id,96).isNull() for id in BY_ID)
                 ui.profile_fields["personality"].setPlainText("慢热但亲人");ui.profile_fields["habits"].setPlainText("爱喝清水");ui.save_profile()
@@ -102,7 +133,7 @@ def main():
                 assert window.desktop.activate(uid) and w.record["water"]==80
                 window.desktop.refill(uid);assert w.record["water"]==100
                 window.desktop.clear();assert not window.desktop.widgets
-                print("DESKTOP_SMOKE passed: 8 pages, no 3D space, 51 product images, mandatory profile, fountain drink/refill and cleanup",flush=True);window.close()
+                print("DESKTOP_SMOKE passed: 9 pages, no 3D space, 51 product images, mandatory profile, fountain drink/refill and cleanup",flush=True);window.close()
             except Exception:traceback.print_exc();app.exit(1)
         QTimer.singleShot(1200,desktop_smoke)
     if args.motion_smoke:
@@ -124,16 +155,16 @@ def main():
         def suite_smoke():
             try:
                 window.open_life();ui=window.life_window
-                assert ui.stack.count()==8
-                for i in range(8):ui.nav.setCurrentRow(i);app.processEvents()
+                assert ui.stack.count()==9
+                for i in range(9):ui.nav.setCurrentRow(i);app.processEvents()
                 ui.care("brush","groom");assert window.behaviour.state=="groom"
                 assert window.life.add_task("smoke task")
                 ui.generate_diary();assert ui.diary_text.toPlainText()
                 ui.grab().save(str((args.probe.parent if args.probe else Path.cwd())/"life-smoke.png"))
-                print("LIFE_SMOKE passed: 8 pages, care/action, task, diary",flush=True);window.close()
+                print("LIFE_SMOKE passed: 9 pages, care/action, task, diary",flush=True);window.close()
             except Exception:traceback.print_exc();app.exit(1)
         QTimer.singleShot(1200,suite_smoke)
-    elif not args.smoke and not args.probe and not args.motion_smoke and not args.desktop_smoke and not args.expanded_smoke and not window.work_mode:
+    elif not args.smoke and not args.probe and not args.motion_smoke and not args.desktop_smoke and not args.expanded_smoke and not args.album_smoke and not window.work_mode:
         QTimer.singleShot(700,window.open_life)
     if args.smoke:
         def smoke():

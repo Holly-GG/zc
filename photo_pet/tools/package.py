@@ -7,10 +7,12 @@ sha=hashlib.file_digest(exe.open('rb'),'sha256').hexdigest()
 (root/'dist/Niangao-PhotoPet-exe-SHA256.txt').write_text(sha+'  Niangao-PhotoPet.exe\n')
 with zipfile.ZipFile(root/'dist/Niangao-PhotoPet-windows.zip','w',zipfile.ZIP_DEFLATED,compresslevel=6) as z:
     z.write(exe,'Niangao-PhotoPet/Niangao-PhotoPet.exe')
-    for name in ['README.md','FEATURES.md','LATEST.md','MOTIONS.md','ASSET_PROVENANCE.md','API_COMPATIBILITY.md','CHAT_MEMORY.md','dist/Niangao-PhotoPet-exe-SHA256.txt']:
+    for name in ['README.md','FEATURES.md','LATEST.md','MOTIONS.md','ASSET_PROVENANCE.md','API_COMPATIBILITY.md','CHAT_MEMORY.md','ALBUM_AND_FONTS.md','dist/Niangao-PhotoPet-exe-SHA256.txt']:
         z.write(root/name,'Niangao-PhotoPet/'+Path(name).name)
     for p in (root/'licenses').rglob('*'):
         if p.is_file():z.write(p,'Niangao-PhotoPet/licenses/'+str(p.relative_to(root/'licenses')))
+    for p in (root.parent/'fonts').glob('*'):
+        if p.is_file():z.write(p,'Niangao-PhotoPet/fonts/'+p.name)
     results=root/'test-results'
     if results.exists():
         for p in results.glob('*.log'):z.write(p,'Niangao-PhotoPet/validation/'+p.name)

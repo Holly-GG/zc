@@ -9,8 +9,8 @@ from niangao.life.jobs import run_job
 def test_dashboard_real_buttons_and_assets(tmp_path):
     app=QApplication.instance() or QApplication([])
     pet=PetWindow(Settings(tmp_path/"settings.json"));pet.open_life();ui=pet.life_window
-    assert ui.stack.count()==8
-    for i in range(8):ui.nav.setCurrentRow(i);app.processEvents()
+    assert ui.stack.count()==9
+    for i in range(9):ui.nav.setCurrentRow(i);app.processEvents()
     for action in ("groom","stretch","feed","pet","play_bow","yawn"):
         assert pet.perform_action(action);assert len(pet.art.frames[action])==4
         assert len({(f.width(),f.height()) for f in pet.art.frames[action]})==1

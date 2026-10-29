@@ -79,7 +79,7 @@ def test_profile_editor_and_separate_inventory_pages(tmp_path):
     from niangao.pet import PetWindow
     from niangao.config import Settings
     app=QApplication.instance() or QApplication([]);p=PetWindow(Settings(tmp_path/"settings.json"));p.open_life();ui=p.life_window
-    assert ui.width()<=900 and p.bubble.width()<244 and ui.stack.count()==8
+    assert ui.width()<=900 and p.bubble.width()<244 and ui.stack.count()==9
     assert not any("3D" in ui.nav.item(i).text() for i in range(8))
     ui.profile_fields["personality"].setPlainText("胆小但亲人");ui.profile_fields["habits"].setPlainText("睡前舔爪")
     ui.save_profile();assert ui.client.profile_provider()["identity"]["personality"]=="胆小但亲人"

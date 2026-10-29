@@ -8,3 +8,7 @@ Generated with the image generation tool using the user's latest floral eight-pa
 - paper.webp: low-contrast unprinted cotton watercolour paper texture, omitted from chat background.
 
 Original generated PNGs remain in /workspace/generated_images; shipped WebP copies only change encoding, retaining dimensions and alpha. No existing photo/action resources were deleted. All text, fields, buttons, lists, progress indicators and navigation are real Qt widgets above the ornament layer.
+
+## 2026-10-29 journal expansion
+
+moon-window.webp and forest-collection.webp are generated environment ornaments containing no cats or animals. Shipped copies change only encoding. Existing hero/poses remain candidate character illustrations and are labeled pending confirmation. The new album has a neutral dedicated-character placeholder. User album photographs stay local and are never automatically mascot art or API input.

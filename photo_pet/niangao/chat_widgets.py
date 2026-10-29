@@ -7,7 +7,7 @@ from .life.ai import AIClient
 from .life.token_budget import policy
 class TokenMeter(QLabel):
     def __init__(self,pet,channel,input_field):
-        super().__init__();self.pet=pet;self.channel=channel;self.input=input_field;self.setWordWrap(True);self.setObjectName('sub');self.setStyleSheet('font-size:10px;')
+        super().__init__();self.pet=pet;self.channel=channel;self.input=input_field;self.setWordWrap(True);self.setObjectName('sub');self.setStyleSheet('font-size:12px;')
         self.timer=QTimer(self);self.timer.setSingleShot(True);self.timer.setInterval(180);self.timer.timeout.connect(self.refresh);input_field.textChanged.connect(lambda _text:self.timer.start())
         self.pulse=QTimer(self);self.pulse.timeout.connect(self.refresh);self.pulse.start(1500);self.refresh()
     def refresh(self):
@@ -83,5 +83,8 @@ def transcript_html(store,id):
         name={'user':'你','assistant':'年糕','system':'承接摘要'}.get(r['role'],r['role'])
         state={'pending':'等待回复','failed':'请求未完成','transferred':'已转入新会话','complete':''}.get(r['state'],'')
         marker='[API] ' if r['source'] in ('api','summary') and r['role']!='user' else '[本地回应] ' if r['source']=='local' and r['role']=='assistant' else ''
-        parts.append('<p><b>'+html.escape(name+' · '+r['created'][11:19]+' '+state)+'</b><br>'+marker+html.escape(r['content']).replace('\n','<br>')+'</p>')
+        body='<span style="font-size:11px;color:#66745C">'+html.escape(name+' · '+r['created'][11:19]+' '+state)+'</span><br>'+marker+html.escape(r['content']).replace('\n','<br>')
+        color='#E1EFF7' if r['role']=='user' else '#EDF0DA' if r['role']=='assistant' else '#F4F0E2'
+        cell='<td width="76%" bgcolor="'+color+'" style="color:#2A472F">'+body+'</td>';space='<td width="24%"></td>'
+        parts.append('<table width="100%" cellpadding="10" cellspacing="0"><tr>'+(space+cell if r['role']=='user' else cell+space)+'</tr></table><p style="margin:6px"></p>')
     return ''.join(parts) or '<p>新会话，聊天记录将保存在本机。</p>'

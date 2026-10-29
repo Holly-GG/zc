@@ -1,3 +1,7 @@
+## 手账新界面与相册
+
+新增本地照片相册（第九页），支持导入图片、按日期归档、筛选、编辑日期与导出原图；不向API上传。根目录 `fonts/` 和 `Niangao-Fonts.zip` 提供三角色可替换字体及许可证。详见 [相册与字体说明](ALBUM_AND_FONTS.md)。原有八页及其数据/API行为保留。
+
 # 年糕 · 手绘生活馆与照片桌宠
 
 [直接下载 Windows EXE](https://github.com/Holly-GG/zc/raw/refs/heads/windows-download/Niangao-PhotoPet.exe) · [ZIP 备用包](https://github.com/Holly-GG/zc/raw/refs/heads/windows-download/Niangao-PhotoPet-windows.zip)
