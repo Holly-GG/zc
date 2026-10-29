@@ -46,7 +46,19 @@ def main():
                 window.open_work();assert window.work_panel.text.isVisible() and window.work_panel.send_button.isVisible()
                 window.work_panel.search_input.setText("DeepSeek");assert window.work_panel.search_results.count()>0
                 window.work_panel.text.setText("今天要专注工作");window.work_panel.send()
-                assert window.work_panel.isVisible();window.set_work_mode(False);assert window.size()==normal
+                assert window.work_panel.isVisible()
+                old_session=window.work_panel.channel.session_id
+                assert len(window.chat_store.transcript(old_session))>=2
+                window.work_panel.clear_chat();assert window.work_panel.channel.session_id!=old_session
+                assert len(window.chat_store.transcript(old_session))>=2
+                assert (window.settings.path.parent/'chat_sessions'/(old_session+'.json')).exists()
+                from niangao.life.chat_store import BudgetExceeded
+                reservation=window.chat_store.reserve('packaged-test','smoke',600,1000)
+                try:window.chat_store.reserve('packaged-test','smoke',500,1000)
+                except BudgetExceeded:pass
+                else:raise AssertionError('Daily budget did not reject concurrent overuse')
+                window.chat_store.finish(reservation,rejected=True)
+                window.set_work_mode(False);assert window.size()==normal
                 window.open_focus();assert window.focus_panel.isVisible()
                 body=Body(100,100)
                 for _ in range(120):body.advance(1/60,100,100,Rect(0,0,1200,900))

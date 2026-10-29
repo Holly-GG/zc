@@ -20,7 +20,7 @@ class LifeEngine:
           "focus":{"duration":25,"remaining":1500,"active":False,"cycles":0},"travel":None,"postcards":[],
           "preferences":{"activity":60,"input_link":False,"cursor_chase":False,"emotion_actions":True,"sound":False,"volume":25,"diary_auto":False,"easter_eggs":True,
              "reminders":True,"weather":False,"latitude":0.0,"longitude":0.0,"d_day":"","network_time":False,"first_opened":False},
-          "ai":{"enabled":False,"diary_enabled":False,"base_url":"https://api.openai.com/v1","model":"gpt-4.1-mini","protocol":"openai_chat","max_tokens":700,"timeout":90},
+          "ai":{"enabled":False,"diary_enabled":False,"base_url":"https://api.openai.com/v1","model":"gpt-4.1-mini","protocol":"openai_chat","max_tokens":700,"timeout":90,"light_thinking":True,"daily_token_limit":500000,"daily_warning_percent":80,"context_profiles":{}},
           "last_wall":self.wall(),"effect":""}
         if self.path.exists():
             try:
@@ -46,7 +46,7 @@ class LifeEngine:
                 if isinstance(target[key],dict) and isinstance(source[key],dict):LifeEngine._merge(target[key],source[key])
                 elif isinstance(target[key],dict):continue
                 else:target[key]=source[key]
-        for key in ("inventory","diaries","layouts","layout_presets","daily","profile"):
+        for key in ("inventory","diaries","layouts","layout_presets","daily","profile","context_profiles"):
             if key in target and isinstance(source.get(key),dict):target[key]=source[key]
     def profile_snapshot(self):
         from .profile import snapshot
@@ -98,8 +98,11 @@ class LifeEngine:
             if not isinstance(self.data["ai"].get(k),str):self.data["ai"][k]=default
         from .providers import PROTOCOLS,bounded_int
         if self.data["ai"].get("protocol") not in PROTOCOLS:self.data["ai"]["protocol"]="openai_chat"
-        self.data["ai"]["max_tokens"]=bounded_int(self.data["ai"].get("max_tokens"),700,64,16384)
+        self.data["ai"]["max_tokens"]=min(2048,bounded_int(self.data["ai"].get("max_tokens"),700,64,16384))
         self.data["ai"]["timeout"]=bounded_int(self.data["ai"].get("timeout"),90,10,180)
+        self.data["ai"]["light_thinking"]=True
+        self.data["ai"]["daily_token_limit"]=bounded_int(self.data["ai"].get("daily_token_limit"),500000,1000,100000000)
+        self.data["ai"]["daily_warning_percent"]=bounded_int(self.data["ai"].get("daily_warning_percent"),80,10,99)
         v=self.data["age_override"]
         if v is not None and (not math.isfinite(v) or v<0 or v>=10000):self.data["age_override"]=None
         focus=self.data["focus"]
@@ -129,10 +132,11 @@ class LifeEngine:
         from .calendar_cn import CHINA
         if server_time.tzinfo is None:raise ValueError("服务器时间缺少时区")
         self.network_time=server_time.astimezone(CHINA);self.network_clock=self.clock();self.network_today=None
-    def today(self):
+    def now(self):
         if self.network_time is not None and self.data["preferences"]["network_time"]:
-            return (self.network_time+timedelta(seconds=max(0,self.clock()-self.network_clock))).date()
-        return china_now(self.wall()).date()
+            return self.network_time+timedelta(seconds=max(0,self.clock()-self.network_clock))
+        return china_now(self.wall())
+    def today(self):return self.now().date()
     def age(self):return age_info(self.data["birth_date"],self.today(),self.data["age_override"])
     @property
     def level(self):return 1+self.data["xp"]//100

@@ -13,7 +13,7 @@ from .catalog import BY_ID,is_placeable
 from .profile import sanitize_profile
 from .item_art import item_pixmap
 from ..desktop_items import ItemDragCard
-from ..ui_controls import ClickSelectComboBox
+from ..ui_controls import ClickSelectComboBox,ExplicitSpinBox
 from .ai import SecretVault,AIClient,checked_base
 from .jobs import run_job
 from ..theme import STYLE
@@ -222,22 +222,37 @@ class LifeWindow(QMainWindow):
     def add_task(self):
         if self.engine.add_task(self.task_input.text()):self.task_input.clear();self.render_tasks()
     def chat_page(self,l):
+        self.chat_busy=False;self.chat_channel=self.pet.chat_channels['main']
         self.title(l,"说给年糕听","默认使用本地简短回应。仅主动启用 API 后才发送聊天文字；不读取应用内容或键盘文本。")
-        self.chat_log=QTextBrowser();self.chat_log.setMinimumHeight(250);l.addWidget(self.chat_log);self.chat_input=QLineEdit();self.chat_input.setPlaceholderText("今天发生了什么？");self.chat_input.returnPressed.connect(self.send_chat);l.addWidget(self.chat_input)
+        from ..chat_widgets import TokenMeter,SessionChooser,HistoryBrowser
+        self.chat_chooser=SessionChooser(self.pet,self.chat_channel,self.load_chat,lambda:self.chat_busy);l.addWidget(self.chat_chooser)
+        self.chat_log=QTextBrowser();self.chat_log.setMinimumHeight(250);l.addWidget(self.chat_log);self.chat_input=QLineEdit();self.chat_input.setMaxLength(65536);self.chat_input.setPlaceholderText("今天发生了什么？");self.chat_input.returnPressed.connect(self.send_chat);l.addWidget(self.chat_input)
         self.chat_send=self.button(l,"发送",self.send_chat)
+        self.chat_meter=TokenMeter(self.pet,self.chat_channel,self.chat_input);l.addWidget(self.chat_meter)
+        group=QGroupBox("按日期查看完整本地历史");box=QVBoxLayout(group);self.chat_archive=HistoryBrowser(self.pet);box.addWidget(self.chat_archive);l.addWidget(group);self.load_chat()
+    def load_chat(self,id=None):
+        from ..chat_widgets import transcript_html
+        if hasattr(self,'chat_log'):self.chat_log.setHtml(transcript_html(self.pet.chat_store,id or self.chat_channel.session_id))
+
     def send_chat(self):
-        text=self.chat_input.text().strip()[:2000]
-        if not text:return
+        if self.chat_busy:return
+        text=self.chat_input.text()
+        if not text.strip():return
         self.chat_input.clear();self.chat_log.append("你："+__import__("html").escape(text))
         if text in ("年糕最可爱","小棕点"):self.engine.unlock_badge("鼻尖小棕点")
         if not self.engine.data["ai"]["enabled"]:
             from ..dialogue import respond
-            self.chat_log.append("年糕 [本地回应]："+respond(text));return
-        self.chat_send.setEnabled(False);mood=self.engine.mood;history=list(self.history)
+            reply=respond(text);self.chat_channel.local(self.engine.data["ai"],text,reply);self.chat_log.append("年糕 [本地回应]："+reply);self.chat_meter.refresh();return
+        self.chat_busy=True;self.chat_input.setEnabled(False);self.chat_send.setEnabled(False);mood=self.engine.mood;history=list(self.history)
+        def restore():self.chat_busy=False;self.chat_input.setEnabled(True);self.chat_send.setEnabled(True)
         def done(reply):
-            self.chat_send.setEnabled(True);self.chat_log.append("年糕 [API]："+__import__("html").escape(reply));self.history.extend([{"role":"user","content":text},{"role":"assistant","content":reply}]);self.history=self.history[-8:];self.calibrate_date()
-        def failed(message):self.chat_send.setEnabled(True);self.notice(message);self.chat_log.append("连接失败，可稍后重试；聊天未记入日记。")
-        run_job(lambda:self.client.chat(text,mood,history),done,failed)
+            if self.pet.shutting_down:return
+            restore();self.chat_chooser.refresh();self.load_chat();self.chat_meter.refresh();self.chat_archive.reset();self.calibrate_date()
+            self.notice("已摘要并自动新建承接会话，原始历史完整保留" if self.chat_channel.last_rollover else "回复已保存到本地")
+        def failed(message):
+            if self.pet.shutting_down:return
+            restore();self.notice(message);self.chat_log.append("请求未完成："+__import__('html').escape(message));self.chat_input.setText(text);self.chat_archive.reset();self.chat_meter.refresh()
+        run_job(lambda:self.chat_channel.send(self.client,text,mood),done,failed)
     def calibrate_date(self):
         if self.engine.data["preferences"]["network_time"] and self.client.server_time:self.engine.calibrate_time(self.client.server_time);self.refresh()
     def diary_page(self,l):
@@ -319,9 +334,15 @@ class LifeWindow(QMainWindow):
         self.api_protocol.setCurrentIndex(max(0,self.api_protocol.findData(self.engine.data["ai"]["protocol"])));f.addRow("接口协议",self.api_protocol)
         self.base_url=QLineEdit(self.engine.data["ai"]["base_url"]);f.addRow("API 地址",self.base_url);self.model=QLineEdit(self.engine.data["ai"]["model"]);f.addRow("模型",self.model)
         self.api_presets.activated.connect(self.apply_api_preset)
-        self.api_tokens=QSpinBox();self.api_tokens.setRange(64,16384);self.api_tokens.setValue(self.engine.data["ai"]["max_tokens"]);f.addRow("输出预算上限",self.api_tokens)
-        self.api_timeout=QSpinBox();self.api_timeout.setRange(10,180);self.api_timeout.setSuffix(" 秒");self.api_timeout.setValue(self.engine.data["ai"]["timeout"]);f.addRow("请求超时",self.api_timeout)
-        hint=QLabel("模型 ID 以服务商控制台为准；预设不代表所有账户可用。支持基础地址或完整接口地址。思考模型自动增加预算，连接测试也可能产生少量费用。");hint.setWordWrap(True);f.addRow(hint)
+        self.api_tokens=ExplicitSpinBox();self.api_tokens.setRange(64,2048);self.api_tokens.setValue(self.engine.data["ai"]["max_tokens"]);f.addRow("轻量输出上限",self.api_tokens)
+        self.api_timeout=ExplicitSpinBox();self.api_timeout.setRange(10,180);self.api_timeout.setSuffix(" 秒");self.api_timeout.setValue(self.engine.data["ai"]["timeout"]);f.addRow("请求超时",self.api_timeout)
+        hint=QLabel("模型 ID 以服务商控制台为准；预设不代表所有账户可用。支持基础地址或完整接口地址。仅允许轻量思考，不再自动抬高输出预算；测试和摘要也计入每日额度。");hint.setWordWrap(True);f.addRow(hint)
+        self.context_window=ExplicitSpinBox();self.context_window.setRange(4096,2000000);f.addRow("此模型上下文窗口",self.context_window)
+        self.context_threshold=ExplicitSpinBox();self.context_threshold.setRange(1024,2000000);f.addRow("摘要阈值（保守 token）",self.context_threshold)
+        self.daily_tokens=ExplicitSpinBox();self.daily_tokens.setRange(1000,100000000);self.daily_tokens.setValue(self.engine.data['ai']['daily_token_limit']);f.addRow("本程序每日 token 上限",self.daily_tokens)
+        self.daily_warning=ExplicitSpinBox();self.daily_warning.setRange(10,99);self.daily_warning.setSuffix(" % 已用时提醒");self.daily_warning.setValue(self.engine.data['ai']['daily_warning_percent']);f.addRow("用量提醒阈值",self.daily_warning)
+        self.load_context_profile();self.model.editingFinished.connect(self.load_context_profile);self.base_url.editingFinished.connect(self.load_context_profile);self.api_protocol.activated.connect(self.load_context_profile)
+        note=QLabel("阈值按地址+协议+模型分别保存，请以服务商真实窗口为准。发送前保守估算，不是官方精确 tokenizer；服务商返回 usage 后按实际用量记账。思考专用模型会拦截。历史 SQLite 和逐会话 JSON 永不自动清理。");note.setWordWrap(True);f.addRow(note)
         self.key=QLineEdit();self.key.setEchoMode(QLineEdit.EchoMode.Password);self.key.setPlaceholderText("留空保留旧密钥；Windows 使用当前用户 DPAPI 加密");f.addRow("API Key",self.key)
         self.button(f,"保存 API 配置",self.save_ai);self.button(f,"删除密钥",lambda:(self.vault.clear(),self.notice("密钥已删除")))
         self.api_test_button=self.button(f,"保存并测试连接",self.test_api_connection)
@@ -341,13 +362,19 @@ class LifeWindow(QMainWindow):
         self.engine.save();self.history.clear();self.notice("性格习惯已保存；每次 API 回复前都会重新读取")
     def save_birth(self):self.engine.data["birth_date"]=self.birth.date().toString("yyyy-MM-dd");self.engine.save();self.refresh();self.notice("生日已更新")
     def reset_age(self):self.engine.data["age_override"]=None;self.engine.data["age_frozen"]=False;self.engine.save();self.refresh()
+    def load_context_profile(self,*_):
+        from .token_budget import policy
+        if not hasattr(self,'context_window'):return
+        try:p=policy(dict(self.engine.data['ai'],base_url=self.base_url.text(),model=self.model.text(),protocol=self.api_protocol.currentData()))
+        except ValueError:p={'window':32768,'threshold':28000}
+        self.context_window.setValue(p['window']);self.context_threshold.setValue(p['threshold'])
     def apply_api_preset(self,index):
         from .providers import PRESETS
         _,protocol,base,model=PRESETS[index]
         self.api_protocol.setCurrentIndex(self.api_protocol.findData(protocol))
         if base:self.base_url.setText(base)
         self.model.setText(model);self.model.setPlaceholderText("填写此账户控制台可用的模型 / endpoint ID")
-        self.key.clear()
+        self.load_context_profile();self.key.clear()
         from urllib.parse import urlsplit
         self.api_platform_changed=bool(base and urlsplit(base).hostname!=urlsplit(self.engine.data["ai"]["base_url"]).hostname)
         self.api_result.setText("已选择平台预设；旧配置尚未改动。请填写对应密钥后保存。")
@@ -367,10 +394,16 @@ class LifeWindow(QMainWindow):
             from urllib.parse import urlsplit
             changed_host=urlsplit(base).hostname!=urlsplit(self.engine.data["ai"]["base_url"]).hostname
             if (changed_host or getattr(self,"api_platform_changed",False)) and not self.key.text().strip():raise ValueError("切换平台或服务地址后，请重新填写对应平台的密钥，避免误用旧 Key")
+            if self.context_threshold.value()>=self.context_window.value():raise ValueError("摘要阈值必须小于模型上下文窗口")
+            from .token_budget import identity
+            profile_key=identity(dict(self.engine.data['ai'],base_url=base,model=self.model.text().strip(),protocol=self.api_protocol.currentData()))
+            self.engine.data['ai']['context_profiles'][profile_key]={'window':self.context_window.value(),'threshold':self.context_threshold.value(),'keep':6}
+            self.engine.data['ai'].update(light_thinking=True,daily_token_limit=self.daily_tokens.value(),daily_warning_percent=self.daily_warning.value())
             if self.key.text().strip():self.vault.save(self.key.text());self.key.clear()
             self.api_platform_changed=False
             self.engine.data["ai"].update(enabled=self.ai_enabled.isChecked(),diary_enabled=self.ai_diary.isChecked(),base_url=base,model=self.model.text().strip()[:200],protocol=self.api_protocol.currentData(),max_tokens=self.api_tokens.value(),timeout=self.api_timeout.value());self.engine.save()
             if self.pet.work_panel:self.pet.work_panel.sync_config()
+            self.chat_chooser.refresh();self.load_chat()
             self.notice("API 配置已保存；密钥不写入普通 JSON");return True
         except (ValueError,OSError) as exc:self.notice(str(exc));return False
     def import_png(self):

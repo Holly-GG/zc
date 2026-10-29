@@ -51,10 +51,10 @@ def test_no_profile_no_network_for_all_protocols(tmp_path,protocol):
 
 def test_reasoning_budget_and_parameter_names():
  messages=[{'role':'system','content':'档案'},{'role':'user','content':'hi'}]
- for model in ('deepseek-reasoner','o3-mini','gpt-5-mini'):
+ for model in ('o3-mini','gpt-5-mini'):
   url,headers,payload,timeout=build_request(dict(protocol='openai_chat',base_url='https://example.com/v1',model=model),messages,'key',True)
   field='max_tokens' if model=='deepseek-reasoner' else 'max_completion_tokens'
-  assert payload[field]>=4096 and timeout>=90 and payload['stream'] is False
+  assert 512<=payload[field]<=2048 and payload['reasoning_effort']=='low' and timeout>=90 and payload['stream'] is False
  for protocol in ('anthropic','gemini','openai_responses'):
   url,_,payload,_=build_request(dict(protocol=protocol,base_url='https://example.com/v1',model='test'),messages,'key',True)
   assert 'key' not in url

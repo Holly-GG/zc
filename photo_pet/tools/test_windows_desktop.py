@@ -166,6 +166,10 @@ try:
     for code in (0x48,0x49):key(code)
     key(0x0D);time.sleep(.3)
     check(state()['work_panel_visible'] and state()['work_sent']==sent+1,'work input accepts native keyboard typing and Enter')
+    import sqlite3
+    with sqlite3.connect(str(out/'chat.sqlite3')) as db:
+        check(db.execute("SELECT COUNT(*) FROM messages WHERE role='user' AND lower(content)='hi'").fetchone()[0]>=1,'native typed chat is saved in local SQLite')
+    check(any((out/'chat_sessions').glob('*.json')),'per-session JSON archive files are created')
     close(pet)
     saved=json.loads(settings.read_text(encoding='utf-8'));saved['work_mode']=False;settings.write_text(json.dumps(saved),encoding='utf-8')
     life_data=json.loads(life_path.read_text(encoding='utf-8'));life_data['inventory'].update(food=1,litter=1)

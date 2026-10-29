@@ -11,3 +11,6 @@ photo_pet/test-results/
 *.spec
 .pytest_cache/
 .venv/
+
+**/chat.sqlite3*
+**/chat_sessions/

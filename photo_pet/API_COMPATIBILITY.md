@@ -11,7 +11,7 @@
 
 设置中提供可编辑预设。模型 ID 以账户控制台为准；某些服务要求部署 endpoint ID。预设不代表每个地区、账户或型号均可用，也不代表已用真实密钥逐一测试。旧版只会拼接一种 OpenAI 路径，本版支持基础地址及完整接口路径，避免重复追加。
 
-OpenAI 新思考模型使用 max_completion_tokens；DeepSeek reasoner 等思考模型增加输出预算和超时。仅思考而没有正文会提示失败，不把内部思考内容显示为年糕回复。DashScope Qwen3 非流式请求显式关闭 enable_thinking。其他服务若有特殊参数，可先使用标准聊天模型；本版不是所有私有签名、OAuth、工具调用、流式、图像或音频 API 的通用 SDK。
+OpenAI 新思考模型使用 max_completion_tokens；本版仅轻量思考：DeepSeek reasoner / R1 等专用深思模型会拦截，不再自动增加输出预算。仅思考而没有正文会提示失败，不把内部思考内容显示为年糕回复。DashScope Qwen3 非流式请求显式关闭 enable_thinking。其他服务若有特殊参数，可先使用标准聊天模型；用量与本地会话详见 CHAT_MEMORY.md。本版不是所有私有签名、OAuth、工具调用、流式、图像或音频 API 的通用 SDK。
 
 ## 实际测试
 

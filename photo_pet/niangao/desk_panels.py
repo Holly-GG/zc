@@ -28,18 +28,21 @@ class DeskPanel(QWidget):
         self.pet.settings.data[self.key]=[self.x(),self.y()];self.pet.settings.save();event.ignore();self.hide()
 class WorkPanel(DeskPanel):
     def __init__(self,pet):
-        super().__init__(pet,'年糕 · 桌面工作台',(360,460),'work_panel_position')
-        self.busy=False;self.history=[];self.sent_count=0
+        super().__init__(pet,'年糕 · 桌面工作台',(400,560),'work_panel_position')
+        self.busy=False;self.history=[];self.sent_count=0;self.channel=pet.chat_channels['work']
         self.status=QLabel();self.status.setWordWrap(True);self.layout.addWidget(self.status)
         self.tabs=QTabWidget();self.layout.addWidget(self.tabs,1)
         chat=QWidget();chat.setObjectName("workTabPage");c=QVBoxLayout(chat);c.setContentsMargins(5,7,5,4)
         self.ai_enabled=QCheckBox('使用已配置 API 对话');self.ai_enabled.setChecked(pet.life.data['ai']['enabled']);self.ai_enabled.toggled.connect(self.set_api);c.addWidget(self.ai_enabled)
+        from .chat_widgets import TokenMeter,SessionChooser,HistoryBrowser
+        self.session_chooser=SessionChooser(pet,self.channel,self.load_conversation,lambda:self.busy);c.addWidget(self.session_chooser)
         self.log=QTextBrowser();self.log.setMinimumHeight(110);c.addWidget(self.log,1)
         label=QLabel('对话输入');label.setObjectName('eyebrow');c.addWidget(label)
-        self.text=QLineEdit();self.text.setObjectName('workChatInput');self.text.setPlaceholderText('输入问题，按回车发送给年糕…');self.text.returnPressed.connect(self.send);c.addWidget(self.text)
+        self.text=QLineEdit();self.text.setObjectName('workChatInput');self.text.setMaxLength(65536);self.text.setPlaceholderText('输入问题，按回车发送给年糕…');self.text.returnPressed.connect(self.send);c.addWidget(self.text)
         row=QHBoxLayout();c.addLayout(row)
         self.send_button=QPushButton('发送对话');self.send_button.clicked.connect(self.send);row.addWidget(self.send_button,1)
-        self.clear_button=QPushButton('清空对话');self.clear_button.clicked.connect(self.clear_chat);row.addWidget(self.clear_button)
+        self.clear_button=QPushButton('新建一轮');self.clear_button.clicked.connect(self.clear_chat);row.addWidget(self.clear_button)
+        self.token_meter=TokenMeter(pet,self.channel,self.text);c.addWidget(self.token_meter)
         self.tabs.addTab(chat,'API 对话')
         finder=QWidget();finder.setObjectName("workTabPage");s=QVBoxLayout(finder);s.setContentsMargins(5,7,5,4)
         hint=QLabel('搜索应用功能、物品、动作和你填写的待办。');hint.setWordWrap(True);hint.setObjectName('sub');s.addWidget(hint)
@@ -47,10 +50,11 @@ class WorkPanel(DeskPanel):
         self.search_results=QListWidget();self.search_results.itemClicked.connect(self.open_result);s.addWidget(self.search_results,1)
         self.search_notice=QLabel('搜索在本机完成，点击结果打开对应页面。');self.search_notice.setWordWrap(True);self.search_notice.setObjectName('sub');s.addWidget(self.search_notice)
         self.tabs.addTab(finder,'应用搜索')
+        self.archive=HistoryBrowser(pet);self.tabs.addTab(self.archive,'聊天历史')
         row=QHBoxLayout();self.layout.addLayout(row)
         for title,callback in [('API 设置',self.open_settings),('专注小窗',pet.open_focus),('退出工作模式',lambda:pet.set_work_mode(False))]:
             button=QPushButton(title);button.setObjectName('quiet');button.clicked.connect(callback);row.addWidget(button)
-        self.reply('输入问题就能和我聊天；也可以切到应用搜索，找功能、物品和待办。')
+        self.load_conversation()
         self.refresh_status()
     def showEvent(self,event):
         super().showEvent(event)
@@ -58,7 +62,9 @@ class WorkPanel(DeskPanel):
         self.refresh_status();(self.text if self.tabs.currentIndex()==0 else self.search_input).setFocus()
     def sync_config(self):
         self.ai_enabled.blockSignals(True);self.ai_enabled.setChecked(self.pet.life.data['ai']['enabled']);self.ai_enabled.blockSignals(False)
-        if not self.busy:self.refresh_status()
+        if not self.busy:
+            self.refresh_status()
+            if hasattr(self,"session_chooser"):self.session_chooser.refresh();self.load_conversation()
     def refresh_status(self):
         ai=self.pet.life.data['ai']
         self.status.setText(('API 对话已开启 · '+ai['model']) if ai['enabled'] else '当前为本地回应 · 勾选 API 对话可使用已配置接口')
@@ -89,17 +95,21 @@ class WorkPanel(DeskPanel):
             for i in range(ui.tasks.count()):
                 item=ui.tasks.item(i)
                 if item.data(Qt.ItemDataRole.UserRole)==result['id']:ui.tasks.setCurrentRow(i);ui.tasks.scrollToItem(item);break
+    def load_conversation(self,id=None):
+        from .chat_widgets import transcript_html
+        self.log.setHtml(transcript_html(self.pet.chat_store,id or self.channel.session_id))
+        if hasattr(self,'token_meter'):self.token_meter.refresh()
     def clear_chat(self):
         if self.busy:return
-        self.history.clear();self.log.clear();self.reply('新的一页，想聊什么？')
+        self.channel.new(self.pet.life.data['ai']);self.session_chooser.refresh();self.load_conversation();self.history.clear()
     def reply(self,text):self.log.append('<p style="color:#507669;margin:6px 0;"><b>年糕</b> · '+html.escape(str(text))+'</p>')
     def send(self):
         if self.busy:return
-        text=self.text.text().strip()[:1000]
-        if not text:return
+        text=self.text.text()
+        if not text.strip():return
         self.sent_count+=1;self.text.clear();self.log.append('你：'+html.escape(text));self.pet.autonomy.click()
         if not self.pet.life.data['ai']['enabled']:
-            self.refresh_status();self.reply('[本地回应] '+respond(text));return
+            self.refresh_status();reply=respond(text);self.channel.local(self.pet.life.data['ai'],text,reply);self.reply('[本地回应] '+reply);self.token_meter.refresh();return
         from .life.ai import AIClient
         from .life.jobs import run_job
         self.busy=True;self.text.setEnabled(False);self.send_button.setEnabled(False);self.clear_button.setEnabled(False);self.ai_enabled.setEnabled(False)
@@ -110,13 +120,13 @@ class WorkPanel(DeskPanel):
             self.text.setFocus()
         def done(reply):
             if self.pet.shutting_down:return
-            restore();self.status.setText('API 回复成功 · '+client.settings['model']);self.reply('[API] '+reply)
+            restore();self.status.setText(('已摘要，开启新一轮会话 · ' if self.channel.last_rollover else 'API 回复成功 · ')+client.settings['model']);self.reply('[API] '+reply)
             if self.pet.life.data['preferences']['network_time'] and client.server_time:self.pet.life.calibrate_time(client.server_time)
-            self.history.extend([{'role':'user','content':text},{'role':'assistant','content':reply}]);self.history=self.history[-8:]
+            self.history=[{'role':'user','content':text},{'role':'assistant','content':reply}];self.session_chooser.refresh();self.load_conversation();self.archive.reset()
         def failed(error):
             if self.pet.shutting_down:return
-            restore();self.status.setText('API 请求失败：'+str(error));self.reply('这条没有收到 API 回复，请检查提示后重试。');self.text.setText(text)
-        run_job(lambda:client.chat(text,self.pet.life.mood,history),done,failed)
+            restore();self.status.setText('API 请求失败：'+str(error));self.reply('这条没有收到 API 回复，请检查提示后重试。');self.text.setText(text);self.archive.reset();self.token_meter.refresh()
+        run_job(lambda:self.channel.send(client,text,self.pet.life.mood),done,failed)
 class FocusPanel(DeskPanel):
     def __init__(self,pet):
         super().__init__(pet,'年糕 · 专注与待办',(300,360),'focus_position')

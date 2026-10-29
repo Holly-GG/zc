@@ -33,6 +33,10 @@ class PetWindow(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         from .life.engine import LifeEngine
         self.life=LifeEngine(self.settings.path.parent/"life.json");self.life_window=None
+        from .life.chat_store import ChatStore
+        from .life.conversations import ChatChannel
+        self.chat_store=ChatStore(self.settings.path.parent/"chat.sqlite3",self.life.now)
+        self.chat_channels={key:ChatChannel(self.chat_store,key) for key in ("main","work")}
         from .life.ai import SecretVault
         self.vault=SecretVault(self.settings.path.parent/"api-key.dpapi")
         self.shutting_down=False;self.work_mode=False;self.work_panel=None;self.focus_panel=None;self.furniture=None

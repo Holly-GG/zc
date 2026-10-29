@@ -77,7 +77,7 @@ jobs:
           $process = Start-Process -FilePath ./dist/Niangao-PhotoPet.exe -ArgumentList '--expanded-smoke','--settings',"$env:RUNNER_TEMP/expanded-smoke/settings.json",'--probe',"$env:RUNNER_TEMP/expanded-smoke/probe.json" -PassThru
           if (-not $process.WaitForExit(120000)) { $process.Kill(); throw 'Expanded smoke timeout' }
           if ($process.ExitCode -ne 0) { throw "Expanded smoke failed: $($process.ExitCode)" }
-          'Random idle work poses, lunar calendar, focus, food routines and litter scoop PASS' | Set-Content test-results/expanded-smoke.log
+          'Random idle work poses, local SQLite/JSON history, token quota, calendar and desktop routines PASS' | Set-Content test-results/expanded-smoke.log
       - name: Native Windows desktop acceptance
         run: |
           python tools/test_windows_desktop.py --exe dist/Niangao-PhotoPet.exe --output test-results/native 2>&1 | Tee-Object test-results/windows-desktop.log

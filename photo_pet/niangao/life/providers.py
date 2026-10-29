@@ -49,7 +49,12 @@ def build_request(settings,messages,key,test=False):
     reasoning=reasoning_model(model)
     limit=bounded_int(settings.get('max_tokens'),700,64,16384)
     if test:limit=64
-    if reasoning:limit=max(limit,4096 if test else 8192)
+    light=True # This application never offers a deep-thinking override.
+    if light:
+        lowered=model.lower()
+        if any(token in lowered for token in ('reasoner','deepseek-r1','qwq','-thinking','o1-preview','o1-mini')):raise ValueError('当前仅允许轻量思考，此深度思考专用模型已拦截；请改用 deepseek-chat 等普通聊天模型')
+        limit=min(limit,2048)
+        if reasoning and lowered.startswith(('o1','o3','o4','gpt-5')):limit=max(512,limit)
     timeout=bounded_int(settings.get('timeout'),90,10,180)
     headers={'Content-Type':'application/json','Accept':'application/json'}
     if protocol=='openai_chat':
@@ -58,16 +63,27 @@ def build_request(settings,messages,key,test=False):
         # OpenAI reasoning families reject legacy max_tokens. Other compatible services keep it.
         field='max_completion_tokens' if model.lower().startswith(('o1','o3','o4','gpt-5')) else 'max_tokens'
         payload[field]=limit
-        if urlsplit(base).hostname=='dashscope.aliyuncs.com' and 'qwen3' in model.lower():payload['enable_thinking']=False
+        host=urlsplit(base).hostname
+        if light and host=='api.deepseek.com':payload['thinking']={'type':'disabled'}
+        if light and model.lower().startswith(('o1','o3','o4','gpt-5')):payload['reasoning_effort']='low'
+        if light and 'qwen3' in model.lower():
+            if host in ('dashscope.aliyuncs.com','api.siliconflow.cn'):payload['enable_thinking']=False
+            elif host=='openrouter.ai':payload['reasoning']={'effort':'low'}
+            else:raise ValueError('无法确认此 Qwen3 接口能关闭深度思考，请使用普通聊天模型或受支持的服务地址')
     elif protocol=='openai_responses':
         headers['Authorization']='Bearer '+key
-        payload={'model':model,'input':messages,'max_output_tokens':max(limit,2048) if reasoning else limit,'stream':False,'store':False}
+        payload={'model':model,'input':messages,'max_output_tokens':limit,'stream':False,'store':False}
+        if light and reasoning:payload['reasoning']={'effort':'low'}
     elif protocol=='anthropic':
         headers.update({'x-api-key':key,'anthropic-version':'2023-06-01'})
         payload={'model':model,'system':'\n'.join(m['content'] for m in messages if m['role']=='system'),'messages':[m for m in messages if m['role']!='system'],'max_tokens':limit,'stream':False}
     elif protocol=='gemini':
         headers['x-goog-api-key']=key
-        payload={'systemInstruction':{'parts':[{'text':'\n'.join(m['content'] for m in messages if m['role']=='system')}]},'contents':[{'role':'model' if m['role']=='assistant' else 'user','parts':[{'text':m['content']}]} for m in messages if m['role']!='system'],'generationConfig':{'maxOutputTokens':max(limit,4096) if reasoning else limit}}
+        payload={'systemInstruction':{'parts':[{'text':'\n'.join(m['content'] for m in messages if m['role']=='system')}]},'contents':[{'role':'model' if m['role']=='assistant' else 'user','parts':[{'text':m['content']}]} for m in messages if m['role']!='system'],'generationConfig':{'maxOutputTokens':limit}}
+        if light and model.lower().removeprefix('models/').startswith('gemini-2.5'):
+            pro='pro' in model.lower();payload['generationConfig']['thinkingConfig']={'thinkingBudget':128 if pro else 0}
+            if pro:payload['generationConfig']['maxOutputTokens']=max(256,limit)
+        if light and model.lower().removeprefix('models/').startswith('gemini-3'):payload['generationConfig']['thinkingConfig']={'thinkingLevel':'low'}
     else:raise ValueError('未知 API 协议')
     return url,headers,payload,timeout
 
@@ -99,4 +115,4 @@ def parse_reply(data,protocol):
     elif protocol=='openai_responses':
         text='\n'.join(text_parts(item.get('content')) for item in list_value(data.get('output')) if isinstance(item,dict) and item.get('type')=='message')
     if not text.strip():raise ValueError('接口已响应但没有可显示的正文；请检查协议、模型及输出预算')
-    return text.strip()[:10000]
+    return text
