@@ -29,3 +29,15 @@
 - 大肖像350–440高，保留比例；装饰框角42–66，页边6–12，功能卡内距14、间距10，响应列间距12–14，按钮焦点2px蓝框。小窗口收敛布局并纵向滚动，不压缩正文。
 - 页面插画、植物标本无鼠标事件/焦点。状态展示只读取五项已有数值，无造假亲密度；配色/字号/焦点复用统一token。
 - 发布文件原95MB保守阈值提升至104,000,000字节，仍低于GitHub单文件100MiB(104,857,600)限制，为新增本地插画留出空间；构建后实际尺寸与完整下载另验证。
+
+## 本次发行验证
+
+源码构建提交 `b1e425cc959a38857ef137aa4815058aa0a7f137`；[Windows构建40836908505](https://github.com/Holly-GG/zc/actions/runs/40836908505) 全部通过。Windows完整134项测试、六项EXE打包启动检查、原生鼠标/键盘/桌面拖放/右键逐粒投食/铲砂/聊天本地保存验收均通过。
+
+实际从发布地址重新下载并检查：EXE 96,571,771字节，ZIP 98,088,233字节；PE为Windows x64，EXE与ZIP校验值匹配，ZIP内EXE一致，11份新增图像资源SHA256、三套嵌入及旁置字体、根字体ZIP均核对通过。8场景+2物品图集+1完整坐姿候选已实际进入EXE。14种不同物件插画映射15个商品ID（`bowl`和`food_bowl`共用粮碗），不等于全部51件商品已水彩重绘。
+
+EXE SHA256：`89240c2a9a0b80f6a9ffe19cca88a9bb536901846c58f2735e71ea7ec0461bd2`。
+
+[固定版本EXE](https://github.com/Holly-GG/zc/raw/b34d6265beba3d7db612f29990e2498b58ade312/Niangao-PhotoPet.exe) · [固定版本ZIP](https://github.com/Holly-GG/zc/raw/b34d6265beba3d7db612f29990e2498b58ade312/Niangao-PhotoPet-windows.zip) · [同步字体包](https://github.com/Holly-GG/zc/raw/b1e425cc959a38857ef137aa4815058aa0a7f137/Niangao-Fonts.zip)。
+
+以上为功能与资源验证，不能替代逐图视觉验收或角色身份确认；未声明达到每页90%的图像内容还原。
