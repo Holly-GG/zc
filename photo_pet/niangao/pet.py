@@ -35,7 +35,7 @@ class PetWindow(QWidget):
         self.life=LifeEngine(self.settings.path.parent/"life.json");self.life_window=None
         from .life.ai import SecretVault
         self.vault=SecretVault(self.settings.path.parent/"api-key.dpapi")
-        self.work_mode=False;self.work_panel=None;self.focus_panel=None;self.furniture=None
+        self.shutting_down=False;self.work_mode=False;self.work_panel=None;self.focus_panel=None;self.furniture=None
         from .interaction.work_idle import WorkIdle
         self.work_idle=WorkIdle();self.work_pose="idle";self.work_frame=0
         self.art=CatArt();self.behaviour=Behaviour();self.observer=WindowObstacles()
@@ -82,11 +82,12 @@ class PetWindow(QWidget):
         position=self.settings.data["work_position" if enabled else "position"]
         if position:self.move(round(position[0]),round(position[1]))
         self.repair_position();self.render_frame();self.save();self.bubble.hide()
-        if not enabled and self.work_panel:self.work_panel.hide()
+        if enabled:QTimer.singleShot(0,lambda:self.open_work() if self.work_mode and not self.shutting_down else None)
+        elif self.work_panel:self.work_panel.hide()
     def open_work(self):
         from .desk_panels import WorkPanel
         if self.work_panel is None:self.work_panel=WorkPanel(self)
-        self.work_panel.show();self.work_panel.raise_();self.work_panel.activateWindow()
+        self.work_panel.show();self.work_panel.raise_();self.work_panel.activateWindow();(self.work_panel.text if self.work_panel.tabs.currentIndex()==0 else self.work_panel.search_input).setFocus()
     def open_focus(self):
         from .desk_panels import FocusPanel
         if self.focus_panel is None:self.focus_panel=FocusPanel(self)
@@ -277,7 +278,7 @@ class PetWindow(QWidget):
                     if card.isVisible() and ui.frameGeometry().contains(point):cards[id]=[point.x(),point.y()]
                 clear=ui.clear_desktop_button.mapToGlobal(ui.clear_desktop_button.rect().center())
                 ui_probe={"rect":[ui.x(),ui.y(),ui.width(),ui.height()],"dpi":ui.devicePixelRatioF(),"nav":nav,"bag_cards":cards,"clear":[clear.x(),clear.y()]}
-            self.probe.write_text(json.dumps({"body_point":[self.interaction_point().x(),self.interaction_point().y()],"pet_dpi":self.devicePixelRatioF(),"work_pose":self.work_pose,"work_frame":self.work_frame,"work_mode":self.work_mode,"work_panel_visible":bool(self.work_panel and self.work_panel.isVisible()),"focus_visible":bool(self.focus_panel and self.focus_panel.isVisible()),"card_drag":getattr(self,"drag_debug",None),"dashboard":ui_probe,"desktop_props":[{"uid":w.uid,"item":w.id,"position":[w.x(),w.y()]} for w in self.desktop.widgets.values()],"position":[self.x(),self.y()],"size":[self.width(),self.height()],"state":self.behaviour.state,"obstacles":len(self.obstacles),"native_obstacles":self.observer.supported,"counts":self.counts,"masked":not self.mask().isEmpty(),"bubble_visible":self.bubble.isVisible(),"bubble":[self.bubble.x(),self.bubble.y(),self.bubble.width(),self.bubble.height()],"provider_error":self.observer.last_error}),encoding="utf-8")
+            self.probe.write_text(json.dumps({"body_point":[self.interaction_point().x(),self.interaction_point().y()],"pet_dpi":self.devicePixelRatioF(),"work_pose":self.work_pose,"work_frame":self.work_frame,"work_mode":self.work_mode,"work_panel_visible":bool(self.work_panel and self.work_panel.isVisible()),"work_sent":self.work_panel.sent_count if self.work_panel else 0,"work_panel_inputs":bool(self.work_panel and self.work_panel.isVisible() and self.work_panel.text.isVisible()),"focus_visible":bool(self.focus_panel and self.focus_panel.isVisible()),"card_drag":getattr(self,"drag_debug",None),"dashboard":ui_probe,"desktop_props":[{"uid":w.uid,"item":w.id,"position":[w.x(),w.y()]} for w in self.desktop.widgets.values()],"position":[self.x(),self.y()],"size":[self.width(),self.height()],"state":self.behaviour.state,"obstacles":len(self.obstacles),"native_obstacles":self.observer.supported,"counts":self.counts,"masked":not self.mask().isEmpty(),"bubble_visible":self.bubble.isVisible(),"bubble":[self.bubble.x(),self.bubble.y(),self.bubble.width(),self.bubble.height()],"provider_error":self.observer.last_error}),encoding="utf-8")
     def say(self,kind):
         self.last_speech=time.monotonic();self.next_speech_at=self.last_speech+random.uniform(18,28)/self.autonomy.rate;self.bubble.speak(choose(kind),self.rect_global(),self.areas())
     def pet_head(self):
@@ -316,6 +317,7 @@ class PetWindow(QWidget):
         menu.addAction("戳一下（也可双击）",self.poke)
         menu.addAction("退出工作模式" if self.work_mode else "工作模式 · 随机待机",lambda:self.set_work_mode(not self.work_mode))
         menu.addAction("专注与待办桌面小窗",self.open_focus)
+        menu.addAction("打开桌面对话 / 应用搜索",self.open_work)
         self.menu_open=True
         try:menu.exec(position)
         finally:self.menu_open=False;menu.deleteLater()
@@ -377,6 +379,7 @@ class PetWindow(QWidget):
                 p.drawPolygon(QPolygon([QPoint(x,y),QPoint(x+5,y+16),QPoint(x+9,y+10),QPoint(x+17,y+9)]))
             p.end()
     def closeEvent(self,event):
+        self.shutting_down=True
         self.timer.stop();self.audio.stop();self.desktop.shutdown();self.save();self.life.focus_pause();self.life.save();self.bubble.close()
         if self.life_window:self.life_window.shutdown()
         for panel in (self.work_panel,self.focus_panel):

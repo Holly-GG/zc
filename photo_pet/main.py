@@ -43,7 +43,9 @@ def main():
                 assert len(_CORPUS)==1000 and lunar_label(date(2025,1,29))=="春节"
                 normal=window.size();window.set_work_mode(True);assert window.width()==160
                 before=window.pos();window.render_frame();assert window.pos()==before and window.work_pose in window.work_idle.POSES
-                window.open_work();window.work_panel.text.setText("今天要专注工作");window.work_panel.send()
+                window.open_work();assert window.work_panel.text.isVisible() and window.work_panel.send_button.isVisible()
+                window.work_panel.search_input.setText("DeepSeek");assert window.work_panel.search_results.count()>0
+                window.work_panel.text.setText("今天要专注工作");window.work_panel.send()
                 assert window.work_panel.isVisible();window.set_work_mode(False);assert window.size()==normal
                 window.open_focus();assert window.focus_panel.isVisible()
                 body=Body(100,100)

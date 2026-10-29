@@ -26,6 +26,10 @@ QLabel#productName {font-weight:700;color:#305e63;}
 QLabel#productDetail {font-size:11px;color:#7e8d80;}
 QProgressBar {background:#e6ede2;border:0;border-radius:6px;min-height:14px;text-align:center;color:#3e655a;font-size:10px;}
 QProgressBar::chunk {background:#a9ceb7;border-radius:6px;}
+QTabWidget::pane {background:#fffdf7;border:1px solid #c7d3c5;border-radius:10px;}
+QTabBar::tab {background:#e3ede1;color:#507669;border:1px solid #c7d3c5;padding:7px 13px;margin-right:3px;border-top-left-radius:7px;border-top-right-radius:7px;}
+QTabBar::tab:selected {background:#fffdf7;color:#305e63;font-weight:700;}
+QWidget#workTabPage {background:#fffdf7;}
 QCheckBox {padding:4px;} QScrollArea {border:0;background:transparent;}
 QScrollBar:vertical {width:8px;background:transparent;margin:3px;}
 QScrollBar::handle:vertical {background:#c4d7c3;border-radius:4px;min-height:30px;}

@@ -13,6 +13,7 @@ from .catalog import BY_ID,is_placeable
 from .profile import sanitize_profile
 from .item_art import item_pixmap
 from ..desktop_items import ItemDragCard
+from ..ui_controls import ClickSelectComboBox
 from .ai import SecretVault,AIClient,checked_base
 from .jobs import run_job
 from ..theme import STYLE
@@ -302,7 +303,7 @@ class LifeWindow(QMainWindow):
             check=QCheckBox(label);check.setChecked(self.engine.data["preferences"][key]);check.toggled.connect(lambda value,k=key:self.interaction_pref(k,value));sound_layout.addWidget(check)
         volume=QSpinBox();volume.setRange(0,100);volume.setValue(self.engine.data["preferences"]["volume"]);volume.setSuffix(" % 音效音量")
         volume.valueChanged.connect(lambda value:self.interaction_pref("volume",value));sound_layout.addWidget(volume)
-        row=QHBoxLayout();sound_layout.addLayout(row);self.sound_choice=QComboBox()
+        row=QHBoxLayout();sound_layout.addLayout(row);self.sound_choice=ClickSelectComboBox()
         for key,label in SOUNDS.items():self.sound_choice.addItem(label,key)
         row.addWidget(self.sound_choice);self.button(row,"试听已选音效",self.preview_sound);self.button(row,"立即停止音效",self.pet.audio.stop)
         label=QLabel("仅检测是否按键，不安装键盘钩子、不读取屏幕内容。声音在本机合成，可随时静音。系统音量通知、联网天气与开机启动仍未接入。");label.setWordWrap(True);sound_layout.addWidget(label)
@@ -310,10 +311,10 @@ class LifeWindow(QMainWindow):
         self.ai_enabled=QCheckBox("允许发送聊天文字及年糕档案");self.ai_enabled.setChecked(self.engine.data["ai"]["enabled"]);f.addRow(self.ai_enabled)
         self.ai_diary=QCheckBox("另行允许发送游戏事件及年糕档案用于 AI 日记");self.ai_diary.setChecked(self.engine.data["ai"]["diary_enabled"]);f.addRow(self.ai_diary)
         from .providers import PRESETS,PROTOCOLS
-        self.api_presets=QComboBox()
+        self.api_presets=ClickSelectComboBox()
         for name,*_ in PRESETS:self.api_presets.addItem(name)
         f.addRow("平台预设",self.api_presets)
-        self.api_protocol=QComboBox()
+        self.api_protocol=ClickSelectComboBox()
         for key,label in PROTOCOLS.items():self.api_protocol.addItem(label,key)
         self.api_protocol.setCurrentIndex(max(0,self.api_protocol.findData(self.engine.data["ai"]["protocol"])));f.addRow("接口协议",self.api_protocol)
         self.base_url=QLineEdit(self.engine.data["ai"]["base_url"]);f.addRow("API 地址",self.base_url);self.model=QLineEdit(self.engine.data["ai"]["model"]);f.addRow("模型",self.model)
