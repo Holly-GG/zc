@@ -2,8 +2,8 @@
 import json,uuid,sys
 from pathlib import Path
 from datetime import date
-from PySide6.QtCore import Qt,QTimer,QDate,QEvent
-from PySide6.QtGui import QPixmap,QPainter,QColor
+from PySide6.QtCore import Qt,QTimer,QDate,QEvent,QSize
+from PySide6.QtGui import QPixmap,QPainter,QColor,QIcon
 from PySide6.QtWidgets import (QMainWindow,QWidget,QVBoxLayout,QHBoxLayout,QGridLayout,QLabel,QPushButton,
     QListWidget,QStackedWidget,QScrollArea,QProgressBar,QComboBox,QSpinBox,QDoubleSpinBox,QTextBrowser,
     QFrame,QLineEdit,QTextEdit,QCheckBox,QCalendarWidget,QFileDialog,QDateEdit,QGroupBox,QFormLayout)
@@ -17,7 +17,7 @@ from ..ui_controls import ClickSelectComboBox,ExplicitSpinBox
 from .ai import SecretVault,AIClient,checked_base
 from .jobs import run_job
 from ..theme import STYLE
-from ..journal import PaperPage,ChapterHeading,JournalSidebar
+from ..journal import PaperPage,ChapterHeading,JournalSidebar,HeroIllustration,portrait
 from ..theme import chapter_style
 from ..interaction.actions import ACTIONS as MOTIONS,MOOD_POOLS,SOUNDS
 ACTIONS={key:info.label for key,info in MOTIONS.items()}
@@ -55,15 +55,15 @@ class LifeWindow(QMainWindow):
                   ("专注与待办",self.focus_page),("和年糕聊天",self.chat_page),("年糕日记",self.diary_page),("性格与设置",self.settings_page)]
         for index,(name,builder) in enumerate(builders):
             self._chapter_index=index
-            self.nav.addItem(name);page=PaperPage(index);page.setStyleSheet(chapter_style(page.chapter));layout=QVBoxLayout(page);layout.setContentsMargins(14,10,14,16);layout.setSpacing(12);builder(layout);layout.addStretch()
+            self.nav.addItem(name);page=PaperPage(index);page.setStyleSheet(chapter_style(page.chapter));layout=QVBoxLayout(page);layout.setContentsMargins(23,18,23,22);layout.setSpacing(12);builder(layout);layout.addStretch()
             scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setWidget(page);self.stack.addWidget(scroll)
         self.nav.currentRowChanged.connect(self.stack.setCurrentIndex);self.nav.setCurrentRow(0)
         self.pet.desktop.changed.connect(self.refresh_inventory)
         self.timer=QTimer(self);self.timer.timeout.connect(self.refresh);self.timer.start(1000);self.refresh()
     def chapter_portrait(self,index):
-        # Reuse the same Niangao pose resources as the pet; never substitute a generic cat.
-        poses=('idle','groom','idle','sleep','sleep','idle','stretch','idle')
-        frames=self.pet.art.frames.get(poses[index]) or self.pet.art.frames.get('idle')
+        image=portrait(index)
+        if not image.isNull():return image
+        frames=self.pet.art.frames.get('idle')
         return QPixmap.fromImage(frames[0]) if frames else QPixmap()
     def title(self,layout,title,subtitle=""):
         index=self._chapter_index
@@ -74,7 +74,7 @@ class LifeWindow(QMainWindow):
     def result(self,result):self.notice(result[1]);self.refresh()
     def overview(self,l):
         self.title(l,"你好，今天也有年糕陪你","真实生日 · 照料记录 · 小小的陪伴奖励")
-        row=QHBoxLayout();l.addLayout(row);photo=QLabel();photo.setPixmap(self.chapter_portrait(0).scaled(135,155,Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation));row.addWidget(photo)
+        row=QHBoxLayout();l.addLayout(row);photo=HeroIllustration();row.addWidget(photo,1)
         box=QVBoxLayout();row.addLayout(box,1);self.age_label=QLabel();self.age_label.setWordWrap(True);box.addWidget(self.age_label)
         self.summary=QLabel();box.addWidget(self.summary);self.bars={}
         for key,name in STAT_NAMES.items():
@@ -86,7 +86,9 @@ class LifeWindow(QMainWindow):
         grid=QGridLayout();l.addLayout(grid)
         for i,(key,text,action) in enumerate([("meal","基础餐","feed"),("water","喝水","idle"),("pet","摸摸头","pet"),("play","逗猫玩","play_bow"),
              ("brush","梳毛","groom"),("bath","虚拟清洁","groom"),("litter","清猫砂","idle"),("rest","休息","sleep"),("checkup","虚拟健康照料","idle")]):
-            b=QPushButton(text);grid.addWidget(b,i//3,i%3);b.clicked.connect(lambda checked=False,k=key,a=action:self.care(k,a))
+            b=QPushButton(text);b.setObjectName('careAction')
+            icon_id={'meal':'food_bowl','water':'water_bowl','pet':'affection','play':'wand','brush':'brush','bath':'wash_basin','litter':'litter','rest':'bed','checkup':'health_kit'}[key]
+            b.setIcon(QIcon(item_pixmap(icon_id,48)));b.setIconSize(QSize(38,38));grid.addWidget(b,i//3,i%3);b.clicked.connect(lambda checked=False,k=key,a=action:self.care(k,a))
         self.care_objects(l)
         live=QGroupBox("桌面照料 · 看得见的小日常");v=QVBoxLayout(live)
         hint=QLabel("粮袋 / 冻干：右键逐颗倒出，Shift + 右键打开菜单。食物落稳后轻点，年糕会走过去闻闻再吃。\n猫砂盆：轻点邀请使用，右键铲砂；离开前打断不会扣掉食物。");hint.setWordWrap(True);hint.setObjectName("sub");v.addWidget(hint)
@@ -195,7 +197,7 @@ class LifeWindow(QMainWindow):
         self.button(l,"一键清理桌面摆件",self.pet.desktop.clear)
     def focus_page(self,l):
         self.title(l,"一起认真，一起休息","计时依据实际经过时间；退出后暂停，不补发离线专注奖励。")
-        self.focus_label=QLabel();self.focus_label.setObjectName("hero");l.addWidget(self.focus_label);row=QHBoxLayout();l.addLayout(row)
+        self.focus_label=QLabel();self.focus_label.setObjectName("focusClock");l.addWidget(self.focus_label);row=QHBoxLayout();l.addLayout(row)
         self.button(l,"打开独立专注与待办小窗",self.pet.open_focus)
         self.button(l,"切换工作模式（随机待机）",lambda:self.pet.set_work_mode(not self.pet.work_mode))
         self.minutes=QSpinBox();self.minutes.setRange(1,180);self.minutes.setValue(25);self.minutes.setSuffix(" 分钟");row.addWidget(self.minutes)

@@ -1,12 +1,14 @@
 """Presentation-only botanical journal surfaces. No input handlers or application state."""
 import random
+from functools import lru_cache
+from .art import asset_path
 from PySide6.QtCore import Qt,QRectF,QPointF
 from PySide6.QtGui import QColor,QPainter,QPainterPath,QPen,QLinearGradient,QPixmap
 from PySide6.QtWidgets import QWidget,QFrame,QLabel,QHBoxLayout,QVBoxLayout
 
 # Each chapter varies its paper, dominant wash, ornament and density.
 CHAPTERS=(
- dict(key='overview',number='I',name='THE GARDEN COMPANION',paper='#F4F0DC',wash='#92AB76',accent='#3C582C',motif='arch',density=1.0),
+ dict(key='overview',number='I',name='THE GARDEN COMPANION',paper='#F4F0DC',wash='#A4CAB8',accent='#3C582C',motif='arch',density=1.0),
  dict(key='care',number='II',name='HERBARIUM · DAILY CARE',paper='#EFF2DE',wash='#B4D3EC',accent='#3C582C',motif='herb',density=.65),
  dict(key='shop',number='III',name='THE LITTLE APOTHECARY',paper='#F3EDDA',wash='#839D45',accent='#2A472F',motif='flower',density=.75),
  dict(key='backpack',number='IV',name='COLLECTED TREASURES',paper='#EDF1E2',wash='#92AB76',accent='#3C582C',motif='fern',density=.6),
@@ -15,6 +17,52 @@ CHAPTERS=(
  dict(key='diary',number='VII',name='FIELD NOTES · MEMORIES',paper='#F3EFDF',wash='#92AB76',accent='#3C582C',motif='manuscript',density=.55),
  dict(key='settings',number='VIII',name='PORTRAIT & PARTICULARS',paper='#EEF0DF',wash='#839D45',accent='#2A472F',motif='seed',density=.35),
 )
+
+
+@lru_cache(maxsize=5)
+def decorative_asset(name):
+    return QPixmap(str(asset_path('ui/botanical/'+name+'.webp')))
+
+def portrait(index):
+    atlas=decorative_asset('poses')
+    if atlas.isNull():return QPixmap()
+    # Read-only sprite view: illustrations remain separate from interactive controls.
+    cell={0:1,1:0,2:0,3:2,4:3,5:3,6:1,7:1}[index]
+    w,h=atlas.width()//2,atlas.height()//2
+    inset=60 if cell==1 else 0
+    return atlas.copy((cell%2)*w+inset,(cell//2)*h,w-inset,h)
+
+def floral_frame(p,rect,quiet=False):
+    image=decorative_asset('border')
+    if image.isNull():return
+    p.save();p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+    # Nine-slice an ornament, never a screenshot: corners keep their proportions,
+    # long notebook pages do not stretch flowers into tall vertical bands.
+    sw,sh=image.width(),image.height();sx,sy=310,230
+    corner=34 if quiet else 61;edge=9 if quiet else 17
+    x,y,w,h=rect.x(),rect.y(),rect.width(),rect.height()
+    cells=[(QRectF(x,y,corner,corner),QRectF(0,0,sx,sy)),
+      (QRectF(x+w-corner,y,corner,corner),QRectF(sw-sx,0,sx,sy)),
+      (QRectF(x,y+h-corner,corner,corner),QRectF(0,sh-sy,sx,sy)),
+      (QRectF(x+w-corner,y+h-corner,corner,corner),QRectF(sw-sx,sh-sy,sx,sy)),
+      (QRectF(x+corner,y,w-2*corner,edge),QRectF(sx,0,sw-2*sx,sy)),
+      (QRectF(x+corner,y+h-edge,w-2*corner,edge),QRectF(sx,sh-sy,sw-2*sx,sy)),
+      (QRectF(x,y+corner,edge,h-2*corner),QRectF(0,sy,sx,sh-2*sy)),
+      (QRectF(x+w-edge,y+corner,edge,h-2*corner),QRectF(sw-sx,sy,sx,sh-2*sy))]
+    p.setOpacity(.55 if quiet else .95)
+    for destination,source in cells:
+        if destination.width()>0 and destination.height()>0:p.drawPixmap(destination,image,source)
+    p.restore()
+
+class HeroIllustration(QLabel):
+    def __init__(self):
+        super().__init__();self.setMinimumWidth(165);self.setMaximumWidth(270);self.setMinimumHeight(225)
+    def paintEvent(self,event):
+        p=QPainter(self);p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform);image=decorative_asset('hero')
+        # Keep the full artwork and natural anatomy; no stretched character images.
+        if not image.isNull():
+            size=image.size();size.scale(self.size(),Qt.AspectRatioMode.KeepAspectRatio);r=QRectF((self.width()-size.width())/2,(self.height()-size.height())/2,size.width(),size.height());p.drawPixmap(r,image,QRectF(image.rect()))
+        p.end()
 
 def branch(p,x,y,size=70,angle=-25,color='#839D45',fern=False):
     p.save();p.translate(x,y);p.rotate(angle)
@@ -43,6 +91,7 @@ class PaperPage(QWidget):
     def paintEvent(self,event):
         p=QPainter(self);p.setRenderHint(QPainter.RenderHint.Antialiasing);c=self.chapter;p.fillRect(self.rect(),QColor(c['paper']))
         if c['density']:
+            p.save();p.setOpacity(.35);p.drawTiledPixmap(self.rect(),decorative_asset('paper'));p.restore()
             # Deterministic, low-contrast paper fibres; decoration is painted below widgets.
             rng=random.Random(1921)
             p.setPen(QPen(QColor(70,82,43,12),.6))
@@ -69,18 +118,19 @@ class PaperPage(QWidget):
             else:
                 branch(p,w-8,180,100,0,c['accent'],motif=='fern');branch(p,7,h-22,80,8,c['accent'],motif=='fern')
             p.setOpacity(1)
+        floral_frame(p,QRectF(0,0,self.width(),self.height()),c['motif']=='letter')
         p.end()
 
 class ChapterHeading(QFrame):
     def __init__(self,index,title,subtitle,pixmap=None):
-        super().__init__();self.index=index;self.chapter=CHAPTERS[index];self.setObjectName('chapterHeading');self.setMinimumHeight(156 if index==0 else 125 if index!=5 else 96)
+        super().__init__();self.index=index;self.chapter=CHAPTERS[index];self.setObjectName('chapterHeading');self.setMinimumHeight(88 if index==0 else 134 if index!=5 else 88)
         row=QHBoxLayout(self);row.setContentsMargins(18,18,14,17);text=QVBoxLayout();text.setSpacing(5);row.addLayout(text,1)
         eyebrow=QLabel(self.chapter['number']+'  /  '+self.chapter['name']);eyebrow.setObjectName('eyebrow');text.addWidget(eyebrow)
         label=QLabel(title);label.setWordWrap(True);label.setObjectName('hero');text.addWidget(label)
         if subtitle:
             label=QLabel(subtitle);label.setWordWrap(True);label.setObjectName('sub');text.addWidget(label)
-        if pixmap is not None and not pixmap.isNull() and index!=5:
-            art=QLabel();art.setObjectName('chapterPortrait');art.setFixedSize(98 if index==0 else 82,116 if index==0 else 94);art.setAlignment(Qt.AlignmentFlag.AlignCenter);art.setPixmap(pixmap.scaled(art.size(),Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation));row.addWidget(art)
+        if pixmap is not None and not pixmap.isNull() and index not in (0,5):
+            art=QLabel();art.setObjectName('chapterPortrait');art.setFixedSize(130,105);art.setAlignment(Qt.AlignmentFlag.AlignCenter);art.setPixmap(pixmap.scaled(art.size(),Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation));row.addWidget(art)
     def paintEvent(self,event):
         p=QPainter(self);p.setRenderHint(QPainter.RenderHint.Antialiasing);c=self.chapter;w,h=self.width(),self.height()
         p.fillRect(QRectF(2,4,w-4,h-5),QColor(42,71,47,12));p.fillRect(QRectF(0,0,w-3,h-5),QColor('#FCFAF0'))
@@ -90,7 +140,7 @@ class ChapterHeading(QFrame):
         g=QLinearGradient(w-150,0,w,90);g.setColorAt(0,QColor(255,255,255,0));q=QColor(c['wash']);q.setAlpha(110);g.setColorAt(1,q);p.fillRect(QRectF(w-155,0,152,h-5),g)
         p.setPen(QPen(QColor('#A1AD7C'),.7));p.drawRect(QRectF(5,5,w-14,h-16))
         if c['motif']=='arch':
-            arch(p,QRectF(w-115,8,100,h-22));branch(p,w-133,h-12,70,-22);flower(p,w-128,30,.7)
+            branch(p,w-18,h-15,52,-18);flower(p,w-29,20,.7)
         elif c['motif']=='flower':
             for x,y in [(w-109,26),(w-17,h-25)]:flower(p,x,y,.8);branch(p,x,y+40,44,16)
         elif c['motif']=='coast':
@@ -103,6 +153,7 @@ class ChapterHeading(QFrame):
             branch(p,w-20,h-13,85,-20)
         else:branch(p,w-13,h-14,85,-18,c['accent'],c['motif']=='fern')
         # Semi-transparent washi, torn lower edge, and a tiny botanical wax seal.
+        if self.index!=0:floral_frame(p,QRectF(w-153,1,150,h-7))
         p.fillRect(QRectF(24,0,57,7),QColor(146,171,118,90))
         p.setPen(QPen(QColor('#3C582C'),.6));p.setBrush(QColor('#92AB76'));p.drawEllipse(QRectF(w-27,h-23,15,15));p.setPen(QPen(QColor('#E8E9C0'),.6));p.drawLine(QPointF(w-23,h-12),QPointF(w-17,h-20))
         p.setPen(QPen(QColor('#B6BE93'),.6));path=QPainterPath(QPointF(7,h-7))
@@ -112,4 +163,4 @@ class ChapterHeading(QFrame):
 
 class JournalSidebar(QFrame):
     def paintEvent(self,event):
-        super().paintEvent(event);p=QPainter(self);p.setRenderHint(QPainter.RenderHint.Antialiasing);p.setOpacity(.6);branch(p,26,self.height()-12,57,-16,'#3C582C');branch(p,self.width()-24,self.height()-12,49,23,'#3C582C');flower(p,self.width()/2,self.height()-25,.55);p.end()
+        super().paintEvent(event);p=QPainter(self);p.setRenderHint(QPainter.RenderHint.Antialiasing);floral_frame(p,QRectF(0,self.height()-70,self.width(),70));p.end()

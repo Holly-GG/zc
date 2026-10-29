@@ -68,6 +68,21 @@ QMenu {background:${card};color:${ink};border:1px solid ${olive};padding:6px;}
 QMenu::item {padding:6px 15px;} QMenu::item:selected {background:${vellum};}
 """
 
+STYLE += """
+QPushButton#careAction {background:#FCF7E6;border:1px solid #B9AE7A;min-height:44px;}
+QPushButton#careAction:hover {background:#E8E9C0;border-color:${olive};}
+QLabel#focusClock {font-size:34px;color:${ink};font-weight:500;letter-spacing:2px;}
+QFrame#header {background:#F8F4DF;border-top:2px solid ${olive};border-radius:5px;}
+QFrame#sidebar {background:#EEEDCF;border:1px solid #ACA66D;}
+QFrame#itemCard {background:#FCF7E6;border:1px solid #B9AE7A;border-radius:7px;}
+QFrame#itemCard:hover {background:#F3F1D6;border-color:${olive};}
+QPushButton {background:#CFDAB7;border-color:#9AAB76;border-bottom:2px solid #879A68;}
+QPushButton:pressed {background:${sky};}
+QPushButton#quiet {background:#F8F4DF;}
+QProgressBar {background:#E0E5CC;border-color:#BCC5A1;}
+QGroupBox {background:#FCF8E8;border-color:#B9AE7A;}
+"""
+
 STYLE=Template(STYLE).substitute(TOKENS)
 
 def chapter_style(chapter):
