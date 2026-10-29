@@ -124,7 +124,7 @@ class LifeWindow(QMainWindow):
                       6:((8,'打开宠物相册'),),7:((5,'返回聊天'),),8:((6,'打开日记'),)}
         links=QHBoxLayout();links.setSpacing(8)
         for target,text in destinations.get(index,()):
-            link=QPushButton(text+' →');link.setObjectName('pageLink');link.setAccessibleName(text)
+            link=QPushButton(text+' →');link.setObjectName('pageLink');link.setAccessibleName(text);link.setMinimumHeight(36)
             link.clicked.connect(lambda checked=False,destination=target:self.nav.setCurrentRow(destination));links.addWidget(link)
         links.addStretch();layout.addLayout(links)
     def button(self,layout,text,callback):

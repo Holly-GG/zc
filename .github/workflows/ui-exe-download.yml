@@ -35,7 +35,7 @@ jobs:
           python -m pytest -q tests/test_component_assets.py tests/test_window_entries.py tests/test_layered_ui.py --tb=short 2>&1 | Tee-Object test-results/download-ui-tests.log
           $testExit = $LASTEXITCODE
           if ($testExit -ne 0) {
-            python -c "from pathlib import Path; s=Path('test-results/download-ui-tests.log').read_text(encoding='utf-8-sig',errors='replace')[-14000:]; print('::error title=UI test detail::'+s.replace('%%','%%25').replace(chr(13),'%%0D').replace(chr(10),'%%0A'))"
+            python -c "from pathlib import Path; s=Path('test-results/download-ui-tests.log').read_text(encoding='utf-8-sig',errors='replace')[-14000:]; print('::error title=UI test detail::'+s.replace('%','%25').replace(chr(13),'%0D').replace(chr(10),'%0A'))"
             exit $testExit
           }
       - name: Build Windows x64 GUI executable
