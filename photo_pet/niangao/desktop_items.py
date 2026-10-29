@@ -1,10 +1,12 @@
 """Owned transparent desktop props; never creates files on the user's desktop."""
-import math,time,uuid
+import math,time,uuid,random
 from PySide6.QtCore import Qt,QPoint,QTimer,QRectF,QObject,Signal
 from PySide6.QtGui import QPainter,QColor,QPen,QRegion,QFont
 from PySide6.QtWidgets import QWidget,QMenu,QApplication,QFrame,QVBoxLayout,QLabel,QPushButton
 from .geometry import Rect,nearest_area,clamp_position
-from .life.catalog import BY_ID,is_placeable
+from .life.catalog import BY_ID,is_placeable,desktop_width
+from .prop_physics import Body,accepts
+from .dialogue import choose
 from .life.item_art import item_pixmap
 WATER={"water_bowl","water_fountain"}
 CARE_OBJECT={"food_bowl":("meal","feed"),"bowl":("meal","feed"),"water_bowl":("water","feed"),"water_fountain":("water","feed"),
@@ -17,9 +19,10 @@ class DesktopItem(QWidget):
         self.manager=manager;self.record=record;self.uid=record["uid"];self.id=record["item"]
         self.setWindowTitle("年糕物件 · "+self.uid);self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
-        width=int(record.get("width",112));self.resize(width,width+26);self.down=False;self.dragged=False;self.offset=QPoint()
+        width=int(record.get("width",112));self.resize(width,width+(0 if self.id=="freeze_piece" else 26));self.down=False;self.dragged=False;self.offset=QPoint()
         self.setToolTip(BY_ID[self.id]["name"]+" · 左键拖动，轻点使用，右键补水或收回")
-        self.phase=0.;self.last_time=time.monotonic();self.timer=QTimer(self);self.timer.timeout.connect(self.tick);self.timer.start(80 if self.id in WATER else 500)
+        self.body=Body(float(record["x"]),float(record["y"]),55 if self.id=="mouse" else 0);self.pinned=bool(record.get("pinned",False))
+        self.phase=0.;self.last_time=time.monotonic();self.timer=QTimer(self);self.timer.timeout.connect(self.tick);self.timer.start(33)
         self.repair();self.rebuild_mask()
     def repair(self):
         area=nearest_area(self.record["x"],self.record["y"],self.manager.pet.areas())
@@ -30,7 +33,10 @@ class DesktopItem(QWidget):
     def compose(self):
         from PySide6.QtGui import QPixmap
         pix=QPixmap(self.size());pix.fill(Qt.GlobalColor.transparent);p=QPainter(pix);p.setRenderHint(QPainter.RenderHint.Antialiasing)
-        p.drawPixmap(0,0,item_pixmap(self.id,self.width(),self.record.get("water",100)<=0))
+        p.save()
+        if self.id in ("wand","feather") and not self.manager.pet.work_mode:
+            p.translate(self.width()/2,self.width()*.78);p.rotate(math.sin(self.phase*2.1)*4);p.translate(-self.width()/2,-self.width()*.78)
+        p.drawPixmap(0,0,item_pixmap(self.id,self.width(),self.record.get("water",100)<=0));p.restore()
         if self.id in WATER:
             level=int(self.record.get("water",100))
             p.setPen(QPen(QColor("#73b9cb"),1.5))
@@ -41,12 +47,26 @@ class DesktopItem(QWidget):
                     x=self.width()*.635;y=self.width()*(.24+.12*((self.phase*1.8)%1))
                     p.setBrush(QColor("#95d2df"));p.drawEllipse(QRectF(x,y,3,5))
             p.setPen(QColor("#342d2b"));p.setFont(QFont("Microsoft YaHei",8));p.drawText(QRectF(0,self.width()-14,self.width(),16),Qt.AlignmentFlag.AlignCenter,str(level)+"%")
+        if self.id=="freeze_piece":p.end();return pix
         p.setPen(QPen(QColor("#342d2b"),1.5));p.setBrush(QColor("#fffaf0"));p.drawRoundedRect(QRectF(4,self.width()+1,self.width()-8,22),8,8)
-        p.setFont(QFont("Microsoft YaHei",8));name=p.fontMetrics().elidedText(BY_ID[self.id]["name"],Qt.TextElideMode.ElideRight,self.width()-16)
+        p.setFont(QFont("Microsoft YaHei",8));name=p.fontMetrics().elidedText(BY_ID[self.id]["name"]+(" · "+str(self.record.get("remaining",8)) if self.id=="freeze_dried" else ""),Qt.TextElideMode.ElideRight,self.width()-16)
         p.drawText(QRectF(8,self.width()+2,self.width()-16,20),Qt.AlignmentFlag.AlignCenter,name);p.end();return pix
     def tick(self):
-        now=time.monotonic();self.phase+=min(.3,max(0,now-self.last_time));self.last_time=now
-        if self.id in WATER and self.record.get("water",100)>0:self.update()
+        now=time.monotonic();dt=max(0,now-self.last_time);self.phase+=min(.3,dt);self.last_time=now
+        pet=self.manager.pet
+        if not self.down and not self.pinned:
+            area=nearest_area(self.x(),self.y(),pet.areas())
+            surfaces=[Rect(w.x()+8,w.y()+w.width()*.25,w.width()-16,1) for w in self.manager.widgets.values() if w is not self and (w.pinned or w.body.grounded) and not w.down]
+            # Only land on window top edges approached from above; never treat a whole app as a wall.
+            surfaces+=getattr(self.manager,"window_surfaces",[])
+            active=not pet.work_mode
+            if self.id=="mouse":self.body.vx=(55 if self.body.vx>=0 else -55) if active else 0
+            self.body.advance(dt,self.width(),self.height(),area,surfaces,self.id=="ball" and active,self.id=="mouse" and active)
+            self.move(round(self.body.x),round(self.body.y));self.record.update(x=self.x(),y=self.y())
+        if self.id in ("wand","feather"):self.rebuild_mask()
+        elif self.id in WATER or self.id=="laser":self.update()
+        if self.id=="laser" and not pet.work_mode:
+            self.manager.move_laser(self,now)
     def paintEvent(self,event):
         p=QPainter(self);p.drawPixmap(0,0,self.compose());p.end()
     def mousePressEvent(self,event):
@@ -54,11 +74,15 @@ class DesktopItem(QWidget):
         if event.button()==Qt.MouseButton.LeftButton:
             self.down=True;self.dragged=False;self.press=event.globalPosition().toPoint();self.offset=self.press-self.pos();event.accept()
         elif event.button()==Qt.MouseButton.RightButton:
+            if self.id=="freeze_dried" and not (event.modifiers()&Qt.KeyboardModifier.ShiftModifier):self.manager.drop_piece(self.uid);return
             menu=QMenu();menu.setStyleSheet("QMenu{background:#fffaf0;color:#342d2b;padding:8px;} QMenu::item{padding:8px 14px;}")
             menu.addAction("使用 / 和年糕互动",lambda:self.manager.activate(self.uid))
             if self.id in WATER:menu.addAction("加满清水",lambda:self.manager.refill(self.uid))
+            pin=menu.addAction("固定位置 / 恢复掉落",self.toggle_pin)
             menu.addAction("收回背包",lambda:self.manager.remove(self.uid));menu.addAction("一键清理桌面摆件",self.manager.clear)
             menu.exec(event.globalPosition().toPoint());menu.deleteLater()
+    def toggle_pin(self):
+        self.pinned=not self.pinned;self.record["pinned"]=self.pinned;self.body.vx=self.body.vy=0;self.manager.save()
     def mouseMoveEvent(self,event):
         if self.down:
             point=event.globalPosition().toPoint()
@@ -68,7 +92,7 @@ class DesktopItem(QWidget):
         if self.down and event.button()==Qt.MouseButton.LeftButton:
             self.down=False
             if self.dragged:
-                self.record.update(x=self.x(),y=self.y());self.repair();self.manager.save()
+                self.record.update(x=self.x(),y=self.y());self.repair();self.body=Body(float(self.x()),float(self.y()));self.manager.save()
             else:self.manager.activate(self.uid)
     def closeEvent(self,event):
         self.timer.stop()
@@ -78,7 +102,7 @@ class DesktopItem(QWidget):
 class DesktopItems(QObject):
     changed=Signal()
     def __init__(self,pet):
-        super().__init__(pet);self.pet=pet;self.engine=pet.life;self.widgets={};self.closing=False
+        super().__init__(pet);self.pet=pet;self.engine=pet.life;self.widgets={};self.closing=False;self.window_surfaces=[];self.rng=random.Random();self.next_interest=time.monotonic()+15;self.laser_spots={};self.interest=None;self.last_interest_save=0
         accepted=[]
         for record in self.engine.data["desktop_items"]:
             id=record["item"]
@@ -102,29 +126,46 @@ class DesktopItems(QObject):
                 nx,ny=clamp_position(x+(shift%7)*125,y-(shift//7)*145,112,138,area)
                 if not any(Rect(nx,ny,112,138).intersects(Rect(w.x(),w.y(),w.width(),w.height())) for w in self.widgets.values()):x,y=nx,ny;found=True;break
             if not found:return False,"附近没有空位，请拖到另一处或先清理"
-        record=dict(uid=uuid.uuid4().hex,item=id,x=round(x),y=round(y),width=112,water=100)
+        width=desktop_width(id)
+        x,y=clamp_position(point.x()-width/2,point.y()-40,width,width+26,area)
+        record=dict(uid=uuid.uuid4().hex,item=id,x=round(x),y=round(y),width=width,water=100)
+        if id=="freeze_dried":record["remaining"]=self.engine.data["freeze_packets"].pop(0) if self.engine.data["freeze_packets"] else 8
         self.engine.data["desktop_items"].append(record);self._show(record);self.save()
         return True,"已摆放 "+BY_ID[id]["name"]+"，轻点使用，右键可收回"
     def save(self):self.engine.save();self.changed.emit()
     def remove(self,uid,close=True):
-        widget=self.widgets.pop(uid,None);self.engine.data["desktop_items"][:]=[v for v in self.engine.data["desktop_items"] if v["uid"]!=uid]
+        widget=self.widgets.pop(uid,None)
+        if widget and widget.id=="freeze_dried" and 0<widget.record.get("remaining",8)<8:self.engine.data["freeze_packets"].append(widget.record["remaining"])
+        spot=self.laser_spots.pop(uid,None)
+        if spot:spot.close();spot.deleteLater()
+        self.engine.data["desktop_items"][:]=[v for v in self.engine.data["desktop_items"] if v["uid"]!=uid]
         if widget and close:
             old=self.closing;self.closing=True;widget.close();widget.deleteLater();self.closing=old
         self.save()
     def clear(self):
         self.closing=True
-        for widget in list(self.widgets.values()):widget.close();widget.deleteLater()
+        for widget in list(self.widgets.values()):
+            if widget.id=="freeze_dried" and 0<widget.record.get("remaining",8)<8:self.engine.data["freeze_packets"].append(widget.record["remaining"])
+            widget.close();widget.deleteLater()
+        for spot in self.laser_spots.values():spot.close();spot.deleteLater()
+        self.laser_spots.clear()
         self.widgets.clear();self.engine.data["desktop_items"]=[];self.closing=False;self.save()
         self.speak("桌面收拾好啦，物品都回到背包。")
     def refill(self,uid):
         widget=self.widgets.get(uid)
         if widget and widget.id in WATER:
             widget.record["water"]=100;widget.rebuild_mask();self.engine.event("water_fill","给"+BY_ID[widget.id]["name"]+"加满清水");self.save();self.speak("清水加满，咕嘟咕嘟～")
-    def activate(self,uid):
+    def activate(self,uid,manual=True):
         widget=self.widgets.get(uid)
         if not widget:return False
-        self.pet.autonomy.click();id=widget.id;kind=BY_ID[id]["kind"]
+        if manual:self.pet.autonomy.click()
+        id=widget.id;kind=BY_ID[id]["kind"]
         if id in WATER and widget.record.get("water",0)<=0:self.speak("小碗空啦，右键选择加满清水吧。");return False
+        if id=="freeze_dried":return self.drop_piece(uid)
+        if (kind in ("toy","consumable") or id in ("food_bowl","bowl")) and not accepts(self.engine.data["stats"],"consumable" if kind=="consumable" or id in ("food_bowl","bowl") else "toy",self.rng):
+            self.speak(choose("refuse_food" if kind=="consumable" or id in ("food_bowl","bowl") else "refuse_toy"));return False
+        if id in ("tunnel","tree","hammock","bed","soft_bed","rug","blanket","garden_patch","litter"):
+            return self.start_furniture(widget)
         if id in CARE_OBJECT:
             care,action=CARE_OBJECT[id];ok,text=self.engine.care(care)
             if ok:
@@ -138,9 +179,72 @@ class DesktopItems(QObject):
         else:
             ok,text=self.engine.use(id)
             if ok:
-                self.pet.perform_action("chew_toy" if kind=="toy" else "feed" if kind=="consumable" else "expectant")
+                self.pet.perform_action({"wand":"swat","feather":"pounce","ball":"pounce","mouse":"stalk","bell_ball":"swat","catnip":"roll","laser":"stalk"}.get(id,"chew_toy" if kind=="toy" else "feed" if kind=="consumable" else "expectant"))
+                if id in ("bell_ball","blanket"):
+                    widget.body.vx=self.rng.choice([-1,1])*160;widget.body.vy=-160
+                if kind=="toy" and self.engine.data["preferences"]["easter_eggs"] and self.rng.random()<.12:
+                    widget.body.vx=self.rng.choice([-1,1])*190;widget.body.vy=-120;text=choose("prank")
                 if kind!="toy":self.remove(uid)
         self.save();self.speak(text);return ok
+    def drop_piece(self,uid):
+        widget=self.widgets.get(uid)
+        if not widget or widget.id!="freeze_dried" or len(self.widgets)>=32:return False
+        remaining=widget.record.get("remaining",8)
+        if not isinstance(remaining,int) or not 1<=remaining<=8:return False
+        self.engine.data["inventory"]["freeze_piece"]=self.engine.data["inventory"].get("freeze_piece",0)+1
+        record=dict(uid=uuid.uuid4().hex,item="freeze_piece",x=widget.x()+widget.width(),y=widget.y(),width=38,water=100)
+        self.engine.data["desktop_items"].append(record);self._show(record)
+        piece=self.widgets[record["uid"]];piece.body.vx=80;piece.body.vy=-120
+        widget.record["remaining"]=remaining-1
+        if remaining==1:
+            self.engine.data["inventory"]["freeze_dried"]-=1;self.remove(uid)
+        else:widget.rebuild_mask()
+        self.engine.event("drop_food","冻干掉落一颗");self.save();return True
+    def start_furniture(self,widget):
+        if self.pet.work_mode:self.speak("工作模式正在安静值班，退出后再玩家具吧。");return False
+        if not accepts(self.engine.data["stats"],"toy",self.rng):self.speak(choose("refuse_toy"));return False
+        from .furniture import FurnitureSession
+        if getattr(self.pet,"furniture",None):self.pet.furniture.cancel()
+        self.pet.furniture=FurnitureSession(self.pet,widget,self.rng)
+        self.engine.event("furniture","靠近"+BY_ID[widget.id]["name"]+"互动");self.save();return True
+    def move_laser(self,widget,now):
+        from .furniture import LightSpot
+        spot=self.laser_spots.get(widget.uid)
+        if spot is None:spot=LightSpot();self.laser_spots[widget.uid]=spot
+        area=nearest_area(widget.x(),widget.y(),self.pet.areas())
+        x,y=clamp_position(widget.x()+math.sin(now*.8)*130,widget.y()-65+math.cos(now*1.1)*65,16,16,area)
+        spot.move(round(x),round(y));spot.show()
+    def tick_interest(self,now):
+        if now-self.last_interest_save>5:
+            self.last_interest_save=now;self.engine.save()
+        if self.pet.work_mode:
+            self.interest=None
+            for spot in self.laser_spots.values():spot.hide()
+            return
+        if self.interest:
+            uid,deadline=self.interest;widget=self.widgets.get(uid)
+            if not widget or now>deadline or self.pet.dragging or self.pet.pressed or self.pet.menu_open:self.interest=None
+            else:
+                target=self.laser_spots.get(uid,widget);point=target.geometry().center()
+                foot=QPoint(self.pet.x()+self.pet.width()//2,self.pet.y()+self.pet.height()-10)
+                if (point-foot).manhattanLength()<85:
+                    self.interest=None;self.activate(uid,False)
+                else:
+                    area=nearest_area(point.x(),point.y(),self.pet.areas())
+                    self.pet.behaviour.target=clamp_position(point.x()-self.pet.width()/2,point.y()-self.pet.height()+20,self.pet.width(),self.pet.height(),area)
+                return
+        if now<self.next_interest or self.pet.dragging or self.pet.pressed or self.pet.menu_open or self.pet.director.active or getattr(self.pet,"furniture",None):return
+        self.next_interest=now+self.rng.uniform(12,25)/self.pet.autonomy.rate
+        candidates=[w for w in self.widgets.values() if not w.down and BY_ID[w.id]["kind"] in ("toy","consumable","furniture")]
+        if not candidates:return
+        widget=self.rng.choice(candidates)
+        if not accepts(self.engine.data["stats"],BY_ID[widget.id]["kind"],self.rng):return
+        if widget.id in ("tree","tunnel","bed","soft_bed","hammock","rug","blanket","garden_patch","litter"):self.start_furniture(widget);return
+        target=self.laser_spots.get(widget.uid,widget);point=target.geometry().center()
+        area=nearest_area(point.x(),point.y(),self.pet.areas());self.pet.perform_action("walk",15)
+        self.interest=(widget.uid,now+15)
+        self.pet.behaviour.target=clamp_position(point.x()-self.pet.width()/2,point.y()-self.pet.height()+20,self.pet.width(),self.pet.height(),area)
+        self.speak(choose({"ball":"ball","mouse":"mouse","laser":"laser","wand":"wand","feather":"wand","catnip":"catnip"}.get(widget.id,"expectant")))
     def speak(self,text):self.pet.bubble.speak(text,self.pet.rect_global(),self.pet.areas())
     def repair(self):
         for w in self.widgets.values():
@@ -148,6 +252,7 @@ class DesktopItems(QObject):
     def obstacles(self):return [Rect(w.x(),w.y(),w.width(),w.height()) for w in self.widgets.values()]
     def shutdown(self):
         self.closing=True
+        for spot in self.laser_spots.values():spot.close()
         for w in list(self.widgets.values()):
             w.record.update(x=w.x(),y=w.y());w.close()
         self.engine.save()

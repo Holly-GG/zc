@@ -1,4 +1,5 @@
 from datetime import datetime,date
+from .calendar_cn import china_now
 from pathlib import Path
 import json,os,time,uuid,math,random,tempfile
 from .age import age_info
@@ -13,7 +14,7 @@ class LifeEngine:
     def __init__(self,path,clock=None,wall=None):
         self.path=Path(path);self.clock=clock or time.monotonic;self.wall=wall or time.time
         self.last_tick=self.clock();self.last_save=self.last_tick;self.cooldowns={};self.focus_deadline=None;self.error="";self.network_today=None
-        self.data={"version":3,"profile":{},"desktop_items":[],"desktop_starter":False,"birth_date":"2021-02-28","coins":150,"xp":0,"stats":dict(satiety=82,cleanliness=90,energy=85,mood=80,health=95),
+        self.data={"version":3,"profile":{},"freeze_packets":[],"desktop_items":[],"expanded_starter":False,"desktop_starter":False,"birth_date":"2021-02-28","coins":150,"xp":0,"stats":dict(satiety=82,cleanliness=90,energy=85,mood=80,health=95),
           "inventory":{"fish":2,"bed":1,"bowl":1},"events":[],"diaries":{},"tasks":[],"mood_history":[],"badges":[],"daily":{},
           "age_override":None,"age_frozen":False,"scene":"desk","layouts":{},"layout_presets":{},
           "focus":{"duration":25,"remaining":1500,"active":False,"cycles":0},"travel":None,"postcards":[],
@@ -31,6 +32,10 @@ class LifeEngine:
             for id in ("food_bowl","water_bowl","water_fountain","brush","wash_basin","ball","litter","health_kit"):
                 self.data["inventory"][id]=self.data["inventory"].get(id,0)+1
             self.data["desktop_starter"]=True
+        if not self.data["expanded_starter"]:
+            for id in ("wand","mouse","feather","bell_ball","catnip","laser","tunnel","tree","hammock","rug","blanket","soft_bed","garden_patch","freeze_dried","food","wet_food","cat_strip"):
+                self.data["inventory"][id]=self.data["inventory"].get(id,0)+1
+            self.data["expanded_starter"]=True
         elapsed=max(0,min(8*3600,self.wall()-float(self.data.get("last_wall",self.wall()))))
         self._decay(elapsed,False);self.data["last_wall"]=self.wall()
         self.data["focus"]["active"]=False
@@ -48,16 +53,18 @@ class LifeEngine:
         return snapshot(self)
     def _validate(self):
         self.data["version"]=3
+        if not isinstance(self.data["expanded_starter"],bool):self.data["expanded_starter"]=False
         if not isinstance(self.data["desktop_starter"],bool):self.data["desktop_starter"]=False
         from .profile import sanitize_profile
         self.data["profile"]=sanitize_profile(self.data.get("profile"))
+        self.data["freeze_packets"]=[v for v in self.data.get("freeze_packets",[]) if isinstance(v,int) and 0<v<8][:1000] if isinstance(self.data.get("freeze_packets"),list) else []
         if not isinstance(self.data["desktop_items"],list):self.data["desktop_items"]=[]
         self.data["desktop_items"]=[v for v in self.data["desktop_items"] if isinstance(v,dict)
             and isinstance(v.get("uid"),str) and v.get("item") in BY_ID and
             all(isinstance(v.get(k), (int,float)) and math.isfinite(v[k]) for k in ("x","y"))][:32]
         for v in self.data["desktop_items"]:
             for k,default in (("water",100),("width",120)):
-                value=v.get(k,default);v[k]=max(0,min(100,value)) if k=="water" and isinstance(value,(int,float)) and math.isfinite(value) else max(80,min(180,value)) if k=="width" and isinstance(value,(int,float)) and math.isfinite(value) else default
+                value=v.get(k,default);v[k]=max(0,min(100,value)) if k=="water" and isinstance(value,(int,float)) and math.isfinite(value) else max(32,min(320,value)) if k=="width" and isinstance(value,(int,float)) and math.isfinite(value) else default
 
         for key in STAT_NAMES:
             v=self.data["stats"].get(key,80)
@@ -109,7 +116,7 @@ class LifeEngine:
         self.data["postcards"]=[v for v in self.data["postcards"] if isinstance(v,dict) and isinstance(v.get("place"),str)]
         self.data["badges"]=[v for v in self.data["badges"] if isinstance(v,str)]
         self.data["layout_presets"]={k:v for k,v in self.data["layout_presets"].items() if isinstance(v,dict) and v.get("scene") in SCENES and isinstance(v.get("items"),list)}
-    def today(self):return self.network_today or date.fromtimestamp(self.wall())
+    def today(self):return self.network_today or china_now(self.wall()).date()
     def age(self):return age_info(self.data["birth_date"],self.today(),self.data["age_override"])
     @property
     def level(self):return 1+self.data["xp"]//100
@@ -130,7 +137,7 @@ class LifeEngine:
         if s["satiety"]<10 or s["cleanliness"]<10:s["health"]-=h
         for k in s:s[k]=max(0,min(100,s[k]))
     def event(self,kind,text):
-        self.data["events"].append({"at":datetime.fromtimestamp(self.wall()).isoformat(timespec="seconds"),"day":self.today().isoformat(),"kind":kind,"text":str(text)[:180]})
+        self.data["events"].append({"at":china_now(self.wall()).isoformat(timespec="seconds"),"day":self.today().isoformat(),"kind":kind,"text":str(text)[:180]})
         self.data["events"]=self.data["events"][-5000:]
     def reward(self,coins=0,xp=0):self.data["coins"]+=coins;self.data["xp"]+=xp
     def care(self,kind):
@@ -213,7 +220,7 @@ class LifeEngine:
         body+="\n".join("· "+e["text"] for e in events[-8:]) if events else "今天还没有记下互动，不过安静陪着你也很好。"
         body+="\n今天的心情是"+self.mood+"。明天也想和你一起晒晒太阳。"
         old=self.data["diaries"].get(day,{})
-        self.data["diaries"][day]={"text":body,"note":old.get("note",""),"source":"本地事件小结","updated":datetime.fromtimestamp(self.wall()).isoformat()}
+        self.data["diaries"][day]={"text":body,"note":old.get("note",""),"source":"本地事件小结","updated":china_now(self.wall()).isoformat()}
         self.save();return body
     def tick(self,sleeping=False):
         now=self.clock();dt=max(0,min(300,now-self.last_tick));self.last_tick=now;self._decay(dt,sleeping);messages=[]

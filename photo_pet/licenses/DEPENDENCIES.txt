@@ -16,3 +16,7 @@ Source and rebuild instructions for this application:
 https://github.com/Holly-GG/zc/tree/main/photo_pet
 The supplied source/build instructions allow rebuilding with replacement Qt
 libraries. No restriction on modifying or reverse engineering Qt is imposed.
+
+lunar-python 1.4.8: MIT, Copyright (c) 2020 6tail.
+https://github.com/6tail/lunar-python
+Full notice: LUNAR-PYTHON-MIT.txt

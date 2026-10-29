@@ -47,3 +47,6 @@ MOOD_POOLS={
  "开心":["knead","rub_hand","roll","stretch"]}
 SOUNDS={"milk_meow":"奶喵叫","adult_meow":"成猫喵呜","senior_meow":"老猫低唤","purr":"呼噜","smack":"吧唧",
         "hiss":"哈气","scratch":"抓挠","bell":"铃铛","snore":"打呼"}
+
+ACTIONS["climb"]=Action("攀爬抓握（二维演出）","家具","climb","scratch",3)
+ACTIONS["climb_top"]=Action("平台蹲守瞭望","家具","climb_top","",4)

@@ -33,6 +33,12 @@ class PetWindow(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         from .life.engine import LifeEngine
         self.life=LifeEngine(self.settings.path.parent/"life.json");self.life_window=None
+        from .life.ai import SecretVault
+        self.vault=SecretVault(self.settings.path.parent/"api-key.dpapi")
+        self.work_mode=False;self.work_panel=None;self.focus_panel=None;self.furniture=None
+        from .art import asset_path
+        from PySide6.QtGui import QPixmap
+        self.work_icon=QPixmap(str(asset_path("niangao-work.webp")))
         self.art=CatArt();self.behaviour=Behaviour();self.observer=WindowObstacles()
         self.autonomy=AutonomyPolicy();self.director=Director();self.director.set_rate(self.autonomy.rate)
         self.behaviour.autonomous_rate=self.autonomy.rate;self.behaviour.deadline=self.behaviour.clock()+3/self.autonomy.rate
@@ -53,6 +59,7 @@ class PetWindow(QWidget):
         self.timer=QTimer(self);self.timer.timeout.connect(self.tick);self.timer.start(33)
         self.desktop=DesktopItems(self)
         self.build_tray()
+        if self.settings.data["work_mode"]:self.set_work_mode(True)
         app=QApplication.instance()
         from PySide6.QtCore import QObject,QEvent
         class ClickTracker(QObject):
@@ -62,16 +69,39 @@ class PetWindow(QWidget):
                 return False
         self.click_tracker=ClickTracker(self.autonomy,self);app.installEventFilter(self.click_tracker)
         app.screenAdded.connect(lambda _s:self.repair_position());app.screenRemoved.connect(lambda _s:self.repair_position())
-        QTimer.singleShot(650,lambda:self.say("greet"))
+        QTimer.singleShot(650,lambda:None if self.work_mode else self.say("greet"))
 
+    def set_work_mode(self,enabled):
+        enabled=bool(enabled)
+        if enabled==self.work_mode:return
+        if self.furniture:self.furniture.cancel()
+        self.save();self.director.cancel();self.cursor_mode=False;self.cursor_target=None
+        self.work_mode=enabled;self.settings.data["work_mode"]=enabled;self.behaviour.action("idle",float("inf") if enabled else 2)
+        width=96 if enabled else self.settings.data["width"]
+        self.resize(width,width if enabled else self.art.stage_height(width));self.last_art_key=None
+        position=self.settings.data["work_position" if enabled else "position"]
+        if position:self.move(round(position[0]),round(position[1]))
+        self.repair_position();self.render_frame();self.save();self.bubble.hide()
+        if not enabled and self.work_panel:self.work_panel.hide()
+    def open_work(self):
+        from .desk_panels import WorkPanel
+        if self.work_panel is None:self.work_panel=WorkPanel(self)
+        self.work_panel.show();self.work_panel.raise_();self.work_panel.activateWindow()
+    def open_focus(self):
+        from .desk_panels import FocusPanel
+        if self.focus_panel is None:self.focus_panel=FocusPanel(self)
+        self.focus_panel.show();self.focus_panel.raise_()
     def pose_state(self,state):
         key=("walk_left" if self.behaviour.facing_left else "walk") if state in ("walk","perch","play","elegant_walk") else state
         return self.art.ensure(ACTIONS[key].resource if key in ACTIONS else key)
     def perform_action(self,action,duration=5,interrupt=True):
+        if self.work_mode:return False
         resource=ACTIONS[action].resource if action in ACTIONS else action
         available=self.art.ensure(resource)
         if available!=resource:return False
-        if interrupt:self.director.cancel();self.cursor_target=None;self.cursor_mode=False
+        if interrupt:
+            if self.furniture:self.furniture.cancel()
+            self.director.cancel();self.cursor_target=None;self.cursor_mode=False
         self.behaviour.action(action,None if action=="sleep" else duration)
         if action in ("walk","elegant_walk"):
             area=nearest_area(self.x(),self.y(),self.areas())
@@ -85,8 +115,11 @@ class PetWindow(QWidget):
             if sound:self.audio.play(sound)
         self.render_frame();return True
     def play_step(self,action,duration):return self.perform_action(action,duration,False)
-    def tease(self):self.director.tease(self.play_step)
+    def tease(self):
+        if self.furniture:self.furniture.cancel()
+        self.director.tease(self.play_step)
     def poke(self):
+        if self.furniture:self.furniture.cancel()
         self.poke_until=time.monotonic()+.5;self.director.poke(self.play_step);self.say("poke")
     def chase_cursor(self,force=False):
         point=QCursor.pos();distance=math.hypot(point.x()-self.geometry().center().x(),point.y()-self.geometry().center().y())
@@ -98,6 +131,7 @@ class PetWindow(QWidget):
         self.cursor_target=clamp_position(point.x()-self.width()/2-35,point.y()-self.height()/2+40,self.width(),self.height(),area)
         self.cursor_mode=True;self.director.chase(self.play_step,random.random()<.35);return True
     def motion_interactions(self,now,dt):
+        if self.work_mode:return
         prefs=self.life.data["preferences"]
         rate=self.autonomy.rate
         if rate!=self.last_autonomy_rate:
@@ -142,7 +176,7 @@ class PetWindow(QWidget):
     def screen_maps(self):
         return [{"name":s.name(),"origin":(s.geometry().x(),s.geometry().y()),"scale":s.devicePixelRatio()} for s in QApplication.screens()]
     def save(self):
-        self.settings.data["position"]=[self.x(),self.y()]
+        self.settings.data["work_position" if self.work_mode else "position"]=[self.x(),self.y()]
         self.settings.save()
     def repair_position(self):
         area=nearest_area(self.x(),self.y(),self.areas())
@@ -151,6 +185,7 @@ class PetWindow(QWidget):
         self.float_pos=clamp_position(self.x(),self.y(),self.width(),self.height(),area)
         self.move(round(self.float_pos[0]),round(self.float_pos[1]))
     def resize_pet(self,width,save=True):
+        if self.work_mode:return
         old_center=self.geometry().center();bottom=self.geometry().bottom()
         area=nearest_area(self.x(),self.y(),self.areas())
         width=int(max(80,min(420,width,area.w-24,(area.h-24)/1.3)))
@@ -162,12 +197,17 @@ class PetWindow(QWidget):
             self.repair_position();self.render_frame()
         if save:self.save()
     def height_for(self,width):
-        if self.dragging:return self.height()
-        state=self.behaviour.state
-        art_state=self.pose_state(state)
-        ratio=max(frame.height()/frame.width() for frame in self.art.frames[art_state])
-        return max(50,int((width-16)*ratio+16))
+        return width if self.work_mode else self.art.stage_height(width)
     def render_frame(self):
+        if self.work_mode:
+            key=("work",self.width())
+            if self.last_art_key!=key:
+                from PySide6.QtGui import QPixmap
+                canvas=QPixmap(self.size());canvas.fill(Qt.GlobalColor.transparent)
+                image=self.work_icon.scaled(self.size()-QSize(8,8),Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation)
+                painter=QPainter(canvas);painter.drawPixmap((self.width()-image.width())//2,(self.height()-image.height())//2,image);painter.end()
+                self.pixmap=canvas;self.setMask(QRegion(canvas.mask()));self.last_art_key=key;self.update()
+            return
         wanted_height=self.height_for(self.width())
         if self.height()!=wanted_height:
             bottom=self.y()+self.height()
@@ -198,19 +238,22 @@ class PetWindow(QWidget):
             self.behaviour.speed=(42 if months>=84 else 48 if months<3 else 66 if months<12 else 58)*(.4+activity/100)
             for message in self.life.tick(self.behaviour.state=="sleep"):
                 self.bubble.speak(message,self.rect_global(),self.areas())
-            self.obstacles=self.observer.query(self.screen_maps())+self.desktop.obstacles()
+            external=self.observer.query(self.screen_maps());self.desktop.window_surfaces=external
+            self.obstacles=external+self.desktop.obstacles()
             self.desktop.repair()
             if not self.dragging:self.repair_position()
-        if not self.dragging and not self.pressed and not self.menu_open:
+        if not self.work_mode and not self.furniture and not self.dragging and not self.pressed and not self.menu_open:
             area=nearest_area(self.x(),self.y(),self.areas())
             self.float_pos=self.behaviour.tick(*self.float_pos,self.width(),self.height(),area,self.obstacles,dt,self.settings.data["roaming"] and self.life.data["preferences"]["activity"]>0)
             self.move(round(self.float_pos[0]),round(self.float_pos[1]))
             if self.behaviour.edge_contact and now-self.last_edges>8/self.autonomy.rate:
                 self.last_edges=now;self.say("edge")
-        if now>=self.next_speech_at and self.behaviour.state!="sleep" and not self.menu_open:
+        if not self.work_mode and now>=self.next_speech_at and self.behaviour.state!="sleep" and not self.menu_open:
             self.say("idle")
         self.render_frame()
-        self.motion_interactions(now,dt)
+        if self.furniture:self.furniture.tick(now)
+        else:self.motion_interactions(now,dt)
+        self.desktop.tick_interest(now)
         if self.bubble.isVisible():self.bubble.place(self.rect_global(),self.areas())
         if self.probe:
             ui_probe=None
@@ -224,14 +267,17 @@ class PetWindow(QWidget):
                     if card.isVisible() and ui.frameGeometry().contains(point):cards[id]=[point.x(),point.y()]
                 clear=ui.clear_desktop_button.mapToGlobal(ui.clear_desktop_button.rect().center())
                 ui_probe={"rect":[ui.x(),ui.y(),ui.width(),ui.height()],"dpi":ui.devicePixelRatioF(),"nav":nav,"bag_cards":cards,"clear":[clear.x(),clear.y()]}
-            self.probe.write_text(json.dumps({"card_drag":getattr(self,"drag_debug",None),"dashboard":ui_probe,"desktop_props":[{"uid":w.uid,"item":w.id,"position":[w.x(),w.y()]} for w in self.desktop.widgets.values()],"position":[self.x(),self.y()],"size":[self.width(),self.height()],"state":self.behaviour.state,"obstacles":len(self.obstacles),"native_obstacles":self.observer.supported,"counts":self.counts,"masked":not self.mask().isEmpty(),"bubble_visible":self.bubble.isVisible(),"bubble":[self.bubble.x(),self.bubble.y(),self.bubble.width(),self.bubble.height()],"provider_error":self.observer.last_error}),encoding="utf-8")
+            self.probe.write_text(json.dumps({"work_mode":self.work_mode,"work_panel_visible":bool(self.work_panel and self.work_panel.isVisible()),"focus_visible":bool(self.focus_panel and self.focus_panel.isVisible()),"card_drag":getattr(self,"drag_debug",None),"dashboard":ui_probe,"desktop_props":[{"uid":w.uid,"item":w.id,"position":[w.x(),w.y()]} for w in self.desktop.widgets.values()],"position":[self.x(),self.y()],"size":[self.width(),self.height()],"state":self.behaviour.state,"obstacles":len(self.obstacles),"native_obstacles":self.observer.supported,"counts":self.counts,"masked":not self.mask().isEmpty(),"bubble_visible":self.bubble.isVisible(),"bubble":[self.bubble.x(),self.bubble.y(),self.bubble.width(),self.bubble.height()],"provider_error":self.observer.last_error}),encoding="utf-8")
     def say(self,kind):
         self.last_speech=time.monotonic();self.next_speech_at=self.last_speech+random.uniform(18,28)/self.autonomy.rate;self.bubble.speak(choose(kind),self.rect_global(),self.areas())
     def pet_head(self):
+        if self.furniture:self.furniture.cancel()
         self.life.care("pet");self.counts["head_pet"]+=1;self.director.stroke(self.play_step);self.say("pet")
     def feed(self):
+        if self.furniture:self.furniture.cancel()
         self.life.care("meal");self.counts["fed"]+=1;self.director.feed(self.play_step);self.say("feed")
     def toggle_sleep(self):
+        if self.furniture:self.furniture.cancel()
         self.director.cancel();self.cursor_mode=False;self.cursor_target=None
         if self.behaviour.state=="sleep":self.behaviour.wake();self.say("wake")
         else:self.perform_action("sleep");self.say("sleep")
@@ -258,6 +304,8 @@ class PetWindow(QWidget):
         menu.addAction("一键清理桌面摆件",self.desktop.clear)
         menu.addAction("逗年糕玩",self.tease)
         menu.addAction("戳一下（也可双击）",self.poke)
+        menu.addAction("退出工作模式" if self.work_mode else "工作模式 · 静态年糕",lambda:self.set_work_mode(not self.work_mode))
+        menu.addAction("专注与待办桌面小窗",self.open_focus)
         self.menu_open=True
         try:menu.exec(position)
         finally:self.menu_open=False;menu.deleteLater()
@@ -273,6 +321,8 @@ class PetWindow(QWidget):
         menu.addAction("一键清理桌面摆件",self.desktop.clear)
         menu.addAction("逗年糕玩",self.tease)
         menu.addAction("戳一下（也可双击）",self.poke)
+        menu.addAction("工作模式 / 正常模式",lambda:self.set_work_mode(not self.work_mode))
+        menu.addAction("专注与待办桌面小窗",self.open_focus)
         self.tray.setContextMenu(menu);self.tray_menu=menu
         self.tray.show()
     def mousePressEvent(self,event):
@@ -282,7 +332,7 @@ class PetWindow(QWidget):
     def mouseMoveEvent(self,event):
         if self.pressed:
             point=event.globalPosition().toPoint()
-            if self.stroke_mode:
+            if self.stroke_mode and not self.work_mode:
                 if (point-self.press_global).manhattanLength()>3 and self.director.ready("stroke",1.5):self.director.stroke(self.play_step)
                 return
             if not self.dragging and (point-self.press_global).manhattanLength()>4:
@@ -294,10 +344,11 @@ class PetWindow(QWidget):
     def mouseReleaseEvent(self,event):
         if event.button()==Qt.MouseButton.LeftButton and self.pressed:
             was_dragging=self.dragging;self.pressed=False;self.dragging=False
-            if was_dragging:self.counts["dragged"]+=1;self.behaviour.action("idle",2);self.repair_position();self.save()
+            if was_dragging:self.counts["dragged"]+=1;self.behaviour.action("idle",float("inf") if self.work_mode else 2);self.repair_position();self.save()
             else:
                 self.counts["clicked"]+=1
-                if not self.hold_fired and not self.stroke_mode and time.monotonic()>self.poke_until:self.pet_head()
+                if self.work_mode:self.open_work()
+                elif not self.hold_fired and not self.stroke_mode and time.monotonic()>self.poke_until:self.pet_head()
     def mouseDoubleClickEvent(self,event):
         if event.button()==Qt.MouseButton.LeftButton:
             self.pressed=True;self.poke();event.accept()
@@ -318,5 +369,7 @@ class PetWindow(QWidget):
     def closeEvent(self,event):
         self.timer.stop();self.audio.stop();self.desktop.shutdown();self.save();self.life.focus_pause();self.life.save();self.bubble.close()
         if self.life_window:self.life_window.shutdown()
+        for panel in (self.work_panel,self.focus_panel):
+            if panel:panel.close();panel.deleteLater()
         if self.tray:self.tray.hide()
         event.accept();QApplication.instance().quit()

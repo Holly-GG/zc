@@ -107,7 +107,7 @@ try:
     close(pet)
     # Owned real desktop props: same OS-input method as the cat, independent underlay.
     life_data=json.loads(life_path.read_text(encoding='utf-8'));life_data['preferences']['input_link']=False
-    life_data['desktop_items']=[dict(uid='native-water',item='water_fountain',x=350,y=350,width=112,water=100)]
+    life_data['desktop_items']=[dict(uid='native-water',item='water_fountain',x=350,y=350,width=112,water=100,pinned=True)]
     life_path.write_text(json.dumps(life_data),encoding='utf-8');probe.unlink();pet=launch();time.sleep(.3)
     def prop_handle():return u.FindWindowW(None,'年糕物件 · native-water')
     def prop_rect():
@@ -140,6 +140,23 @@ try:
     dash=state()['dashboard'];click(*ui_point(dash['clear'],dash));time.sleep(.25)
     data=json.loads(life_path.read_text(encoding='utf-8'))
     check(not state()['desktop_props'] and data['inventory']['water_fountain']==1,'cleanup returns placement to inventory without deleting owned stock')
+    close(pet)
+    # New dynamic objects use actual moving coordinates; legacy mask/drag test above pins its fixture.
+    life_data=json.loads(life_path.read_text(encoding='utf-8'))
+    life_data['inventory'].update(ball=1,mouse=1)
+    life_data['desktop_items']=[dict(uid='gravity-ball',item='ball',x=300,y=180,width=112,water=100),dict(uid='running-mouse',item='mouse',x=600,y=180,width=112,water=100)]
+    life_path.write_text(json.dumps(life_data),encoding='utf-8');probe.unlink();pet=launch();time.sleep(1.4)
+    dynamic={v['uid']:v for v in state()['desktop_props']}
+    check(dynamic['gravity-ball']['position'][1]>180,'ball falls under real elapsed-time gravity')
+    old_x=dynamic['running-mouse']['position'][0];time.sleep(.5)
+    dynamic={v['uid']:v for v in state()['desktop_props']}
+    check(abs(dynamic['running-mouse']['position'][0]-old_x)>5,'windup mouse runs on the real desktop')
+    close(pet)
+    saved=json.loads(settings.read_text(encoding='utf-8'));saved.update(work_mode=True,work_position=[650,250]);settings.write_text(json.dumps(saved),encoding='utf-8')
+    probe.unlink();pet=launch();check(state()['work_mode'] and state()['size']==[96,96],'work mode restores static compact photo icon')
+    before=state()['position'];time.sleep(1);check(state()['position']==before,'work icon stays still without input')
+    n=count();r=bounds();click(r.left+2,r.top+2);check(count()==n+1,'work icon transparent corner passes real OS clicks')
+    click(*body());check(state()['work_panel_visible'],'click static icon opens compact interactive conversation')
     close(pet)
     print('WINDOWS_DESKTOP_RESULT passed; native Win32 mouse input and window bounds verified on this runner',flush=True)
 except Exception as exc:

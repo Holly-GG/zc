@@ -42,7 +42,7 @@ class PaperPage(QWidget):
         p.end()
 from ..interaction.actions import ACTIONS as MOTIONS,MOOD_POOLS,SOUNDS
 ACTIONS={key:info.label for key,info in MOTIONS.items()}
-PENDING=["跳上真实家具","攀爬猫树","服饰穿戴","幼猫/老年独立模型","更连贯的长帧动作"]
+PENDING=["跳上真实家具","精确三维攀爬与肢体接触","服饰穿戴","幼猫/老年独立模型","更连贯的长帧动作"]
 class MoodCurve(QWidget):
     def __init__(self,engine):super().__init__();self.engine=engine;self.setMinimumHeight(110)
     def paintEvent(self,event):
@@ -59,7 +59,7 @@ class MoodCurve(QWidget):
 class LifeWindow(QMainWindow):
     def __init__(self,pet):
         super().__init__();self.pet=pet;self.engine=pet.life;self.setWindowTitle("年糕生活馆 · NIANGAO");area=self.screen().availableGeometry();width=min(860,area.width()-24);height=min(650,area.height()-56);self.resize(width,height);self.setMinimumSize(min(740,width),min(540,height));self.setStyleSheet(STYLE)
-        self.vault=SecretVault(self.engine.path.parent/"api-key.dpapi");self.client=AIClient(self.engine.data["ai"],self.vault,self.engine.profile_snapshot);self.history=[]
+        self.vault=pet.vault;self.client=AIClient(self.engine.data["ai"],self.vault,self.engine.profile_snapshot);self.history=[]
         base=QWidget();base.setObjectName("lifeRoot");self.setCentralWidget(base);outer=QVBoxLayout(base);row=QHBoxLayout();outer.addLayout(row)
         self.nav=QListWidget();self.nav.setFixedWidth(132);self.nav.setObjectName("navigation");self.stack=QStackedWidget();row.addWidget(self.nav);row.addWidget(self.stack,1)
         self.status=QLabel("本地保存 · 年糕的照片形象始终保留");self.status.setWordWrap(True);outer.addWidget(self.status)
@@ -205,6 +205,8 @@ class LifeWindow(QMainWindow):
     def focus_page(self,l):
         self.title(l,"一起认真，一起休息","计时依据实际经过时间；退出后暂停，不补发离线专注奖励。")
         self.focus_label=QLabel();self.focus_label.setObjectName("hero");l.addWidget(self.focus_label);row=QHBoxLayout();l.addLayout(row)
+        self.button(l,"打开独立专注与待办小窗",self.pet.open_focus)
+        self.button(l,"切换工作模式（静态头像）",lambda:self.pet.set_work_mode(not self.pet.work_mode))
         self.minutes=QSpinBox();self.minutes.setRange(1,180);self.minutes.setValue(25);self.minutes.setSuffix(" 分钟");row.addWidget(self.minutes)
         self.button(row,"开始",lambda:self.engine.focus_start(self.minutes.value()));self.button(row,"暂停",self.engine.focus_pause);self.button(row,"继续",self.engine.focus_resume)
         self.tasks=QListWidget();self.tasks.setMinimumHeight(220);self.tasks.itemChanged.connect(self.task_changed);l.addWidget(self.tasks)
@@ -232,7 +234,9 @@ class LifeWindow(QMainWindow):
         if not text:return
         self.chat_input.clear();self.chat_log.append("你："+__import__("html").escape(text))
         if text in ("年糕最可爱","小棕点"):self.engine.unlock_badge("鼻尖小棕点")
-        if not self.engine.data["ai"]["enabled"]:self.chat_log.append("年糕 [本地回应]：喵～我在这里陪你。先摸摸我的小脑袋，再喝一口水吧。");return
+        if not self.engine.data["ai"]["enabled"]:
+            from ..dialogue import respond
+            self.chat_log.append("年糕 [本地回应]："+respond(text));return
         self.chat_send.setEnabled(False);mood=self.engine.mood;history=list(self.history)
         def done(reply):
             self.chat_send.setEnabled(True);self.chat_log.append("年糕 [API]："+__import__("html").escape(reply));self.history.extend([{"role":"user","content":text},{"role":"assistant","content":reply}]);self.history=self.history[-8:];self.calibrate_date()
@@ -242,13 +246,17 @@ class LifeWindow(QMainWindow):
         if self.engine.data["preferences"]["network_time"] and self.client.server_date:self.engine.network_today=self.client.server_date;self.refresh()
     def diary_page(self,l):
         self.title(l,"猫爪日记","默认仅整理本地游戏事件；AI 日记需单独开启。日记和手写备注都保存在本机。")
-        self.calendar=QCalendarWidget();self.calendar.setMaximumHeight(240);self.calendar.selectionChanged.connect(self.load_diary);l.addWidget(self.calendar)
+        from .calendar_widget import ChineseCalendar
+        self.calendar=ChineseCalendar();self.calendar.setMaximumHeight(320);self.calendar.selectionChanged.connect(self.load_diary);l.addWidget(self.calendar)
+        self.calendar_info=QLabel();l.addWidget(self.calendar_info)
         self.diary_source=QLabel();l.addWidget(self.diary_source);self.diary_text=QTextEdit();self.diary_text.setMinimumHeight(160);l.addWidget(self.diary_text)
         self.diary_note=QTextEdit();self.diary_note.setPlaceholderText("给今天留一句自己的话");self.diary_note.setMaximumHeight(85);l.addWidget(self.diary_note)
         row=QHBoxLayout();l.addLayout(row);self.button(row,"生成本地日记",self.generate_diary);self.button(row,"生成 AI 日记",self.generate_ai_diary);self.button(row,"保存修改",self.save_diary)
         row=QHBoxLayout();l.addLayout(row);self.button(row,"导出 TXT",lambda:self.export_diary("txt"));self.button(row,"导出 PNG",lambda:self.export_diary("png"));self.load_diary()
     def diary_day(self):return self.calendar.selectedDate().toString("yyyy-MM-dd")
     def load_diary(self):
+        from .calendar_cn import china_now,lunar_label
+        self.calendar_info.setText(self.diary_day()+" · "+lunar_label(date.fromisoformat(self.diary_day()),True)+"\n中国标准时间 UTC+08:00 · 2020–2069")
         record=self.engine.data["diaries"].get(self.diary_day(),{});self.diary_text.setPlainText(record.get("text",""));self.diary_note.setPlainText(record.get("note",""));self.diary_source.setText(record.get("source","这一天还没有日记"))
     def generate_diary(self):self.engine.local_diary(self.diary_day());self.load_diary();self.notice("已根据实际游戏事件生成")
     def save_diary(self):

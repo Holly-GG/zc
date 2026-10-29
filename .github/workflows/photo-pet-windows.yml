@@ -61,7 +61,7 @@ jobs:
           $process = Start-Process -FilePath ./dist/Niangao-PhotoPet.exe -ArgumentList '--motion-smoke','--settings',"$env:RUNNER_TEMP/motion-smoke/settings.json",'--probe',"$env:RUNNER_TEMP/motion-smoke/probe.json" -PassThru
           if (-not $process.WaitForExit(120000)) { $process.Kill(); throw 'Motion smoke timeout' }
           if ($process.ExitCode -ne 0) { throw "Motion smoke failed: $($process.ExitCode)" }
-          'Packaged 47 actions, 32 new pose resources and 9 sound families PASS' | Set-Content test-results/motion-smoke.log
+          'Packaged 49 actions, 32 new pose resources and 9 sound families PASS' | Set-Content test-results/motion-smoke.log
       - name: Packaged stationery desktop smoke
         env:
           QT_QPA_PLATFORM: offscreen
@@ -69,7 +69,15 @@ jobs:
           $process = Start-Process -FilePath ./dist/Niangao-PhotoPet.exe -ArgumentList '--desktop-smoke','--settings',"$env:RUNNER_TEMP/stationery-smoke/settings.json",'--probe',"$env:RUNNER_TEMP/stationery-smoke/probe.json" -PassThru
           if (-not $process.WaitForExit(120000)) { $process.Kill(); throw 'Desktop smoke timeout' }
           if ($process.ExitCode -ne 0) { throw "Desktop smoke failed: $($process.ExitCode)" }
-          'Packaged 44 images, no 3D space, mandatory profile, fountain and cleanup PASS' | Set-Content test-results/stationery-smoke.log
+          'Packaged 50 images, no 3D space, mandatory profile, fountain and cleanup PASS' | Set-Content test-results/stationery-smoke.log
+      - name: Packaged expanded desktop features smoke
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          $process = Start-Process -FilePath ./dist/Niangao-PhotoPet.exe -ArgumentList '--expanded-smoke','--settings',"$env:RUNNER_TEMP/expanded-smoke/settings.json",'--probe',"$env:RUNNER_TEMP/expanded-smoke/probe.json" -PassThru
+          if (-not $process.WaitForExit(120000)) { $process.Kill(); throw 'Expanded smoke timeout' }
+          if ($process.ExitCode -ne 0) { throw "Expanded smoke failed: $($process.ExitCode)" }
+          'Work icon, lunar calendar, focus, dialogue, gravity, climb and food PASS' | Set-Content test-results/expanded-smoke.log
       - name: Native Windows desktop acceptance
         run: |
           python tools/test_windows_desktop.py --exe dist/Niangao-PhotoPet.exe --output test-results/native 2>&1 | Tee-Object test-results/windows-desktop.log

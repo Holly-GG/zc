@@ -10,6 +10,7 @@ def main():
     parser.add_argument("--suite-smoke",action="store_true")
     parser.add_argument("--motion-smoke",action="store_true")
     parser.add_argument("--desktop-smoke",action="store_true")
+    parser.add_argument("--expanded-smoke",action="store_true")
     args=parser.parse_args()
     if args.probe:args.probe.parent.mkdir(parents=True,exist_ok=True)
     if sys.platform=="win32":
@@ -27,6 +28,32 @@ def main():
     if font_id>=0:app.setFont(QFont(QFontDatabase.applicationFontFamilies(font_id)[0],10))
     window=PetWindow(Settings(args.settings),args.probe)
     window.show()
+    if args.expanded_smoke:
+        def expanded_smoke():
+            try:
+                from datetime import date
+                from niangao.life.calendar_cn import lunar_label
+                from niangao.dialogue import _CORPUS
+                from niangao.prop_physics import Body
+                from niangao.geometry import Rect
+                assert len(_CORPUS)==1000 and lunar_label(date(2025,1,29))=="春节"
+                normal=window.size();window.set_work_mode(True);assert window.width()==96
+                image=window.pixmap.toImage();window.render_frame();assert image==window.pixmap.toImage()
+                window.open_work();window.work_panel.text.setText("今天要专注工作");window.work_panel.send()
+                assert window.work_panel.isVisible();window.set_work_mode(False);assert window.size()==normal
+                window.open_focus();assert window.focus_panel.isVisible()
+                body=Body(100,100)
+                for _ in range(120):body.advance(1/60,100,100,Rect(0,0,1200,900))
+                assert body.grounded and body.y==788
+                assert window.perform_action("climb") and window.perform_action("climb_top")
+                window.life.data["inventory"]["freeze_dried"]=1
+                assert window.desktop.place("freeze_dried")[0]
+                uid=next(w.uid for w in window.desktop.widgets.values() if w.id=="freeze_dried")
+                assert window.desktop.drop_piece(uid) and window.desktop.widgets[uid].record["remaining"]==7
+                window.desktop.clear()
+                print("EXPANDED_SMOKE passed: normalized stage, work icon/local chat, focus widget, lunar dates, 1000 lines, gravity, climb assets, single-piece food",flush=True);window.close()
+            except Exception:traceback.print_exc();app.exit(1)
+        QTimer.singleShot(1200,expanded_smoke)
     if args.desktop_smoke:
         def desktop_smoke():
             try:
@@ -43,7 +70,7 @@ def main():
                 assert window.desktop.activate(uid) and w.record["water"]==80
                 window.desktop.refill(uid);assert w.record["water"]==100
                 window.desktop.clear();assert not window.desktop.widgets
-                print("DESKTOP_SMOKE passed: 8 pages, no 3D space, 44 product images, mandatory profile, fountain drink/refill and cleanup",flush=True);window.close()
+                print("DESKTOP_SMOKE passed: 8 pages, no 3D space, 50 product images, mandatory profile, fountain drink/refill and cleanup",flush=True);window.close()
             except Exception:traceback.print_exc();app.exit(1)
         QTimer.singleShot(1200,desktop_smoke)
     if args.motion_smoke:
@@ -74,7 +101,7 @@ def main():
                 print("LIFE_SMOKE passed: 8 pages, care/action, task, diary",flush=True);window.close()
             except Exception:traceback.print_exc();app.exit(1)
         QTimer.singleShot(1200,suite_smoke)
-    elif not args.smoke and not args.probe and not args.motion_smoke and not args.desktop_smoke:
+    elif not args.smoke and not args.probe and not args.motion_smoke and not args.desktop_smoke and not args.expanded_smoke and not window.work_mode:
         QTimer.singleShot(700,window.open_life)
     if args.smoke:
         def smoke():

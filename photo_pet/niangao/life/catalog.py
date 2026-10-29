@@ -19,8 +19,8 @@ CATALOG=[
  item("bed","软垫猫窝","家具",40,"furniture"),item("bowl","食盆水盆","家具",25,"furniture"),
  item("scratcher","猫抓板","家具",35,"furniture"),item("rug","暖色地毯","家具",45,"furniture"),
  item("plant","安全绿植摆件","家具",30,"furniture"),item("lamp","陪伴小台灯","家具",55,"furniture"),
- item("tree","猫爬架","家具",100,"furniture",note="可摆放；攀爬动画未完成"),
- item("hammock","窗台吊床","家具",80,"furniture",note="可摆放；跳入动画未完成"),item("litter","猫砂盆","家具",45,"furniture"),
+ item("tree","猫爬架","家具",100,"furniture",note="桌面平台互动；照片姿态与路径演出，非 3D 骨骼攀爬"),
+ item("hammock","窗台吊床","家具",80,"furniture",note="桌面休息与瞭望"),item("litter","猫砂盆","家具",45,"furniture"),
  item("bow","蝴蝶结","装扮",45,"outfit",ready=False,note="服饰贴合与穿模检查未完成，不出售"),
  item("scarf","节日围巾","装扮",65,"outfit",ready=False,note="长毛与布料碰撞未完成，不出售"),
  item("crown","小皇冠","装扮",80,"outfit",ready=False,note="头部适配未完成，不出售"),
@@ -39,9 +39,19 @@ CATALOG.extend([
  item("wash_basin","泡泡洗澡盆","照料",45,"furniture",note="点击进行虚拟清洁"),
  item("health_kit","安心照料包（虚拟）","照料",35,"furniture",note="游戏内健康照料，不替代兽医诊断"),
  item("water_bottle","随身补水瓶","食品",8,effect={"health":2},note="虚拟补水用品，可摆放与使用")])
+CATALOG.extend([
+ item("tunnel","躲猫猫隧道","玩具",55,"toy",{"mood":12}),
+ item("laser","小爪激光笔","玩具",38,"toy",{"mood":9},note="模拟红点，不控制系统光标"),
+ item("soft_bed","奶油软垫窝","家具",48,"furniture"),
+ item("blanket","云朵小毯子","家具",30,"furniture"),
+ item("garden_patch","蝴蝶草地垫","家具",65,"furniture",note="二维桌面摆件，非 3D 空间"),
+ item("freeze_piece","一颗冻干","食品",2,effect={"satiety":2,"mood":2},minimum=3,note="冻干右键一次掉一颗")])
 BY_ID={x["id"]:x for x in CATALOG}
 def is_placeable(id):
     it=BY_ID.get(id)
     return bool(it and it["ready"] and it["kind"] not in ("import","room"))
 
 SCENES={"desk":"书桌","living":"客厅","bedroom":"卧室","garden":"花园草地","balcony":"阳台","kitchen":"厨房"}
+
+LARGE_ITEMS={"tree":230,"hammock":210,"tunnel":190,"bed":180,"soft_bed":180,"rug":190,"blanket":180,"garden_patch":220}
+def desktop_width(id):return 38 if id=="freeze_piece" else LARGE_ITEMS.get(id,112)

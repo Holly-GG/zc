@@ -44,6 +44,19 @@ class CatArt:
         # Decode before first interactive frame: lazy alpha scans blocked mouse/probe processing.
         for key in self.extra:self.ensure(key)
         self.atlases.clear()
+        self.head_pixels=json.loads(asset_path("motion/scale.json").read_text())["head_pixels"]
+        self.stage_units=max(max(frame.width()/self.head_pixels[key][i] for i,frame in enumerate(frames)) for key,frames in self.frames.items())
+        self.height_units=max(max(frame.height()/self.head_pixels[key][i] for i,frame in enumerate(frames)) for key,frames in self.frames.items())
+    def stage_height(self,width):
+        return round((width-16)*self.height_units/self.stage_units+20)
+    def projection(self,state,index,width,height):
+        source=self.frames[state][index]
+        if state not in self.head_pixels:
+            scale=min((width-16)/source.width(),(height-20)/source.height())
+        else:scale=min((width-16)/self.stage_units,(height-20)/self.height_units)/self.head_pixels[state][index]
+        w,h=source.width()*scale,source.height()*scale
+        return QRectF((width-w)/2,height-h-10,w,h)
+
 
     def ensure(self,state):
         if state in self.frames:return state
@@ -85,10 +98,10 @@ class CatArt:
         source=self.frames[state][frame_index]
         canvas=QPixmap(width,height);canvas.fill(Qt.GlobalColor.transparent)
         margin=8
-        ratio=min((width-margin*2)/source.width(),(height-margin*2-abs(bob))/source.height())
-        w,h=source.width()*ratio,source.height()*ratio
+        target=self.projection(state,frame_index,width,height)
+        target.translate(0,bob)
         painter=QPainter(canvas);painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
-        painter.drawImage(QRectF((width-w)/2,height-h-margin+bob,w,h),source)
+        painter.drawImage(target,source)
         painter.end()
         # OS region follows the alpha bitmap, including paw gaps and concavities.
         mask=canvas.mask()

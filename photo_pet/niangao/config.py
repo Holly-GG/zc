@@ -1,7 +1,7 @@
 from pathlib import Path
 import json, os, tempfile, math
 
-DEFAULTS={"name":"年糕","width":240,"always_on_top":True,"position":None,"roaming":True}
+DEFAULTS={"name":"年糕","width":240,"always_on_top":True,"position":None,"roaming":True,"work_mode":False,"work_position":None,"work_panel_position":None,"focus_position":None}
 
 def config_path():
     return Path(os.environ.get("APPDATA", str(Path.home()/".config")))/"NiangaoPhotoPet"/"settings.json"
@@ -20,11 +20,11 @@ class Settings:
         width=self.data["width"]
         if not isinstance(width,(int,float)) or not math.isfinite(width): width=240
         self.data["width"]=int(max(80,min(420,width)))
-        for key in ("always_on_top","roaming"):
+        for key in ("always_on_top","roaming","work_mode"):
             if not isinstance(self.data[key],bool): self.data[key]=DEFAULTS[key]
-        pos=self.data["position"]
-        if not (isinstance(pos,list) and len(pos)==2 and all(isinstance(v,(int,float)) and math.isfinite(v) for v in pos)):
-            self.data["position"]=None
+        for key in ("position","work_position","work_panel_position","focus_position"):
+            pos=self.data[key]
+            if not (isinstance(pos,list) and len(pos)==2 and all(isinstance(v,(int,float)) and math.isfinite(v) for v in pos)):self.data[key]=None
 
     def save(self):
         temporary=None

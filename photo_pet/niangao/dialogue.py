@@ -1,13 +1,15 @@
 import random
-LINES={
- "poke":["哼唧，小棕点也有脾气的。","吓我一跳，摸摸头就原谅你。"],
- "greet":["年糕上班：负责可爱。","你忙你的，我巡逻一下～","鼻子上的小点，是我的签名。"],
- "idle":["这块桌面，归猫猫管理。","你的光标看起来很好追。","我没有捣乱，只是在检查。","摸鱼可以，记得摸猫。"],
- "pet":["呼噜呼噜……手不要停。","批准你再摸三分钟！","今天的摸摸，满分。"],
- "feed":["这口零食，我记在心里啦。","小肚子说：谢谢款待！","吃饱了，继续保护桌面。"],
- "sleep":["先睡一会儿，梦里继续巡逻。","呼噜……有事右键叫我。"],
- "wake":["年糕重新上线！","刚才梦见一整箱小鱼干。"],
- "edge":["这里是窗沿，我绕一下～","发现一堵看不见的小墙。","这条边边，很适合猫猫探险。"],
- "drag":["猫猫搬家中，请轻拿轻放。","起飞！目的地由你决定。"],
- "resize":["大小刚刚好，可爱不打折。","变大变小，鼻尖的小点都在。"]}
-def choose(kind,rng=None):return (rng or random).choice(LINES.get(kind,LINES["idle"]))
+import json
+from collections import defaultdict,deque
+from .art import asset_path
+_CORPUS=json.loads(asset_path('data/dialogue.json').read_text(encoding='utf-8'))
+_POOLS=defaultdict(list)
+_RECENT=defaultdict(lambda:deque(maxlen=8))
+for _row in _CORPUS:_POOLS[_row['context']].append(_row['text'])
+def choose(kind,rng=None):
+    kind=kind if kind in _POOLS else 'idle'
+    choices=[text for text in _POOLS[kind] if text not in _RECENT[kind]]
+    text=(rng or random).choice(choices or _POOLS[kind]);_RECENT[kind].append(text);return text
+KEYWORDS=[(('喝水','补水'),'water'),(('吃饭','午饭','晚饭','早餐'),'feed'),(('累','休息'),'tired'),(('难过','伤心','焦虑'),'comfort'),(('睡','晚安'),'night'),(('开心','成功'),'happy'),(('学习','工作','专注','写作','代码'),'focus')]
+def context_for(text):return next((context for words,context in KEYWORDS if any(word in text for word in words)),'todo')
+def respond(text):return choose(context_for(text))

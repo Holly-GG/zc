@@ -2,6 +2,7 @@
 import json,urllib.request,urllib.parse,urllib.error,sys
 from pathlib import Path
 from email.utils import parsedate_to_datetime
+from .calendar_cn import CHINA
 class SecretVault:
     def __init__(self,path):self.path=Path(path);self.memory=""
     def save(self,key):
@@ -61,7 +62,7 @@ class AIClient:
                 if len(raw)>2_000_000:raise ValueError("API 响应过大")
                 header=response.headers.get("Date")
                 if header:
-                    try:self.server_date=parsedate_to_datetime(header).astimezone().date()
+                    try:self.server_date=parsedate_to_datetime(header).astimezone(CHINA).date()
                     except (ValueError,TypeError):pass
                 data=json.loads(raw)
             content=data["choices"][0]["message"]["content"]
