@@ -25,6 +25,10 @@ Windows 10/11 x64，先退出旧版再双击新版，无需安装 Python、Godot
 - “专注与待办”增加可独立摆放的小窗。添加/完成任务及猫靠近时可响应任务关键词；只读取你填写的待办，不识别屏幕其他文字。
 - 1000 条按 40 个场景组合编写的本地短句，最近八条避免重复；本地聊天按关键词选择，联网时仍强制读取最新档案。
 
+## 模型 API
+
+支持 OpenAI Chat Completions / Responses、Claude Messages、Gemini 原生文本接口，提供 DeepSeek 等常见平台预设及“保存并测试连接”。真实模型 ID 由用户控制台决定；协议自测不能代替真实账户连接。Key 仅在应用密码框填写，勿发到聊天。[兼容范围与测试步骤](API_COMPATIBILITY.md)。
+
 ## 开发与构建
 
 Python 3.12、lunar-python 1.4.8（MIT）、PySide6 6.8.3、PyInstaller 6.13.0、pytest 8.3.5。

@@ -306,12 +306,25 @@ class LifeWindow(QMainWindow):
         for key,label in SOUNDS.items():self.sound_choice.addItem(label,key)
         row.addWidget(self.sound_choice);self.button(row,"试听已选音效",self.preview_sound);self.button(row,"立即停止音效",self.pet.audio.stop)
         label=QLabel("仅检测是否按键，不安装键盘钩子、不读取屏幕内容。声音在本机合成，可随时静音。系统音量通知、联网天气与开机启动仍未接入。");label.setWordWrap(True);sound_layout.addWidget(label)
-        group=QGroupBox("可选联网 AI · OpenAI 兼容接口");f=QFormLayout(group);l.addWidget(group)
+        group=QGroupBox("可选联网 AI · 多平台协议适配");f=QFormLayout(group);l.addWidget(group)
         self.ai_enabled=QCheckBox("允许发送聊天文字及年糕档案");self.ai_enabled.setChecked(self.engine.data["ai"]["enabled"]);f.addRow(self.ai_enabled)
         self.ai_diary=QCheckBox("另行允许发送游戏事件及年糕档案用于 AI 日记");self.ai_diary.setChecked(self.engine.data["ai"]["diary_enabled"]);f.addRow(self.ai_diary)
+        from .providers import PRESETS,PROTOCOLS
+        self.api_presets=QComboBox()
+        for name,*_ in PRESETS:self.api_presets.addItem(name)
+        f.addRow("平台预设",self.api_presets)
+        self.api_protocol=QComboBox()
+        for key,label in PROTOCOLS.items():self.api_protocol.addItem(label,key)
+        self.api_protocol.setCurrentIndex(max(0,self.api_protocol.findData(self.engine.data["ai"]["protocol"])));f.addRow("接口协议",self.api_protocol)
         self.base_url=QLineEdit(self.engine.data["ai"]["base_url"]);f.addRow("API 地址",self.base_url);self.model=QLineEdit(self.engine.data["ai"]["model"]);f.addRow("模型",self.model)
+        self.api_presets.activated.connect(self.apply_api_preset)
+        self.api_tokens=QSpinBox();self.api_tokens.setRange(64,16384);self.api_tokens.setValue(self.engine.data["ai"]["max_tokens"]);f.addRow("输出预算上限",self.api_tokens)
+        self.api_timeout=QSpinBox();self.api_timeout.setRange(10,180);self.api_timeout.setSuffix(" 秒");self.api_timeout.setValue(self.engine.data["ai"]["timeout"]);f.addRow("请求超时",self.api_timeout)
+        hint=QLabel("模型 ID 以服务商控制台为准；预设不代表所有账户可用。支持基础地址或完整接口地址。思考模型自动增加预算，连接测试也可能产生少量费用。");hint.setWordWrap(True);f.addRow(hint)
         self.key=QLineEdit();self.key.setEchoMode(QLineEdit.EchoMode.Password);self.key.setPlaceholderText("留空保留旧密钥；Windows 使用当前用户 DPAPI 加密");f.addRow("API Key",self.key)
         self.button(f,"保存 API 配置",self.save_ai);self.button(f,"删除密钥",lambda:(self.vault.clear(),self.notice("密钥已删除")))
+        self.api_test_button=self.button(f,"保存并测试连接",self.test_api_connection)
+        self.api_result=QLabel("密钥仅在本机填写，不要发送到聊天窗口。");self.api_result.setWordWrap(True);f.addRow(self.api_result)
         note=QLabel("未完成：服饰绑定、真实照片重建、幼年/老年独立模型、复杂家具攀爬、Live2D、移动端。默认照片动作由参考图 AI 补全；请以照片为长相依据。");note.setWordWrap(True);l.addWidget(note)
     def interaction_pref(self,key,value):
         self.set_pref(key,value)
@@ -327,14 +340,36 @@ class LifeWindow(QMainWindow):
         self.engine.save();self.history.clear();self.notice("性格习惯已保存；每次 API 回复前都会重新读取")
     def save_birth(self):self.engine.data["birth_date"]=self.birth.date().toString("yyyy-MM-dd");self.engine.save();self.refresh();self.notice("生日已更新")
     def reset_age(self):self.engine.data["age_override"]=None;self.engine.data["age_frozen"]=False;self.engine.save();self.refresh()
+    def apply_api_preset(self,index):
+        from .providers import PRESETS
+        _,protocol,base,model=PRESETS[index]
+        self.api_protocol.setCurrentIndex(self.api_protocol.findData(protocol))
+        if base:self.base_url.setText(base)
+        self.model.setText(model);self.model.setPlaceholderText("填写此账户控制台可用的模型 / endpoint ID")
+        self.key.clear()
+        from urllib.parse import urlsplit
+        self.api_platform_changed=bool(base and urlsplit(base).hostname!=urlsplit(self.engine.data["ai"]["base_url"]).hostname)
+        self.api_result.setText("已选择平台预设；旧配置尚未改动。请填写对应密钥后保存。")
+    def test_api_connection(self):
+        if not self.save_ai():return
+        client=AIClient(dict(self.engine.data["ai"],enabled=True),self.vault,self.engine.profile_snapshot)
+        self.api_test_button.setEnabled(False);self.api_result.setText("正在向所填地址发送一条测试消息和年糕档案…")
+        def done(reply):self.api_test_button.setEnabled(True);self.api_result.setText(reply)
+        def failed(error):self.api_test_button.setEnabled(True);self.api_result.setText("连接失败："+error)
+        run_job(client.test_connection,done,failed)
     def save_ai(self):
         try:
             self.save_profile();self.engine.profile_snapshot()
             base=checked_base(self.base_url.text())
             if not self.model.text().strip():raise ValueError("模型名不能为空")
+            if len(self.model.text().strip())>200:raise ValueError("模型 ID 过长，请填写控制台的模型标识")
+            from urllib.parse import urlsplit
+            changed_host=urlsplit(base).hostname!=urlsplit(self.engine.data["ai"]["base_url"]).hostname
+            if (changed_host or getattr(self,"api_platform_changed",False)) and not self.key.text().strip():raise ValueError("切换平台或服务地址后，请重新填写对应平台的密钥，避免误用旧 Key")
             if self.key.text().strip():self.vault.save(self.key.text());self.key.clear()
-            self.engine.data["ai"].update(enabled=self.ai_enabled.isChecked(),diary_enabled=self.ai_diary.isChecked(),base_url=base,model=self.model.text().strip()[:120]);self.engine.save();self.notice("API 配置已保存；密钥不写入普通 JSON")
-        except (ValueError,OSError) as exc:self.notice(str(exc))
+            self.api_platform_changed=False
+            self.engine.data["ai"].update(enabled=self.ai_enabled.isChecked(),diary_enabled=self.ai_diary.isChecked(),base_url=base,model=self.model.text().strip()[:200],protocol=self.api_protocol.currentData(),max_tokens=self.api_tokens.value(),timeout=self.api_timeout.value());self.engine.save();self.notice("API 配置已保存；密钥不写入普通 JSON");return True
+        except (ValueError,OSError) as exc:self.notice(str(exc));return False
     def import_png(self):
         path,_=QFileDialog.getOpenFileName(self,"选择透明 PNG","","PNG (*.png)")
         if not path:return

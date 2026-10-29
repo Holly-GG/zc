@@ -20,7 +20,7 @@ class LifeEngine:
           "focus":{"duration":25,"remaining":1500,"active":False,"cycles":0},"travel":None,"postcards":[],
           "preferences":{"activity":60,"input_link":False,"cursor_chase":False,"emotion_actions":True,"sound":False,"volume":25,"diary_auto":False,"easter_eggs":True,
              "reminders":True,"weather":False,"latitude":0.0,"longitude":0.0,"d_day":"","network_time":False,"first_opened":False},
-          "ai":{"enabled":False,"diary_enabled":False,"base_url":"https://api.openai.com/v1","model":"gpt-4.1-mini"},
+          "ai":{"enabled":False,"diary_enabled":False,"base_url":"https://api.openai.com/v1","model":"gpt-4.1-mini","protocol":"openai_chat","max_tokens":700,"timeout":90},
           "last_wall":self.wall(),"effect":""}
         if self.path.exists():
             try:
@@ -96,6 +96,10 @@ class LifeEngine:
             if not isinstance(self.data["ai"].get(k),bool):self.data["ai"][k]=False
         for k,default in (("base_url","https://api.openai.com/v1"),("model","gpt-4.1-mini")):
             if not isinstance(self.data["ai"].get(k),str):self.data["ai"][k]=default
+        from .providers import PROTOCOLS,bounded_int
+        if self.data["ai"].get("protocol") not in PROTOCOLS:self.data["ai"]["protocol"]="openai_chat"
+        self.data["ai"]["max_tokens"]=bounded_int(self.data["ai"].get("max_tokens"),700,64,16384)
+        self.data["ai"]["timeout"]=bounded_int(self.data["ai"].get("timeout"),90,10,180)
         v=self.data["age_override"]
         if v is not None and (not math.isfinite(v) or v<0 or v>=10000):self.data["age_override"]=None
         focus=self.data["focus"]

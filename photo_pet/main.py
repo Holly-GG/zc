@@ -36,6 +36,10 @@ def main():
                 from niangao.dialogue import _CORPUS
                 from niangao.prop_physics import Body
                 from niangao.geometry import Rect
+                from niangao.life.providers import build_request,parse_reply
+                url,headers,payload,_=build_request(dict(protocol="openai_chat",base_url="https://api.deepseek.com/v1/chat/completions",model="deepseek-chat"),[{"role":"user","content":"test"}],"smoke-placeholder",True)
+                assert url=="https://api.deepseek.com/v1/chat/completions" and payload["stream"] is False
+                assert parse_reply({"content":[{"type":"text","text":"ok"}]},"anthropic")=="ok"
                 assert len(_CORPUS)==1000 and lunar_label(date(2025,1,29))=="春节"
                 normal=window.size();window.set_work_mode(True);assert window.width()==160
                 before=window.pos();window.render_frame();assert window.pos()==before and window.work_pose in window.work_idle.POSES
