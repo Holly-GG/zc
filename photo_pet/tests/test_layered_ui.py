@@ -4,7 +4,7 @@ from pathlib import Path
 from PySide6.QtCore import Qt,QPoint
 from PySide6.QtGui import QImage
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QApplication,QPushButton,QLabel
+from PySide6.QtWidgets import QApplication,QPushButton,QLabel,QWidget
 
 def test_layer_assets_have_integrity():
  from niangao.art import asset_path
@@ -27,7 +27,8 @@ def test_nine_pages_fit_and_real_links_navigate(tmp_path):
     ui.nav.setCurrentRow(index)
     for _ in range(3):app.processEvents()
     scroll=ui.stack.widget(index);page=scroll.widget()
-    assert page.width()<=scroll.viewport().width(),(index,page.width(),scroll.viewport().width())
+    wide=[(w.metaObject().className(),w.objectName(),w.minimumSizeHint().width()) for w in page.findChildren(QWidget) if w.minimumSizeHint().width()>scroll.viewport().width()-44]
+    assert page.width()<=scroll.viewport().width(),(index,page.width(),scroll.viewport().width(),wide[:8])
     assert scroll.horizontalScrollBar().maximum()==0
     for label in page.findChildren(QLabel,'hero'):
      if label.isVisible():assert label.height()>=label.heightForWidth(label.width()),(index,label.text(),label.size())
