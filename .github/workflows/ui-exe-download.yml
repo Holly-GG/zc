@@ -31,8 +31,13 @@ jobs:
         env:
           QT_QPA_PLATFORM: offscreen
         run: |
-          python -m pytest -q tests/test_component_assets.py tests/test_window_entries.py tests/test_layered_ui.py
-          if ($LASTEXITCODE -ne 0) { throw 'UI checks failed' }
+          New-Item -ItemType Directory -Force test-results | Out-Null
+          python -m pytest -q tests/test_component_assets.py tests/test_window_entries.py tests/test_layered_ui.py --tb=short 2>&1 | Tee-Object test-results/download-ui-tests.log
+          $testExit = $LASTEXITCODE
+          if ($testExit -ne 0) {
+            python -c "from pathlib import Path; s=Path('test-results/download-ui-tests.log').read_text(encoding='utf-8-sig',errors='replace')[-14000:]; print('::error title=UI test detail::'+s.replace('%%','%%25').replace(chr(13),'%%0D').replace(chr(10),'%%0A'))"
+            exit $testExit
+          }
       - name: Build Windows x64 GUI executable
         run: python tools/build.py
       - name: Run packaged UI and functional checks
@@ -73,4 +78,5 @@ jobs:
             photo_pet/dist/*.exe
             photo_pet/dist/*.zip
             photo_pet/dist/*SHA256*.txt
+            photo_pet/test-results/*.log
           if-no-files-found: warn
