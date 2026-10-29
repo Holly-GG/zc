@@ -13,7 +13,7 @@ from .catalog import BY_ID,is_placeable
 from .profile import sanitize_profile
 from .item_art import item_pixmap
 from ..desktop_items import ItemDragCard
-from ..ui_controls import ClickSelectComboBox,ExplicitSpinBox
+from ..ui_controls import ClickSelectComboBox,ExplicitSpinBox,WrappingCheckBox
 from .ai import SecretVault,AIClient,checked_base
 from .jobs import run_job
 from ..theme import STYLE,STATE_COLORS
@@ -425,21 +425,21 @@ class LifeWindow(QMainWindow):
         form=QFormLayout();l.addLayout(form);activity=QSpinBox();activity.setRange(0,100);activity.setValue(self.engine.data["preferences"]["activity"]);activity.valueChanged.connect(lambda v:self.set_pref("activity",v));form.addRow("活动频率",activity)
         opacity=QSpinBox();opacity.setRange(30,100);opacity.setValue(100);opacity.valueChanged.connect(lambda v:self.pet.setWindowOpacity(v/100));form.addRow("桌宠不透明度 %",opacity)
         for key,label in [("easter_eggs","允许彩蛋"),("network_time","用 AI 服务 HTTP 日期校准生日计算（失败用本机日期）")]:
-            b=QCheckBox(label);b.setChecked(self.engine.data["preferences"][key]);b.toggled.connect(lambda v,k=key:self.set_pref(k,v));l.addWidget(b)
+            b=WrappingCheckBox(label);b.setChecked(self.engine.data["preferences"][key]);b.toggled.connect(lambda v,k=key:self.set_pref(k,v));l.addWidget(b)
         self.button(l,"切换桌宠置顶",self.pet.toggle_top);self.button(l,"导入自定义透明 PNG（单姿态）",self.import_png)
         sound_group=QGroupBox("动作联动与音效");sound_layout=QVBoxLayout(sound_group);l.addWidget(sound_group)
         for key,label in [("emotion_actions","根据心情自主播放动作"),("cursor_chase","允许追逐 / 蹲守光标（不捕获或移动系统鼠标）"),
                           ("input_link","允许打字联动：仅检测按键活动，不记录文字（Windows）"),("sound","启用合成示意音效（不是年糕真实录音）")]:
-            check=QCheckBox(label);check.setChecked(self.engine.data["preferences"][key]);check.toggled.connect(lambda value,k=key:self.interaction_pref(k,value));sound_layout.addWidget(check)
+            check=WrappingCheckBox(label);check.setChecked(self.engine.data["preferences"][key]);check.toggled.connect(lambda value,k=key:self.interaction_pref(k,value));sound_layout.addWidget(check)
         volume=QSpinBox();volume.setRange(0,100);volume.setValue(self.engine.data["preferences"]["volume"]);volume.setSuffix(" % 音效音量")
         volume.valueChanged.connect(lambda value:self.interaction_pref("volume",value));sound_layout.addWidget(volume)
         row=QHBoxLayout();sound_layout.addLayout(row);self.sound_choice=ClickSelectComboBox()
         for key,label in SOUNDS.items():self.sound_choice.addItem(label,key)
         row.addWidget(self.sound_choice);self.button(row,"试听已选音效",self.preview_sound);self.button(row,"立即停止音效",self.pet.audio.stop)
         label=QLabel("仅检测是否按键，不安装键盘钩子、不读取屏幕内容。声音在本机合成，可随时静音。系统音量通知、联网天气与开机启动仍未接入。");label.setWordWrap(True);sound_layout.addWidget(label)
-        group=QGroupBox("可选联网 AI · 多平台协议适配");f=QFormLayout(group);l.addWidget(group)
-        self.ai_enabled=QCheckBox("允许发送聊天文字及年糕档案");self.ai_enabled.setChecked(self.engine.data["ai"]["enabled"]);f.addRow(self.ai_enabled)
-        self.ai_diary=QCheckBox("另行允许发送游戏事件及年糕档案用于 AI 日记");self.ai_diary.setChecked(self.engine.data["ai"]["diary_enabled"]);f.addRow(self.ai_diary)
+        group=QGroupBox("可选联网 AI · 多平台协议适配");f=QFormLayout(group);f.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows);f.setSpacing(12);l.addWidget(group)
+        self.ai_enabled=WrappingCheckBox("允许发送聊天文字及年糕档案");self.ai_enabled.setChecked(self.engine.data["ai"]["enabled"]);f.addRow(self.ai_enabled)
+        self.ai_diary=WrappingCheckBox("另行允许发送游戏事件及年糕档案用于 AI 日记");self.ai_diary.setChecked(self.engine.data["ai"]["diary_enabled"]);f.addRow(self.ai_diary)
         from .providers import PRESETS,PROTOCOLS
         self.api_presets=ClickSelectComboBox()
         for name,*_ in PRESETS:self.api_presets.addItem(name)
