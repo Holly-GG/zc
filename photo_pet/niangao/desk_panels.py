@@ -56,6 +56,9 @@ class WorkPanel(DeskPanel):
         super().showEvent(event)
         self.ai_enabled.blockSignals(True);self.ai_enabled.setChecked(self.pet.life.data['ai']['enabled']);self.ai_enabled.blockSignals(False)
         self.refresh_status();(self.text if self.tabs.currentIndex()==0 else self.search_input).setFocus()
+    def sync_config(self):
+        self.ai_enabled.blockSignals(True);self.ai_enabled.setChecked(self.pet.life.data['ai']['enabled']);self.ai_enabled.blockSignals(False)
+        if not self.busy:self.refresh_status()
     def refresh_status(self):
         ai=self.pet.life.data['ai']
         self.status.setText(('API 对话已开启 · '+ai['model']) if ai['enabled'] else '当前为本地回应 · 勾选 API 对话可使用已配置接口')
@@ -103,7 +106,7 @@ class WorkPanel(DeskPanel):
         self.status.setText('API 正在回复 · 已附带最新性格、习惯和年龄…')
         client=AIClient(dict(self.pet.life.data['ai']),self.pet.vault,self.pet.life.profile_snapshot);history=list(self.history)
         def restore():
-            self.busy=False;self.text.setEnabled(True);self.send_button.setEnabled(True);self.clear_button.setEnabled(True);self.ai_enabled.setEnabled(True)
+            self.busy=False;self.text.setEnabled(True);self.send_button.setEnabled(True);self.clear_button.setEnabled(True);self.ai_enabled.setEnabled(True);self.sync_config()
             self.text.setFocus()
         def done(reply):
             if self.pet.shutting_down:return

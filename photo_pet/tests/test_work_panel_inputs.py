@@ -70,4 +70,5 @@ def test_work_chat_failure_keeps_input_and_is_not_reported_as_local_success(pet,
  panel.text.setText('这条需要重试');panel.send()
  assert not panel.busy and panel.text.text()=='这条需要重试' and '401' in panel.status.text()
  assert '这条没有收到 API 回复' in panel.log.toPlainText()
- pet.life.data['ai']['enabled']=False
+ ui=pet.life_window;ui.base_url.setText(pet.life.data['ai']['base_url']);ui.model.setText('test');ui.ai_enabled.setChecked(False)
+ assert ui.save_ai() and not panel.ai_enabled.isChecked() and '本地' in panel.status.text()

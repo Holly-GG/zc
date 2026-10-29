@@ -369,7 +369,9 @@ class LifeWindow(QMainWindow):
             if (changed_host or getattr(self,"api_platform_changed",False)) and not self.key.text().strip():raise ValueError("切换平台或服务地址后，请重新填写对应平台的密钥，避免误用旧 Key")
             if self.key.text().strip():self.vault.save(self.key.text());self.key.clear()
             self.api_platform_changed=False
-            self.engine.data["ai"].update(enabled=self.ai_enabled.isChecked(),diary_enabled=self.ai_diary.isChecked(),base_url=base,model=self.model.text().strip()[:200],protocol=self.api_protocol.currentData(),max_tokens=self.api_tokens.value(),timeout=self.api_timeout.value());self.engine.save();self.notice("API 配置已保存；密钥不写入普通 JSON");return True
+            self.engine.data["ai"].update(enabled=self.ai_enabled.isChecked(),diary_enabled=self.ai_diary.isChecked(),base_url=base,model=self.model.text().strip()[:200],protocol=self.api_protocol.currentData(),max_tokens=self.api_tokens.value(),timeout=self.api_timeout.value());self.engine.save()
+            if self.pet.work_panel:self.pet.work_panel.sync_config()
+            self.notice("API 配置已保存；密钥不写入普通 JSON");return True
         except (ValueError,OSError) as exc:self.notice(str(exc));return False
     def import_png(self):
         path,_=QFileDialog.getOpenFileName(self,"选择透明 PNG","","PNG (*.png)")
