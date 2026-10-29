@@ -16,8 +16,8 @@ def test_full_archive_restart_dates_json_and_no_truncation(tmp_path):
  now[0]+=timedelta(minutes=2);s.append(id,'user','第二天','local')
  reloaded=ChatStore(s.path);assert reloaded.transcript(id)[0]['content']==text
  assert len(reloaded.by_day('2026-10-29'))==2 and len(reloaded.by_day('2026-10-30'))==1
- snapshot=json.loads((tmp_path/'chat_sessions'/f'{id}.json').read_text());assert snapshot['messages'][0]['content']==text
- reloaded.export_json(tmp_path/'all.json');assert len(json.loads((tmp_path/'all.json').read_text())['messages'])==3
+ snapshot=json.loads((tmp_path/'chat_sessions'/f'{id}.json').read_text(encoding='utf-8'));assert snapshot['messages'][0]['content']==text
+ reloaded.export_json(tmp_path/'all.json');assert len(json.loads((tmp_path/'all.json').read_text(encoding='utf-8'))['messages'])==3
 
 def test_daily_reservations_are_atomic_and_reset_by_china_day(tmp_path):
  now=[datetime(2026,10,29,23,59,59,tzinfo=CHINA)];s=ChatStore(tmp_path/'chat.sqlite3',lambda:now[0])

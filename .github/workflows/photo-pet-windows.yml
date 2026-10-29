@@ -37,6 +37,10 @@ jobs:
           New-Item -ItemType Directory -Force test-results | Out-Null
           python -m pytest -q 2>&1 | Tee-Object test-results/unit.log
           if ($LASTEXITCODE -ne 0) { throw 'Unit/Qt tests failed' }
+      - name: Report failed unit diagnostics
+        if: failure()
+        run: |
+          python -c "from pathlib import Path; p=Path('test-results/unit.log'); s=p.read_text(encoding='utf-8-sig',errors='replace')[-18000:] if p.exists() else 'No test log'; print('::error title=Unit test detail::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
       - name: Build standalone exe
         run: python tools/build.py
       - name: Packaged exe smoke
