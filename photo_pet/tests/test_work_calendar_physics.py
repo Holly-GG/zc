@@ -113,3 +113,17 @@ def test_furniture_choreography_has_assets_and_can_be_interrupted(pet):
     assert pet.geometry().top()>=pet.screen().availableGeometry().top()
     pet.pet_head();assert session.cancelled and pet.furniture is None
     pet.desktop.clear()
+
+
+def test_network_time_rolls_over_without_another_api_request(tmp_path):
+    from niangao.life.engine import LifeEngine
+    from niangao.life.calendar_cn import CHINA
+    clock=[100.]
+    engine=LifeEngine(tmp_path/'time.json',clock=lambda:clock[0],wall=lambda:0)
+    engine.data['preferences']['network_time']=True
+    engine.calibrate_time(datetime(2026,10,29,23,59,50,tzinfo=CHINA))
+    assert engine.today()==date(2026,10,29)
+    clock[0]+=20
+    assert engine.today()==date(2026,10,30)
+    engine.data['preferences']['network_time']=False
+    assert engine.today()==date(1970,1,1)

@@ -41,7 +41,7 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self,req,fp,code,msg,headers,newurl):
         raise ValueError("API 重定向已阻止，请直接填写最终 HTTPS 接口地址")
 class AIClient:
-    def __init__(self,settings,vault,profile_provider=None):self.settings=settings;self.vault=vault;self.profile_provider=profile_provider;self.server_date=None
+    def __init__(self,settings,vault,profile_provider=None):self.settings=settings;self.vault=vault;self.profile_provider=profile_provider;self.server_date=None;self.server_time=None
     def request(self,messages):
         if not self.settings.get("enabled"):raise ValueError("联网 AI 未开启")
         if self.profile_provider is None:raise ValueError("缺少年糕档案，请先设置性格与生日；请求未发送")
@@ -62,7 +62,7 @@ class AIClient:
                 if len(raw)>2_000_000:raise ValueError("API 响应过大")
                 header=response.headers.get("Date")
                 if header:
-                    try:self.server_date=parsedate_to_datetime(header).astimezone(CHINA).date()
+                    try:self.server_time=parsedate_to_datetime(header).astimezone(CHINA);self.server_date=self.server_time.date()
                     except (ValueError,TypeError):pass
                 data=json.loads(raw)
             content=data["choices"][0]["message"]["content"]

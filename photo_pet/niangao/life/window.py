@@ -243,7 +243,7 @@ class LifeWindow(QMainWindow):
         def failed(message):self.chat_send.setEnabled(True);self.notice(message);self.chat_log.append("连接失败，可稍后重试；聊天未记入日记。")
         run_job(lambda:self.client.chat(text,mood,history),done,failed)
     def calibrate_date(self):
-        if self.engine.data["preferences"]["network_time"] and self.client.server_date:self.engine.network_today=self.client.server_date;self.refresh()
+        if self.engine.data["preferences"]["network_time"] and self.client.server_time:self.engine.calibrate_time(self.client.server_time);self.refresh()
     def diary_page(self,l):
         self.title(l,"猫爪日记","默认仅整理本地游戏事件；AI 日记需单独开启。日记和手写备注都保存在本机。")
         from .calendar_widget import ChineseCalendar

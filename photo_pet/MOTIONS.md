@@ -100,3 +100,7 @@
 Python 3.12 / PySide6 6.8.3。基础、界面、养成、API、序列、隐私开关、PCM 音频等 50 项测试；另有 47 个动作 ID 打包 smoke、128 帧轮廓检查、Linux X11 真实输入回归和 Windows 原生验收。最终发布结果以相应 GitHub Actions 运行与 ZIP 内日志为准，不能用开发环境模拟代替所有用户显卡/声卡/多屏回归。
 
 资源编码为无损 WebP；检查所有非透明 RGBA 像素与生成 PNG 一致。原始生成文件名与哈希见 assets/motion/provenance.json；矩形与轮廓片段在 atlases.json。编码和分帧脚本 tools/prepare_motion_assets.py、tools/component_frames.py，不在运行时联网生成图像。
+
+## 桌面家具扩展
+
+本次共 49 个动作 ID；新增 `climb` 三帧抓握和 `climb_top` 单帧蹲守，源图 `motion/climb.webp`。属于二维姿态/路径演出，不是完整骨骼攀爬。所有姿态统一固定舞台和头部尺度，配置见 `motion/scale.json`。工作模式使用独立静态头像，不轮播动作帧。

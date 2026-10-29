@@ -1,4 +1,4 @@
-from datetime import datetime,date
+from datetime import datetime,date,timedelta
 from .calendar_cn import china_now
 from pathlib import Path
 import json,os,time,uuid,math,random,tempfile
@@ -13,7 +13,7 @@ CARE={"meal":({"satiety":18},"吃了今天的基础餐"),"water":({"health":2},"
 class LifeEngine:
     def __init__(self,path,clock=None,wall=None):
         self.path=Path(path);self.clock=clock or time.monotonic;self.wall=wall or time.time
-        self.last_tick=self.clock();self.last_save=self.last_tick;self.cooldowns={};self.focus_deadline=None;self.error="";self.network_today=None
+        self.last_tick=self.clock();self.last_save=self.last_tick;self.cooldowns={};self.focus_deadline=None;self.error="";self.network_today=None;self.network_time=None;self.network_clock=None
         self.data={"version":3,"profile":{},"freeze_packets":[],"desktop_items":[],"expanded_starter":False,"desktop_starter":False,"birth_date":"2021-02-28","coins":150,"xp":0,"stats":dict(satiety=82,cleanliness=90,energy=85,mood=80,health=95),
           "inventory":{"fish":2,"bed":1,"bowl":1},"events":[],"diaries":{},"tasks":[],"mood_history":[],"badges":[],"daily":{},
           "age_override":None,"age_frozen":False,"scene":"desk","layouts":{},"layout_presets":{},
@@ -116,7 +116,14 @@ class LifeEngine:
         self.data["postcards"]=[v for v in self.data["postcards"] if isinstance(v,dict) and isinstance(v.get("place"),str)]
         self.data["badges"]=[v for v in self.data["badges"] if isinstance(v,str)]
         self.data["layout_presets"]={k:v for k,v in self.data["layout_presets"].items() if isinstance(v,dict) and v.get("scene") in SCENES and isinstance(v.get("items"),list)}
-    def today(self):return self.network_today or china_now(self.wall()).date()
+    def calibrate_time(self,server_time):
+        from .calendar_cn import CHINA
+        if server_time.tzinfo is None:raise ValueError("服务器时间缺少时区")
+        self.network_time=server_time.astimezone(CHINA);self.network_clock=self.clock();self.network_today=None
+    def today(self):
+        if self.network_time is not None and self.data["preferences"]["network_time"]:
+            return (self.network_time+timedelta(seconds=max(0,self.clock()-self.network_clock))).date()
+        return china_now(self.wall()).date()
     def age(self):return age_info(self.data["birth_date"],self.today(),self.data["age_override"])
     @property
     def level(self):return 1+self.data["xp"]//100

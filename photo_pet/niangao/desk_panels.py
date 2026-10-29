@@ -44,6 +44,7 @@ class WorkPanel(DeskPanel):
         client=AIClient(self.pet.life.data['ai'],self.pet.vault,self.pet.life.profile_snapshot)
         def done(reply):
             self.send_button.setEnabled(True);self.status.setText('API 已连接 · 性格、习惯和年龄已作为本次前提');self.reply(reply)
+            if self.pet.life.data["preferences"]["network_time"] and client.server_time:self.pet.life.calibrate_time(client.server_time)
             self.history.extend([{'role':'user','content':text},{'role':'assistant','content':reply}]);self.history=self.history[-8:]
         def failed(error):
             self.send_button.setEnabled(True);self.status.setText(str(error));self.reply(choose('offline'))
