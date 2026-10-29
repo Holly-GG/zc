@@ -6,13 +6,13 @@ from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QLabel,QPushButton
 from .art import asset_path
 from .dialogue import choose,respond,context_for
 from .geometry import nearest_area,clamp_position
-PAPER='QWidget{background:#fffaf0;color:#342d2b;font:12px "Microsoft YaHei";} QPushButton{background:#b8dbca;border:1px solid #715443;border-radius:7px;padding:6px;} QLineEdit,QTextBrowser,QListWidget{background:#f5f6ef;border:1px solid #b8dbca;border-radius:5px;padding:4px;}'
+from .theme import STYLE as PAPER
 class DeskPanel(QWidget):
     def __init__(self,pet,title,size,key):
         super().__init__(None,Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
-        self.pet=pet;self.key=key;self.setWindowTitle(title);self.resize(*size);self.setStyleSheet(PAPER)
+        self.pet=pet;self.key=key;self.setObjectName("lifeRoot");self.setWindowTitle(title);self.resize(*size);self.setStyleSheet(PAPER)
         self.layout=QVBoxLayout(self);self.layout.setContentsMargins(12,10,12,10)
-        self.heading=QLabel(title+' · 拖动标题栏移动');self.layout.addWidget(self.heading)
+        self.heading=QLabel(title);self.heading.setToolTip('拖动标题栏移动，关闭后保留桌宠');self.heading.setObjectName("brand");self.layout.addWidget(self.heading)
         self.last_pos=None
     def showEvent(self,event):
         point=self.pet.settings.data.get(self.key)
@@ -22,17 +22,18 @@ class DeskPanel(QWidget):
         self.pet.settings.data[self.key]=[self.x(),self.y()];self.pet.settings.save();event.ignore();self.hide()
 class WorkPanel(DeskPanel):
     def __init__(self,pet):
-        super().__init__(pet,'年糕 · 安静陪伴',(320,370),'work_panel_position')
+        super().__init__(pet,'年糕 · 安静陪伴',(320,400),'work_panel_position')
         self.status=QLabel('离线也能陪伴；联网聊天需在设置中启用 API');self.status.setWordWrap(True);self.layout.addWidget(self.status)
-        self.log=QTextBrowser();self.log.setMinimumHeight(130);self.layout.addWidget(self.log)
+        self.pose_label=QLabel('随机轻待机 / 不走动 / 点击回应');self.pose_label.setObjectName('chip');self.layout.addWidget(self.pose_label)
+        self.log=QTextBrowser();self.log.setMinimumHeight(80);self.layout.addWidget(self.log)
         self.text=QLineEdit();self.text.setPlaceholderText('和年糕说句话…');self.text.returnPressed.connect(self.send);self.layout.addWidget(self.text)
         row=QHBoxLayout();self.layout.addLayout(row)
         self.send_button=QPushButton('发送');self.send_button.clicked.connect(self.send);row.addWidget(self.send_button)
         for title,callback in [('摸摸',lambda:self.reply(choose('pet'))),('专注',pet.open_focus),('生活馆',pet.open_life)]:
             button=QPushButton(title);button.clicked.connect(callback);row.addWidget(button)
         button=QPushButton('退出工作模式');button.clicked.connect(lambda:pet.set_work_mode(False));self.layout.addWidget(button)
-        self.history=[];self.reply(choose('work'))
-    def reply(self,text):self.log.append('年糕：'+html.escape(str(text)))
+        self.history=[];self.reply('工作模式换成轻轻动的年糕啦。不走动，点我就陪你聊天。')
+    def reply(self,text):self.log.append('<p style="color:#507669;margin:6px 0;"><b>年糕</b> · '+html.escape(str(text))+'</p>')
     def send(self):
         text=self.text.text().strip()[:1000]
         if not text:return

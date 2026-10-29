@@ -46,6 +46,7 @@ CATALOG.extend([
  item("blanket","云朵小毯子","家具",30,"furniture"),
  item("garden_patch","蝴蝶草地垫","家具",65,"furniture",note="二维桌面摆件，非 3D 空间"),
  item("freeze_piece","一颗冻干","食品",2,effect={"satiety":2,"mood":2},minimum=3,note="冻干右键一次掉一颗")])
+CATALOG.append(item("kibble_piece","一粒猫粮","食品",1,effect={"satiety":2},note="粮袋右键逐粒倒出"))
 BY_ID={x["id"]:x for x in CATALOG}
 def is_placeable(id):
     it=BY_ID.get(id)
@@ -54,4 +55,4 @@ def is_placeable(id):
 SCENES={"desk":"书桌","living":"客厅","bedroom":"卧室","garden":"花园草地","balcony":"阳台","kitchen":"厨房"}
 
 LARGE_ITEMS={"tree":230,"hammock":210,"tunnel":190,"bed":180,"soft_bed":180,"rug":190,"blanket":180,"garden_patch":220}
-def desktop_width(id):return 38 if id=="freeze_piece" else LARGE_ITEMS.get(id,112)
+def desktop_width(id):return 38 if id in ("freeze_piece","kibble_piece") else LARGE_ITEMS.get(id,112)

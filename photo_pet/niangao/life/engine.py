@@ -14,7 +14,7 @@ class LifeEngine:
     def __init__(self,path,clock=None,wall=None):
         self.path=Path(path);self.clock=clock or time.monotonic;self.wall=wall or time.time
         self.last_tick=self.clock();self.last_save=self.last_tick;self.cooldowns={};self.focus_deadline=None;self.error="";self.network_today=None;self.network_time=None;self.network_clock=None
-        self.data={"version":3,"profile":{},"freeze_packets":[],"desktop_items":[],"expanded_starter":False,"desktop_starter":False,"birth_date":"2021-02-28","coins":150,"xp":0,"stats":dict(satiety=82,cleanliness=90,energy=85,mood=80,health=95),
+        self.data={"version":3,"profile":{},"food_packets":{"food":[],"kitten_food":[],"senior_food":[]},"freeze_packets":[],"desktop_items":[],"expanded_starter":False,"desktop_starter":False,"birth_date":"2021-02-28","coins":150,"xp":0,"stats":dict(satiety=82,cleanliness=90,energy=85,mood=80,health=95),
           "inventory":{"fish":2,"bed":1,"bowl":1},"events":[],"diaries":{},"tasks":[],"mood_history":[],"badges":[],"daily":{},
           "age_override":None,"age_frozen":False,"scene":"desk","layouts":{},"layout_presets":{},
           "focus":{"duration":25,"remaining":1500,"active":False,"cycles":0},"travel":None,"postcards":[],
@@ -58,11 +58,16 @@ class LifeEngine:
         from .profile import sanitize_profile
         self.data["profile"]=sanitize_profile(self.data.get("profile"))
         self.data["freeze_packets"]=[v for v in self.data.get("freeze_packets",[]) if isinstance(v,int) and 0<v<8][:1000] if isinstance(self.data.get("freeze_packets"),list) else []
+        for id in ("food","kitten_food","senior_food"):
+            values=self.data["food_packets"].get(id,[])
+            self.data["food_packets"][id]=[v for v in values if isinstance(v,int) and 0<v<12][:1000] if isinstance(values,list) else []
         if not isinstance(self.data["desktop_items"],list):self.data["desktop_items"]=[]
         self.data["desktop_items"]=[v for v in self.data["desktop_items"] if isinstance(v,dict)
             and isinstance(v.get("uid"),str) and v.get("item") in BY_ID and
             all(isinstance(v.get(k), (int,float)) and math.isfinite(v[k]) for k in ("x","y"))][:32]
         for v in self.data["desktop_items"]:
+            for key,default,maximum in (("dirt",0,3),("servings",3,3)):
+                value=v.get(key,default);v[key]=max(0,min(maximum,int(value))) if isinstance(value,(int,float)) and math.isfinite(value) else default
             for k,default in (("water",100),("width",120)):
                 value=v.get(k,default);v[k]=max(0,min(100,value)) if k=="water" and isinstance(value,(int,float)) and math.isfinite(value) else max(32,min(320,value)) if k=="width" and isinstance(value,(int,float)) and math.isfinite(value) else default
 

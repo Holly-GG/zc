@@ -8,7 +8,7 @@ class Body:
     vx:float=0.
     vy:float=0.
     grounded:bool=False
-    def advance(self,dt,width,height,area,surfaces=(),bounce=False,running=False):
+    def advance(self,dt,width,height,area,surfaces=(),bounce=False,running=False,settle_bounce=False):
         remaining=max(0,min(.25,dt));self.grounded=False
         while remaining>1e-9:
             step=min(1/120,remaining);remaining-=step
@@ -23,7 +23,7 @@ class Body:
                     floor=min(floor,surface.y)
             if ny+height>=floor and self.vy>=0:
                 ny=floor-height;self.grounded=True
-                self.vy=-max(170,min(360,abs(self.vy)*.72)) if bounce else 0
+                self.vy=-max(170,min(360,abs(self.vy)*.72)) if bounce else -abs(self.vy)*.24 if settle_bounce and self.vy>85 else 0
                 if not running:self.vx*=math.exp(-7*step)
             self.x,self.y=nx,max(area.y+12,ny)
 def accepts(stats,kind,rng):

@@ -22,6 +22,7 @@ def art(id):
         color={"milk":CREAM,"kitten_food":PINK,"food":MINT,"senior_food":"#c9bdda"}[id]
         return path("M48 30 L144 30 L151 158 Q94 170 41 158 Z",color)+path("M48 43 L144 43 M46 146 Q94 153 147 146")+cat(66,68,.65)+(star(143,40,.55) if id=="kitten_food" else fish(96,136,.35,YELLOW))
     if id=="fish":return fish(95,100,1.6,YELLOW)+star(145,42,.4)
+    if id=="kibble_piece":return path("M59 77 Q94 51 126 75 L139 119 Q99 143 58 117 Z",BROWN)+path("M74 87 L103 78 M104 115 L121 107",stroke="#bd9877")
     if id=="freeze_piece":return rect(63,65,65,63,YELLOW)+path("M76 80 L93 77 M99 110 L115 115")
     if id=="freeze_dried":return rect(29,90,53,52,YELLOW)+rect(86,49,55,54,CREAM)+rect(116,111,49,45,"#e8c599")+path("M42 105 L58 104 M99 64 L118 63 M128 125 L142 128")
     if id=="wet_food":return rect(37,68,118,83,PINK)+ellipse(96,67,59,17,CREAM)+ellipse(96,62,19,7,YELLOW)+cat(65,82,.6)

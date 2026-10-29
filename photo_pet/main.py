@@ -37,8 +37,8 @@ def main():
                 from niangao.prop_physics import Body
                 from niangao.geometry import Rect
                 assert len(_CORPUS)==1000 and lunar_label(date(2025,1,29))=="春节"
-                normal=window.size();window.set_work_mode(True);assert window.width()==96
-                image=window.pixmap.toImage();window.render_frame();assert image==window.pixmap.toImage()
+                normal=window.size();window.set_work_mode(True);assert window.width()==160
+                before=window.pos();window.render_frame();assert window.pos()==before and window.work_pose in window.work_idle.POSES
                 window.open_work();window.work_panel.text.setText("今天要专注工作");window.work_panel.send()
                 assert window.work_panel.isVisible();window.set_work_mode(False);assert window.size()==normal
                 window.open_focus();assert window.focus_panel.isVisible()
@@ -51,7 +51,21 @@ def main():
                 uid=next(w.uid for w in window.desktop.widgets.values() if w.id=="freeze_dried")
                 assert window.desktop.drop_piece(uid) and window.desktop.widgets[uid].record["remaining"]==7
                 window.desktop.clear()
-                print("EXPANDED_SMOKE passed: normalized stage, work icon/local chat, focus widget, lunar dates, 1000 lines, gravity, climb assets, single-piece food",flush=True);window.close()
+                window.life.data["inventory"]["fish"]=1
+                assert window.desktop.place("fish")[0]
+                food=next(iter(window.desktop.widgets.values()));food.pinned=True
+                assert window.desktop.start_routine(food,"food")
+                routine=window.furniture;routine.tick(routine.started+routine.total+1)
+                assert window.life.data["inventory"]["fish"]==0
+                window.life.data["inventory"]["litter"]=1
+                assert window.desktop.place("litter")[0]
+                litter=next(iter(window.desktop.widgets.values()));litter.pinned=True
+                assert window.desktop.start_routine(litter,"litter")
+                routine=window.furniture;routine.tick(routine.started+routine.total+1)
+                assert litter.record["dirt"]==1 and window.desktop.clean_litter(litter.uid)
+                assert litter.record["dirt"]==0
+                window.desktop.clear()
+                print("EXPANDED_SMOKE passed: normalized stage, quiet work poses/local chat, focus widget, lunar dates, 1000 lines, gravity, climb assets, single-piece food",flush=True);window.close()
             except Exception:traceback.print_exc();app.exit(1)
         QTimer.singleShot(1200,expanded_smoke)
     if args.desktop_smoke:
@@ -70,7 +84,7 @@ def main():
                 assert window.desktop.activate(uid) and w.record["water"]==80
                 window.desktop.refill(uid);assert w.record["water"]==100
                 window.desktop.clear();assert not window.desktop.widgets
-                print("DESKTOP_SMOKE passed: 8 pages, no 3D space, 50 product images, mandatory profile, fountain drink/refill and cleanup",flush=True);window.close()
+                print("DESKTOP_SMOKE passed: 8 pages, no 3D space, 51 product images, mandatory profile, fountain drink/refill and cleanup",flush=True);window.close()
             except Exception:traceback.print_exc();app.exit(1)
         QTimer.singleShot(1200,desktop_smoke)
     if args.motion_smoke:

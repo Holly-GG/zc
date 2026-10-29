@@ -9,6 +9,7 @@ def item_pixmap(id,size=112,empty=False):
     data=path.read_bytes()
     if empty and id in ("water_bowl","water_fountain"):
         data=data.replace(b"#a6d8e6",b"#fffaf0").replace(b'stroke="#7dbbcf"',b'stroke="none"')
+    if empty and id in ("food_bowl","bowl"):data=data.replace(b"#bd9877",b"#fffaf0")
     renderer=QSvgRenderer(QByteArray(data))
     if not renderer.isValid():raise ValueError("商品图像无效："+id)
     pix=QPixmap(size,size);pix.fill(Qt.GlobalColor.transparent)

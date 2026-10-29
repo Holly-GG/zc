@@ -41,3 +41,7 @@ assets/items/ 下 44 个 SVG 为原创可编辑的商品实物插图，脚本 to
 `niangao-work.webp` 由图像编辑工具参考本次新照片提取/补全头部与胸毛，透明静态照片风格图标，保留鼻侧查看者右边棕点；不是像素不变的原图抠图。`motion/climb.webp` 为参考原全身图补全的四姿态图集；前三帧抓握、第四帧蹲守，独立轮廓裁剪。未生成真实三维骨骼。`motion/scale.json` 是人工校准的头部尺度，不修改原始猫图。
 
 新增六张 SVG 均为原有手绘实物风格的原创矢量插图。`assets/data/dialogue.json` 为项目场景化组合编写的 1000 条本地短句，由 `tools/create_dialogue.py` 可重建。农历依赖 lunar-python 1.4.8，MIT 许可见 `licenses/LUNAR-PYTHON-MIT.txt`。
+
+## 轻待机与照料 UI 迭代
+
+工作模式不再使用 `niangao-work.webp` 裁图，当前 EXE 排除此历史资产，随机复用已校准的年糕完整姿态。新增猫粮颗粒 SVG 和年糕线稿标识 SVG 由项目原矢量绘制脚本生成；未读取或提取参考 EXE 的素材/代码。食物、猫砂状态和两阶段库存提交由独立模块 `desktop_routines.py` 实现。

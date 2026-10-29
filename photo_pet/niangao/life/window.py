@@ -6,7 +6,7 @@ from PySide6.QtCore import Qt,QTimer,QDate,QEvent
 from PySide6.QtGui import QPixmap,QPainter,QColor
 from PySide6.QtWidgets import (QMainWindow,QWidget,QVBoxLayout,QHBoxLayout,QGridLayout,QLabel,QPushButton,
     QListWidget,QStackedWidget,QScrollArea,QProgressBar,QComboBox,QSpinBox,QDoubleSpinBox,QTextBrowser,
-    QLineEdit,QTextEdit,QCheckBox,QCalendarWidget,QFileDialog,QDateEdit,QGroupBox,QFormLayout)
+    QFrame,QLineEdit,QTextEdit,QCheckBox,QCalendarWidget,QFileDialog,QDateEdit,QGroupBox,QFormLayout)
 from ..art import asset_path
 from .engine import STAT_NAMES
 from .catalog import BY_ID,is_placeable
@@ -15,30 +15,13 @@ from .item_art import item_pixmap
 from ..desktop_items import ItemDragCard
 from .ai import SecretVault,AIClient,checked_base
 from .jobs import run_job
-STYLE="""
-QMainWindow,QWidget#lifeRoot {background:#fffaf0;color:#342d2b;}
-QWidget {color:#342d2b;font-size:13px;}
-QLabel {background:transparent;} QLabel#hero {font-size:22px;font-weight:700;} QLabel#sub {color:#75685d;}
-QPushButton {background:#bad9c8;border:2px solid #342d2b;border-radius:11px;padding:8px 12px;font-weight:600;}
-QPushButton:hover {background:#f8dfa0;} QPushButton:pressed {background:#efc0b9;}
-QPushButton:disabled {background:#e7e3d7;color:#9b9387;border-color:#b9b2a6;}
-QLineEdit,QTextEdit,QTextBrowser,QSpinBox,QDoubleSpinBox,QComboBox,QDateEdit {background:#fffef8;border:1.5px solid #66584e;border-radius:8px;padding:6px;}
-QListWidget {outline:none;background:#fffef8;border:2px solid #342d2b;border-radius:12px;padding:4px;}
-QListWidget::item {padding:9px 7px;margin:2px;} QListWidget::item:selected {background:#f8dfa0;border-radius:7px;color:#342d2b;}
-QListWidget#navigation {background:#c5dfcf;border:2px solid #342d2b;} QListWidget#navigation::item {padding:12px 5px;}
-QGroupBox {background:#fffdf5;border:2px solid #342d2b;border-radius:14px;margin-top:14px;padding:12px;}
-QGroupBox::title {subcontrol-origin:margin;left:13px;padding:0 5px;background:#fffaf0;font-weight:600;}
-QFrame#itemCard {background:#fffdf5;border:2px solid #342d2b;border-radius:14px;}
-QProgressBar {background:#e4ebe0;border:1px solid #342d2b;border-radius:6px;min-height:17px;text-align:center;}
-QProgressBar::chunk {background:#a8d2c0;border-radius:5px;}
-QCheckBox {padding:4px;} QScrollArea {border:0;background:transparent;} QScrollBar:vertical {width:10px;background:#f2eddf;}
-QScrollBar::handle:vertical {background:#bad9c8;border-radius:5px;min-height:25px;}
-"""
+from ..theme import STYLE
 class PaperPage(QWidget):
     def paintEvent(self,event):
-        p=QPainter(self);p.fillRect(self.rect(),QColor("#fffaf0"));p.setPen(QColor("#eee9dd"))
-        for x in range(0,self.width(),22):p.drawLine(x,0,x,self.height())
-        for y in range(0,self.height(),22):p.drawLine(0,y,self.width(),y)
+        p=QPainter(self);p.fillRect(self.rect(),QColor("#fbf7ef"));p.setPen(QColor("#e3e8dc"))
+        for x in range(0,self.width(),22):p.drawPoint(x,10)
+        for y in range(0,self.height(),22):
+            for x in range(10,self.width(),22):p.drawPoint(x,y)
         p.end()
 from ..interaction.actions import ACTIONS as MOTIONS,MOOD_POOLS,SOUNDS
 ACTIONS={key:info.label for key,info in MOTIONS.items()}
@@ -60,9 +43,18 @@ class LifeWindow(QMainWindow):
     def __init__(self,pet):
         super().__init__();self.pet=pet;self.engine=pet.life;self.setWindowTitle("年糕生活馆 · NIANGAO");area=self.screen().availableGeometry();width=min(860,area.width()-24);height=min(650,area.height()-56);self.resize(width,height);self.setMinimumSize(min(740,width),min(540,height));self.setStyleSheet(STYLE)
         self.vault=pet.vault;self.client=AIClient(self.engine.data["ai"],self.vault,self.engine.profile_snapshot);self.history=[]
-        base=QWidget();base.setObjectName("lifeRoot");self.setCentralWidget(base);outer=QVBoxLayout(base);row=QHBoxLayout();outer.addLayout(row)
-        self.nav=QListWidget();self.nav.setFixedWidth(132);self.nav.setObjectName("navigation");self.stack=QStackedWidget();row.addWidget(self.nav);row.addWidget(self.stack,1)
-        self.status=QLabel("本地保存 · 年糕的照片形象始终保留");self.status.setWordWrap(True);outer.addWidget(self.status)
+        base=QWidget();base.setObjectName("lifeRoot");self.setCentralWidget(base);outer=QVBoxLayout(base);outer.setContentsMargins(14,12,14,10);outer.setSpacing(10)
+        header=QFrame();header.setObjectName("header");top=QHBoxLayout(header);brand=QVBoxLayout();top.addLayout(brand,1)
+        label=QLabel("NIANGAO / 年糕的小日子");label.setObjectName("brand");brand.addWidget(label)
+        self.clock_label=QLabel();self.clock_label.setObjectName("eyebrow");brand.addWidget(self.clock_label)
+        for text,callback in [("随机待机",lambda:self.pet.set_work_mode(not self.pet.work_mode)),("专注小窗",self.pet.open_focus),("整理桌面",self.pet.desktop.clear)]:
+            button=QPushButton(text);button.setObjectName("quiet");button.clicked.connect(callback);top.addWidget(button)
+        outer.addWidget(header);row=QHBoxLayout();row.setSpacing(12);outer.addLayout(row,1)
+        sidebar=QFrame();sidebar.setObjectName("sidebar");sidebar.setFixedWidth(142);side=QVBoxLayout(sidebar);side.setContentsMargins(9,13,9,9)
+        mark=QLabel();mark.setAlignment(Qt.AlignmentFlag.AlignCenter);mark.setPixmap(QPixmap(str(asset_path("ui/niangao-mark.svg"))).scaled(64,64,Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation));side.addWidget(mark)
+        label=QLabel("小棕点值班室");label.setAlignment(Qt.AlignmentFlag.AlignCenter);label.setObjectName("eyebrow");side.addWidget(label)
+        self.nav=QListWidget();self.nav.setObjectName("navigation");side.addWidget(self.nav,1);self.stack=QStackedWidget();row.addWidget(sidebar);row.addWidget(self.stack,1)
+        self.status=QLabel("本地陪伴 · 档案随时保存 · 今天也慢慢来");self.status.setObjectName("sub");self.status.setWordWrap(True);outer.addWidget(self.status)
         builders=[("陪伴总览",self.overview),("照料与动作",self.care_page),("年糕小铺",self.shop_page),("我的背包",self.backpack_page),
                   ("专注与待办",self.focus_page),("和年糕聊天",self.chat_page),("年糕日记",self.diary_page),("性格与设置",self.settings_page)]
         for name,builder in builders:
@@ -100,6 +92,9 @@ class LifeWindow(QMainWindow):
              ("brush","梳毛","groom"),("bath","虚拟清洁","groom"),("litter","清猫砂","idle"),("rest","休息","sleep"),("checkup","虚拟健康照料","idle")]):
             b=QPushButton(text);grid.addWidget(b,i//3,i%3);b.clicked.connect(lambda checked=False,k=key,a=action:self.care(k,a))
         self.care_objects(l)
+        live=QGroupBox("桌面照料 · 看得见的小日常");v=QVBoxLayout(live)
+        hint=QLabel("粮袋 / 冻干：右键逐颗倒出，Shift + 右键打开菜单。食物落稳后轻点，年糕会走过去闻闻再吃。\n猫砂盆：轻点邀请使用，右键铲砂；离开前打断不会扣掉食物。");hint.setWordWrap(True);hint.setObjectName("sub");v.addWidget(hint)
+        self.desktop_status=QLabel();self.desktop_status.setWordWrap(True);v.addWidget(self.desktop_status);l.addWidget(live)
         group=QGroupBox("动作与表情图鉴 · 照片关键帧");g=QVBoxLayout(group);l.addWidget(group)
         label=QLabel("轻点：摸头；按住约 0.85 秒：轻啃指尖；左键拖拽：抱起；Shift + 左键滑动：抚摸；双击：戳一下。\n照片关键帧表现动作，较大变姿仍有跳变。");label.setWordWrap(True);g.addWidget(label)
         self.motion_group=QComboBox();self.motion_group.addItems(["全部"]+sorted(set(info.group for info in MOTIONS.values())));g.addWidget(self.motion_group)
@@ -144,7 +139,7 @@ class LifeWindow(QMainWindow):
                 ok,text=self.pet.desktop.place(id);self.notice(text)
                 if not ok:return
                 uid=next(uid for uid,w in self.pet.desktop.widgets.items() if w.id==id)
-            ok=self.pet.desktop.activate(uid);self.notice("年糕正在使用 "+BY_ID[self.pet.desktop.widgets[uid].id]["name"] if ok else "稍等一会儿；空水碗可右键加满")
+            ok=self.pet.desktop.clean_litter(uid) if key=="litter" else self.pet.desktop.activate(uid);self.notice("年糕正在使用 "+BY_ID[self.pet.desktop.widgets[uid].id]["name"] if ok else "稍等一会儿；空水碗可右键加满")
         else:
             ok,text=self.engine.care(key);self.notice(text)
             if ok:self.pet.pet_head() if key=="pet" else self.pet.perform_action(action)
@@ -206,7 +201,7 @@ class LifeWindow(QMainWindow):
         self.title(l,"一起认真，一起休息","计时依据实际经过时间；退出后暂停，不补发离线专注奖励。")
         self.focus_label=QLabel();self.focus_label.setObjectName("hero");l.addWidget(self.focus_label);row=QHBoxLayout();l.addLayout(row)
         self.button(l,"打开独立专注与待办小窗",self.pet.open_focus)
-        self.button(l,"切换工作模式（静态头像）",lambda:self.pet.set_work_mode(not self.pet.work_mode))
+        self.button(l,"切换工作模式（随机待机）",lambda:self.pet.set_work_mode(not self.pet.work_mode))
         self.minutes=QSpinBox();self.minutes.setRange(1,180);self.minutes.setValue(25);self.minutes.setSuffix(" 分钟");row.addWidget(self.minutes)
         self.button(row,"开始",lambda:self.engine.focus_start(self.minutes.value()));self.button(row,"暂停",self.engine.focus_pause);self.button(row,"继续",self.engine.focus_resume)
         self.tasks=QListWidget();self.tasks.setMinimumHeight(220);self.tasks.itemChanged.connect(self.task_changed);l.addWidget(self.tasks)
@@ -352,7 +347,10 @@ class LifeWindow(QMainWindow):
             dest=self.engine.path.parent/"custom.png";image.save(str(dest));self.pet.art.frames["custom"]=[image];self.pet.perform_action("custom",30);self.notice("已导入单姿态，展示 30 秒；不会覆盖年糕原图")
         except (ValueError,OSError) as exc:self.notice(str(exc))
     def refresh(self):
-        self.motion_current.setText("当前动作："+MOTIONS.get(self.pet.behaviour.state,MOTIONS["idle"]).label+"  ·  体验情绪："+self.pet.director.mood(self.engine.mood))
+        from .calendar_cn import china_now
+        self.clock_label.setText(china_now().strftime("%Y.%m.%d  %A  %H:%M").replace("Monday","星期一").replace("Tuesday","星期二").replace("Wednesday","星期三").replace("Thursday","星期四").replace("Friday","星期五").replace("Saturday","星期六").replace("Sunday","星期日"))
+        rows=self.pet.desktop.status_rows();self.desktop_status.setText("\n".join(rows) if rows else "桌面还空着，把一只粮碗或猫砂盆从背包拖出来吧。")
+        self.motion_current.setText("当前动作："+MOTIONS.get(self.pet.work_pose if self.pet.work_mode else self.pet.behaviour.state,MOTIONS["idle"]).label+"  ·  体验情绪："+self.pet.director.mood(self.engine.mood))
         e=self.engine;a=e.age();self.age_label.setText("年糕 NIANGAO · 布偶猫 · 男孩子\n"+a["text"]+" · "+a["stage"]+" · 约人类 "+str(a["human_years"])+" 岁"+("\n体验年龄已冻结，真实生日仍保留" if e.data["age_frozen"] else ""))
         self.summary.setText(f'Lv.{e.level}  ·  经验 {e.data["xp"]}  ·  金币 {e.data["coins"]}  ·  心情 {e.mood}')
         for key,bar in self.bars.items():bar.setValue(round(e.data["stats"][key]))

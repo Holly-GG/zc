@@ -67,10 +67,10 @@ def test_common_head_scale_and_stage(pet):
         pet.perform_action(action);sizes.append((pet.width(),pet.height()))
     assert len(set(sizes))==1
 
-def test_static_work_mode_click_dialog_and_position_restore(pet):
+def test_quiet_work_mode_click_dialog_and_position_restore(pet):
     original=(pet.width(),pet.height());normal_pos=pet.pos();width=pet.settings.data['width']
-    pet.set_work_mode(True);assert pet.size().width()==96 and not pet.work_icon.isNull()
-    image=pet.pixmap.toImage();pet.tick();assert image==pet.pixmap.toImage()
+    pet.set_work_mode(True);assert pet.size().width()==160 and pet.work_pose in pet.work_idle.POSES
+    before=pet.pos();pet.tick();assert pet.pos()==before
     assert not pet.perform_action('pounce')
     pet.open_work();assert pet.work_panel.isVisible()
     pet.work_panel.text.setText('今天要认真工作');pet.work_panel.send();assert '年糕' in pet.work_panel.log.toPlainText()

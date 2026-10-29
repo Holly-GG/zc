@@ -28,7 +28,7 @@ try:
         time.sleep(.1)
     dash=state()["dashboard"];assert dash
     click(dash["nav"]["3"]);dash=state()["dashboard"];source=dash["bag_cards"]["water_fountain"];rect=dash["rect"]
-    target=next(pt for pt in [(1240,700),(20,730),(20,40)] if not(rect[0]<=pt[0]<=rect[0]+rect[2] and rect[1]<=pt[1]<=rect[1]+rect[3]))
+    target=next(pt for pt in [(1020,620),(1050,150),(20,660),(20,40)] if not(rect[0]<=pt[0]<=rect[0]+rect[2] and rect[1]<=pt[1]<=rect[1]+rect[3]))
     x("mousemove","--sync",*source);x("mousedown",1);time.sleep(.1);x("mousemove","--sync",source[0]+20,source[1]+20);time.sleep(.2);x("mousemove","--sync",*target);time.sleep(.2);x("mouseup",1);time.sleep(.5)
     assert state()["desktop_props"],(source,target,state())
     print("PASS actual backpack-card drag into desktop",flush=True)

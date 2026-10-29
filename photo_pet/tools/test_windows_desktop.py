@@ -35,6 +35,8 @@ def bounds():
     return r
 
 def body():
+    s=state()
+    if s.get("work_mode") and s.get("body_point"):return tuple(round(v*s.get("pet_dpi",1)) for v in s["body_point"])
     r=bounds();return r.left+(r.right-r.left)//2,r.top+(r.bottom-r.top)*2//3
 
 def mouse(flags,data=0):u.mouse_event(flags,0,0,data,0)
@@ -153,10 +155,23 @@ try:
     check(abs(dynamic['running-mouse']['position'][0]-old_x)>5,'windup mouse runs on the real desktop')
     close(pet)
     saved=json.loads(settings.read_text(encoding='utf-8'));saved.update(work_mode=True,work_position=[650,250]);settings.write_text(json.dumps(saved),encoding='utf-8')
-    probe.unlink();pet=launch();check(state()['work_mode'] and state()['size']==[96,96],'work mode restores static compact photo icon')
-    before=state()['position'];time.sleep(1);check(state()['position']==before,'work icon stays still without input')
-    n=count();r=bounds();click(r.left+2,r.top+2);check(count()==n+1,'work icon transparent corner passes real OS clicks')
-    click(*body());check(state()['work_panel_visible'],'click static icon opens compact interactive conversation')
+    probe.unlink();pet=launch();check(state()['work_mode'] and state()['size'][0]==160 and state()['work_pose'] in ('idle','bored','tail_sway','ear_flick','lick_paw','groom','yawn','expectant'),'work mode restores compact random idle poses')
+    before=state()['position'];time.sleep(1);check(state()['position']==before,'work avatar does not roam without input')
+    n=count();r=bounds();click(r.left+2,r.top+2);check(count()==n+1,'work avatar transparent corner passes real OS clicks')
+    click(*body());check(state()['work_panel_visible'],'click idle avatar opens compact interactive conversation')
+    close(pet)
+    saved=json.loads(settings.read_text(encoding='utf-8'));saved['work_mode']=False;settings.write_text(json.dumps(saved),encoding='utf-8')
+    life_data=json.loads(life_path.read_text(encoding='utf-8'));life_data['inventory'].update(food=1,litter=1)
+    life_data['desktop_items']=[dict(uid='native-food',item='food',x=300,y=250,width=112,water=100,pinned=True,remaining=12),dict(uid='native-litter',item='litter',x=480,y=350,width=112,water=100,pinned=True,dirt=2)]
+    life_path.write_text(json.dumps(life_data),encoding='utf-8');probe.unlink();pet=launch()
+    food_handle=u.FindWindowW(None,'年糕物件 · native-food');r=w.RECT();assert u.GetWindowRect(food_handle,ctypes.byref(r))
+    n=count();click(r.left+56,r.top+75,button='right')
+    data=json.loads(life_path.read_text(encoding='utf-8'))
+    check(count()==n and next(v for v in data['desktop_items'] if v['uid']=='native-food')['remaining']==11 and any(v['item']=='kibble_piece' for v in data['desktop_items']),'native right click drops exactly one grain without opening a menu')
+    litter_handle=u.FindWindowW(None,'年糕物件 · native-litter');r=w.RECT();assert u.GetWindowRect(litter_handle,ctypes.byref(r))
+    click(r.left+56,r.top+65,button='right');key(0x28);key(0x28);key(0x0D);time.sleep(.3)
+    data=json.loads(life_path.read_text(encoding='utf-8'))
+    check(next(v for v in data['desktop_items'] if v['uid']=='native-litter')['dirt']==0,'native litter context menu scoops stored dirty clumps')
     close(pet)
     print('WINDOWS_DESKTOP_RESULT passed; native Win32 mouse input and window bounds verified on this runner',flush=True)
 except Exception as exc:

@@ -36,9 +36,8 @@ class PetWindow(QWidget):
         from .life.ai import SecretVault
         self.vault=SecretVault(self.settings.path.parent/"api-key.dpapi")
         self.work_mode=False;self.work_panel=None;self.focus_panel=None;self.furniture=None
-        from .art import asset_path
-        from PySide6.QtGui import QPixmap
-        self.work_icon=QPixmap(str(asset_path("niangao-work.webp")))
+        from .interaction.work_idle import WorkIdle
+        self.work_idle=WorkIdle();self.work_pose="idle";self.work_frame=0
         self.art=CatArt();self.behaviour=Behaviour();self.observer=WindowObstacles()
         self.autonomy=AutonomyPolicy();self.director=Director();self.director.set_rate(self.autonomy.rate)
         self.behaviour.autonomous_rate=self.autonomy.rate;self.behaviour.deadline=self.behaviour.clock()+3/self.autonomy.rate
@@ -77,8 +76,9 @@ class PetWindow(QWidget):
         if self.furniture:self.furniture.cancel()
         self.save();self.director.cancel();self.cursor_mode=False;self.cursor_target=None
         self.work_mode=enabled;self.settings.data["work_mode"]=enabled;self.behaviour.action("idle",float("inf") if enabled else 2)
-        width=96 if enabled else self.settings.data["width"]
-        self.resize(width,width if enabled else self.art.stage_height(width));self.last_art_key=None
+        if enabled:self.work_idle.reset()
+        width=160 if enabled else self.settings.data["width"]
+        self.resize(width,self.art.stage_height(width));self.last_art_key=None
         position=self.settings.data["work_position" if enabled else "position"]
         if position:self.move(round(position[0]),round(position[1]))
         self.repair_position();self.render_frame();self.save();self.bubble.hide()
@@ -175,6 +175,17 @@ class PetWindow(QWidget):
     def rect_global(self):return Rect(self.x(),self.y(),self.width(),self.height())
     def screen_maps(self):
         return [{"name":s.name(),"origin":(s.geometry().x(),s.geometry().y()),"scale":s.devicePixelRatio()} for s in QApplication.screens()]
+    def interaction_point(self):
+        mask=self.mask()
+        for fy in (.72,.85,.6,.93,.5):
+            for fx in (.5,.6,.4,.7,.3):
+                point=QPoint(round(self.width()*fx),round(self.height()*fy))
+                if mask.contains(point):return self.mapToGlobal(point)
+        rect=mask.boundingRect()
+        for y in range(rect.top(),rect.bottom()+1,3):
+            for x in range(rect.left(),rect.right()+1,3):
+                if mask.contains(QPoint(x,y)):return self.mapToGlobal(QPoint(x,y))
+        return self.mapToGlobal(self.rect().center())
     def save(self):
         self.settings.data["work_position" if self.work_mode else "position"]=[self.x(),self.y()]
         self.settings.save()
@@ -197,16 +208,15 @@ class PetWindow(QWidget):
             self.repair_position();self.render_frame()
         if save:self.save()
     def height_for(self,width):
-        return width if self.work_mode else self.art.stage_height(width)
+        return self.art.stage_height(width)
     def render_frame(self):
         if self.work_mode:
-            key=("work",self.width())
+            pose,frame=self.work_idle.sample({key:len(frames) for key,frames in self.art.frames.items()})
+            self.work_pose,self.work_frame=pose,frame
+            key=("work",pose,frame,self.width(),self.height())
             if self.last_art_key!=key:
-                from PySide6.QtGui import QPixmap
-                canvas=QPixmap(self.size());canvas.fill(Qt.GlobalColor.transparent)
-                image=self.work_icon.scaled(self.size()-QSize(8,8),Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation)
-                painter=QPainter(canvas);painter.drawPixmap((self.width()-image.width())//2,(self.height()-image.height())//2,image);painter.end()
-                self.pixmap=canvas;self.setMask(QRegion(canvas.mask()));self.last_art_key=key;self.update()
+                self.pixmap,mask=self.art.render(pose,frame,self.width(),self.height())
+                self.setMask(QRegion(mask));self.last_art_key=key;self.update()
             return
         wanted_height=self.height_for(self.width())
         if self.height()!=wanted_height:
@@ -267,7 +277,7 @@ class PetWindow(QWidget):
                     if card.isVisible() and ui.frameGeometry().contains(point):cards[id]=[point.x(),point.y()]
                 clear=ui.clear_desktop_button.mapToGlobal(ui.clear_desktop_button.rect().center())
                 ui_probe={"rect":[ui.x(),ui.y(),ui.width(),ui.height()],"dpi":ui.devicePixelRatioF(),"nav":nav,"bag_cards":cards,"clear":[clear.x(),clear.y()]}
-            self.probe.write_text(json.dumps({"work_mode":self.work_mode,"work_panel_visible":bool(self.work_panel and self.work_panel.isVisible()),"focus_visible":bool(self.focus_panel and self.focus_panel.isVisible()),"card_drag":getattr(self,"drag_debug",None),"dashboard":ui_probe,"desktop_props":[{"uid":w.uid,"item":w.id,"position":[w.x(),w.y()]} for w in self.desktop.widgets.values()],"position":[self.x(),self.y()],"size":[self.width(),self.height()],"state":self.behaviour.state,"obstacles":len(self.obstacles),"native_obstacles":self.observer.supported,"counts":self.counts,"masked":not self.mask().isEmpty(),"bubble_visible":self.bubble.isVisible(),"bubble":[self.bubble.x(),self.bubble.y(),self.bubble.width(),self.bubble.height()],"provider_error":self.observer.last_error}),encoding="utf-8")
+            self.probe.write_text(json.dumps({"body_point":[self.interaction_point().x(),self.interaction_point().y()],"pet_dpi":self.devicePixelRatioF(),"work_pose":self.work_pose,"work_frame":self.work_frame,"work_mode":self.work_mode,"work_panel_visible":bool(self.work_panel and self.work_panel.isVisible()),"focus_visible":bool(self.focus_panel and self.focus_panel.isVisible()),"card_drag":getattr(self,"drag_debug",None),"dashboard":ui_probe,"desktop_props":[{"uid":w.uid,"item":w.id,"position":[w.x(),w.y()]} for w in self.desktop.widgets.values()],"position":[self.x(),self.y()],"size":[self.width(),self.height()],"state":self.behaviour.state,"obstacles":len(self.obstacles),"native_obstacles":self.observer.supported,"counts":self.counts,"masked":not self.mask().isEmpty(),"bubble_visible":self.bubble.isVisible(),"bubble":[self.bubble.x(),self.bubble.y(),self.bubble.width(),self.bubble.height()],"provider_error":self.observer.last_error}),encoding="utf-8")
     def say(self,kind):
         self.last_speech=time.monotonic();self.next_speech_at=self.last_speech+random.uniform(18,28)/self.autonomy.rate;self.bubble.speak(choose(kind),self.rect_global(),self.areas())
     def pet_head(self):
@@ -304,7 +314,7 @@ class PetWindow(QWidget):
         menu.addAction("一键清理桌面摆件",self.desktop.clear)
         menu.addAction("逗年糕玩",self.tease)
         menu.addAction("戳一下（也可双击）",self.poke)
-        menu.addAction("退出工作模式" if self.work_mode else "工作模式 · 静态年糕",lambda:self.set_work_mode(not self.work_mode))
+        menu.addAction("退出工作模式" if self.work_mode else "工作模式 · 随机待机",lambda:self.set_work_mode(not self.work_mode))
         menu.addAction("专注与待办桌面小窗",self.open_focus)
         self.menu_open=True
         try:menu.exec(position)

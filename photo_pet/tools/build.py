@@ -6,7 +6,7 @@ root=Path(__file__).resolve().parent.parent
 os.chdir(root)
 staging=root/"build"/"runtime-assets"
 shutil.rmtree(staging,ignore_errors=True)
-shutil.copytree(root/"assets",staging,ignore=shutil.ignore_patterns("*.blend","*.blend1","models"))
+shutil.copytree(root/"assets",staging,ignore=shutil.ignore_patterns("*.blend","*.blend1","models","niangao-work.webp"))
 
 subprocess.run([sys.executable,'-m','PyInstaller','--noconfirm','--clean','--onefile','--windowed',
     '--name','Niangao-PhotoPet','--add-data',f'{staging}{os.pathsep}assets',
