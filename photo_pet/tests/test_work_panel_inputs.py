@@ -16,7 +16,7 @@ def pet(tmp_path_factory):
  p.close();app.processEvents()
 
 def test_settings_choices_ignore_wheel_but_accept_mouse_selection(pet):
- pet.open_life();ui=pet.life_window;ui.nav.setCurrentRow(7);app=QApplication.instance()
+ pet.open_life();ui=pet.life_window;ui.show_classic(7);app=QApplication.instance()
  for combo in (ui.api_presets,ui.api_protocol,ui.sound_choice):
   before=combo.currentIndex()
   wheel=QWheelEvent(QPointF(8,8),QPointF(combo.mapToGlobal(QPoint(8,8))),QPoint(),QPoint(0,-120),Qt.MouseButton.NoButton,Qt.KeyboardModifier.NoModifier,Qt.ScrollPhase.NoScrollPhase,False)

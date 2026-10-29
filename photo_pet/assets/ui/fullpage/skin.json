@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "pages": {
+    "settings": "settings.webp",
+    "chat": "chat.webp",
+    "home": "home.webp",
+    "care": "care.webp",
+    "status": "status.webp",
+    "diary": "diary.webp",
+    "backpack": "backpack.webp",
+    "album": "album.webp"
+  }
+}

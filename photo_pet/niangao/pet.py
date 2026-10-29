@@ -282,6 +282,21 @@ class PetWindow(QWidget):
                     if card.isVisible() and viewport.rect().contains(viewport.mapFromGlobal(point)):cards[id]=[point.x(),point.y()]
                 clear=ui.clear_desktop_button.mapToGlobal(ui.clear_desktop_button.rect().center())
                 ui_probe={"rect":[ui.x(),ui.y(),ui.width(),ui.height()],"dpi":ui.devicePixelRatioF(),"nav":nav,"bag_cards":cards,"clear":[clear.x(),clear.y()],"viewport":[viewport_origin.x(),viewport_origin.y(),viewport.width(),viewport.height()],"scroll":scroll.verticalScrollBar().value()}
+                if getattr(ui,'skin_view',None) and ui.presentation.currentIndex()==1:
+                    view=ui.skin_view
+                    def location(key):
+                        p=view.point(key);return [p.x(),p.y()]
+                    mapping={0:'home',1:'care',3:'backpack',5:'chat',6:'diary',7:'settings',8:'album'}
+                    vp=view.viewport();origin=vp.mapToGlobal(vp.rect().topLeft())
+                    art_cards={}
+                    for id,box in view.drag_rects.items():
+                        p=view.rect_point(box);art_cards[id]=[p.x(),p.y()]
+                    ui_probe.update(fullpage=True,page=view.page,nav={str(i):location('nav-'+key) for i,key in mapping.items()},clear=location('top2'),bag_cards=art_cards,viewport=[origin.x(),origin.y(),vp.width(),vp.height()],scroll=0)
+                    if view.page=='backpack':ui_probe['full_bag']=location('full-bag')
+                    if view.page=='chat':
+                        p=view.widget_point(ui.chat_input);ui_probe['chat_input']=[p.x(),p.y()]
+                else:
+                    p=ui.skin_return_button.mapToGlobal(ui.skin_return_button.rect().center());ui_probe['return_skin']=[p.x(),p.y()]
             self.probe.write_text(json.dumps({"body_point":[self.interaction_point().x(),self.interaction_point().y()],"pet_dpi":self.devicePixelRatioF(),"work_pose":self.work_pose,"work_frame":self.work_frame,"work_mode":self.work_mode,"work_panel_visible":bool(self.work_panel and self.work_panel.isVisible()),"work_sent":self.work_panel.sent_count if self.work_panel else 0,"work_panel_inputs":bool(self.work_panel and self.work_panel.isVisible() and self.work_panel.text.isVisible()),"focus_visible":bool(self.focus_panel and self.focus_panel.isVisible()),"card_drag":getattr(self,"drag_debug",None),"dashboard":ui_probe,"desktop_props":[{"uid":w.uid,"item":w.id,"position":[w.x(),w.y()]} for w in self.desktop.widgets.values()],"position":[self.x(),self.y()],"size":[self.width(),self.height()],"state":self.behaviour.state,"obstacles":len(self.obstacles),"native_obstacles":self.observer.supported,"counts":self.counts,"masked":not self.mask().isEmpty(),"bubble_visible":self.bubble.isVisible(),"bubble":[self.bubble.x(),self.bubble.y(),self.bubble.width(),self.bubble.height()],"provider_error":self.observer.last_error}),encoding="utf-8")
     def say(self,kind):
         self.last_speech=time.monotonic();self.next_speech_at=self.last_speech+random.uniform(18,28)/self.autonomy.rate;self.bubble.speak(choose(kind),self.rect_global(),self.areas())

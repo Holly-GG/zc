@@ -1,0 +1,66 @@
+[
+  {
+    "page": "chat",
+    "source_zip": "新建文件夹.zip",
+    "original_sha256": "b41ba021c773c7fbecba3336e46314abeb6b481561a599398b79b8126576eb8d",
+    "webp_sha256": "504a5ae8a070ce237d5cbbb0cdbf541ff003a89a71d501171571041a35519bdd",
+    "decoded_pixels_equal": true,
+    "zip_entry": "年糕猫猫陪伴聊天页-2.png"
+  },
+  {
+    "page": "status",
+    "source_zip": "新建文件夹.zip",
+    "original_sha256": "5e04d6fcfbccd96562375ec03ee176fd4c7bf77babd5837f7a2ad2cf6d700658",
+    "webp_sha256": "30b3c6503fbdad5f7bdb94d0c4772b6fb3f57e59c82654c9eabf52b3c7d38c39",
+    "decoded_pixels_equal": true,
+    "zip_entry": "年糕的四季状态星盘-8.png"
+  },
+  {
+    "page": "care",
+    "source_zip": "新建文件夹.zip",
+    "original_sha256": "b6650d95fe5577c0a7616fb7828b5c1f28937696ceee54a86bb927114cba84b3",
+    "webp_sha256": "7920847376b62dcb575671282d6d82e0da40d508db2f7db98a405f1e4fd6ed49",
+    "decoded_pixels_equal": true,
+    "zip_entry": "年糕的星月陪伴-7.png"
+  },
+  {
+    "page": "home",
+    "source_zip": "新建文件夹.zip",
+    "original_sha256": "469cb2e73d9acbb18a9784548a4ae71a6724d2a5bef0565b24fb84b59b71f6b1",
+    "webp_sha256": "c40cb28e80cbfb60c60ec7ef81f76b98316c7ca44160a5f6245a7a18aa038683",
+    "decoded_pixels_equal": true,
+    "zip_entry": "年糕的月光花园-1.png"
+  },
+  {
+    "page": "album",
+    "source_zip": "新建文件夹.zip",
+    "original_sha256": "3a40998d93d26a759e892ea7e15f519c9146d269da1447700d655993f2c87deb",
+    "webp_sha256": "c21e763eea46bf49661a4f309a6557718ff41a5fbaeed520cd9318379e844f17",
+    "decoded_pixels_equal": true,
+    "zip_entry": "年糕的海岸蓝相册-4.png"
+  },
+  {
+    "page": "backpack",
+    "source_zip": "新建文件夹.zip",
+    "original_sha256": "a886183d857e0ffef9942342cb573d2b539b3b98d3109029ada29da73e074e66",
+    "webp_sha256": "e024ce2ca1dacaafd2ac1db2197d03d3c8a8bd921be3df7d7cde449cffb97bd0",
+    "decoded_pixels_equal": true,
+    "zip_entry": "年糕的蘑菇收藏柜-6.png"
+  },
+  {
+    "page": "diary",
+    "source_zip": "新建文件夹.zip",
+    "original_sha256": "50f7ef52b31da23b436a83892e8f77237b62075b568192ddec284f203c443bc2",
+    "webp_sha256": "f6360709608080cd761ca26666356cfeffaccdf75dd0fc31781a877ffd48afff",
+    "decoded_pixels_equal": true,
+    "zip_entry": "年糕的魔法手账-3.png"
+  },
+  {
+    "page": "settings",
+    "source_zip": "新建文件夹.zip",
+    "original_sha256": "ee586843c399f39bc81582487f5bafc0d0de5588c68eec1f01ee8613b67c41a3",
+    "webp_sha256": "eec86892ad1d1b1a0919646ea14ae579cd825aa4509eef2dcadd2ba797dcd193",
+    "decoded_pixels_equal": true,
+    "zip_entry": "年糕猫猫日记设置页-9.png"
+  }
+]

@@ -35,6 +35,14 @@ def main():
                 from niangao.life.album import AlbumStore
                 assert set(loaded_fonts)=={'body','title','script'}
                 window.open_life();ui=window.life_window;assert ui.stack.count()==9
+                assert ui.skin_view is not None and ui.presentation.currentIndex()==1
+                import json,hashlib
+                pack=ui.skin_view.pack
+                for row in json.loads((pack.root/'provenance.json').read_text(encoding='utf-8')):
+                    assert hashlib.sha256(pack.pages[row['page']].read_bytes()).hexdigest()==row['webp_sha256']
+                for page in ('home','chat','diary','album','backpack','care','status','settings'):
+                    ui.skin_view.show_page(page);app.processEvents();assert len(ui.skin_view.hotspots)>=12
+                print('FULLPAGE_SMOKE passed: 8 original artwork hashes, live portals and aligned navigation',flush=True)
                 assert ui.nav.item(7).text()=='性格与设置' and ui.nav.item(8).text()=='宠物相册'
                 ui.nav.setCurrentRow(8);album=ui.album_widget
                 source=window.settings.path.parent/'album-smoke-source.png';image=QImage(100,80,QImage.Format.Format_RGB32);image.fill(QColor('#77AAD7'));assert image.save(str(source))

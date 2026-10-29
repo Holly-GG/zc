@@ -45,6 +45,7 @@ class LifeWindow(QMainWindow):
         header=QFrame();header.setObjectName("header");top=QHBoxLayout(header);brand=QVBoxLayout();top.addLayout(brand,1)
         label=QLabel("NIANGAO / 年糕的小日子");label.setObjectName("brand");brand.addWidget(label)
         self.clock_label=QLabel();self.clock_label.setObjectName("eyebrow");brand.addWidget(self.clock_label)
+        self.skin_return_button=QPushButton('整页画面');self.skin_return_button.clicked.connect(self.enter_skin);top.addWidget(self.skin_return_button)
         for text,callback in [("随机待机",lambda:self.pet.set_work_mode(not self.pet.work_mode)),("专注小窗",self.pet.open_focus),("整理桌面",self.pet.desktop.clear)]:
             button=QPushButton(text);button.setObjectName("quiet");button.clicked.connect(callback);top.addWidget(button)
         outer.addWidget(header);row=QHBoxLayout();row.setSpacing(12);outer.addLayout(row,1)
@@ -61,7 +62,38 @@ class LifeWindow(QMainWindow):
             scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setWidget(page);self.stack.addWidget(scroll)
         self.nav.currentRowChanged.connect(self.stack.setCurrentIndex);self.nav.setCurrentRow(0)
         self.pet.desktop.changed.connect(self.refresh_inventory)
+        self.skin_view=None;self.presentation=None
         self.timer=QTimer(self);self.timer.timeout.connect(self.refresh);self.timer.start(1000);self.refresh()
+        from ..skin_pack import SkinPack
+        try:self.install_skin(SkinPack.active(self.pet.settings.path.parent) or SkinPack.bundled())
+        except (OSError,ValueError) as exc:self.notice('整页图暂不可用，保留完整界面：'+str(exc))
+    def install_skin(self,pack):
+        from ..skin_view import FullPageView
+        if self.presentation is None:
+            classic=self.takeCentralWidget();self.presentation=QStackedWidget();self.setCentralWidget(self.presentation);self.presentation.addWidget(classic)
+            self.nav.currentRowChanged.connect(self.route_skin)
+        elif self.skin_view:
+            self.skin_view.release();self.presentation.removeWidget(self.skin_view);self.skin_view.deleteLater()
+        self.skin_view=FullPageView(self,pack);self.presentation.addWidget(self.skin_view)
+        area=self.screen().availableGeometry();self.resize(min(1200,area.width()-24),min(751,area.height()-56));self.enter_skin()
+    def enter_skin(self):
+        if not self.skin_view:return
+        index=self.nav.currentRow();page={0:'home',1:'care',3:'backpack',5:'chat',6:'diary',7:'settings',8:'album'}.get(index,'home')
+        self.presentation.setCurrentIndex(1);self.skin_view.show_page(page)
+    def show_classic(self,index=None):
+        if self.skin_view:self.skin_view.release();self.skin_view.page=None
+        if self.presentation:self.presentation.setCurrentIndex(0)
+        if index is not None:self.nav.setCurrentRow(index);self.stack.setCurrentIndex(index)
+    def route_skin(self,index):
+        if self.skin_view and self.presentation.currentIndex()==1:
+            page={0:'home',1:'care',3:'backpack',5:'chat',6:'diary',7:'settings',8:'album'}.get(index)
+            self.skin_view.show_page(page) if page else self.show_classic(index)
+    def import_skin(self):
+        path,_=QFileDialog.getOpenFileName(self,'导入八张整页参考图ZIP','','ZIP (*.zip)')
+        if not path:return
+        from ..skin_pack import import_skin_zip
+        try:self.install_skin(import_skin_zip(path,self.pet.settings.path.parent));self.notice('整页底图已载入，使用真实控件叠加')
+        except (OSError,ValueError,__import__('zipfile').BadZipFile) as exc:self.notice('底图导入失败：'+str(exc))
     def chapter_portrait(self,index):
         if index==8:return QPixmap()  # New page has no approved dedicated character art.
         image=portrait(index)
@@ -78,6 +110,7 @@ class LifeWindow(QMainWindow):
         b=QPushButton(text);b.clicked.connect(lambda _checked=False:callback());layout.addWidget(b);return b
     def notice(self,text):
         message=str(text);self.status.setTextFormat(Qt.TextFormat.PlainText);self.status.setText(message.splitlines()[0][:240] if message else '');self.status.setToolTip(message)
+        if getattr(self,'skin_view',None) and self.presentation.currentIndex()==1:self.skin_view.show_toast(message)
     def result(self,result):self.notice(result[1]);self.refresh()
     def overview(self,l):
         self.overview_tabs=QTabWidget();l.addWidget(self.overview_tabs)
@@ -342,6 +375,7 @@ class LifeWindow(QMainWindow):
     def set_pref(self,key,value):self.engine.data["preferences"][key]=value;self.engine.save()
     def settings_page(self,l):
         self.title(l,"性格与设置","为年糕打造更舒适的生活方式。档案与设置保存在本机。")
+        self.button(l,'返回整页画面',self.enter_skin);self.button(l,'导入八张原图 ZIP 皮肤',self.import_skin)
         group=QGroupBox("年糕档案 · 每次API请求读取");form=QFormLayout(group);form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows);form.setSpacing(12);self.profile_fields={}
         from ..reference_scenes import ScenePortrait
         aside=PaperCard('只为年糕');aside.body.addWidget(ScenePortrait('settings',self.chapter_portrait(7),350))
@@ -475,6 +509,7 @@ class LifeWindow(QMainWindow):
     def refresh(self):
         from .calendar_cn import china_now
         self.clock_label.setText(china_now().strftime("%Y.%m.%d  %A  %H:%M").replace("Monday","星期一").replace("Tuesday","星期二").replace("Wednesday","星期三").replace("Thursday","星期四").replace("Friday","星期五").replace("Saturday","星期六").replace("Sunday","星期日"))
+        if self.skin_view and self.presentation.currentIndex()==1:self.skin_view.refresh()
         rows=self.pet.desktop.status_rows();self.desktop_status.setText("\n".join(rows) if rows else "桌面还空着，把一只粮碗或猫砂盆从背包拖出来吧。")
         self.motion_current.setText("当前动作："+MOTIONS.get(self.pet.work_pose if self.pet.work_mode else self.pet.behaviour.state,MOTIONS["idle"]).label+"  ·  体验情绪："+self.pet.director.mood(self.engine.mood))
         e=self.engine;a=e.age();self.age_label.setText("年糕 NIANGAO · 布偶猫 · 男孩子\n"+a["text"]+" · "+a["stage"]+" · 约人类 "+str(a["human_years"])+" 岁"+("\n体验年龄已冻结，真实生日仍保留" if e.data["age_frozen"] else ""))
@@ -504,5 +539,6 @@ class LifeWindow(QMainWindow):
         prioritize_dashboard(self,False);self.engine.save();event.ignore();self.hide()
     def shutdown(self):
         self.timer.stop()
+        if self.skin_view:self.skin_view.release();self.skin_view.page=None
         if hasattr(self,'album_widget'):self.album_widget.cancel_import()
         self.hide()

@@ -131,6 +131,13 @@ try:
     dash=state().get('dashboard');check(bool(dash),'native menu opens compact dashboard')
     def ui_point(point,dashboard):return tuple(round(v*dashboard.get('dpi',1)) for v in point)
     click(*ui_point(dash['nav']['3'],dash));time.sleep(.3);dash=state()['dashboard']
+    if dash.get('fullpage'):
+        check(dash.get('page')=='backpack','original artwork sidebar hotspot opens the real backpack page')
+        source=ui_point(dash['bag_cards']['fish'],dash);x,y,dw,dh=[v*dash.get('dpi',1) for v in dash['rect']]
+        target=next(pt for pt in [(25,730),(u.GetSystemMetrics(0)-25,150),(25,80)] if not (x<=pt[0]<=x+dw and y<=pt[1]<=y+dh))
+        u.SetCursorPos(*source);mouse(2);time.sleep(.12);u.SetCursorPos(source[0]+18,source[1]+18);time.sleep(.15);u.SetCursorPos(*target);time.sleep(.25);mouse(4);time.sleep(.4)
+        check(any(v['item']=='fish' for v in state()['desktop_props']),'original artwork item image drags to a real desktop prop')
+        click(*ui_point(dash['full_bag'],dash));time.sleep(.3);dash=state()['dashboard']
     # First clear the restored fountain using the actual dashboard button.
     click(*ui_point(dash['clear'],dash));time.sleep(.25)
     check(not state()['desktop_props'],'one-click clear removes own props without closing underlay')
@@ -154,6 +161,16 @@ try:
     click(*ui_point(dash['clear'],dash));time.sleep(.25)
     data=json.loads(life_path.read_text(encoding='utf-8'))
     check(not state()['desktop_props'] and data['inventory']['water_fountain']==1,'cleanup returns placement to inventory without deleting owned stock')
+    if dash.get('return_skin'):
+        click(*ui_point(dash['return_skin'],dash));time.sleep(.3);dash=state()['dashboard']
+        click(*ui_point(dash['nav']['5'],dash));time.sleep(.3);dash=state()['dashboard']
+        check(dash.get('fullpage') and dash.get('page')=='chat','full-page chat hotspot opens original artwork with live input')
+        click(*ui_point(dash['chat_input'],dash))
+        for code in (0x53,0x4B,0x49,0x4E):key(code)
+        key(0x0D);time.sleep(.5)
+        import sqlite3
+        with sqlite3.connect(str(out/'chat.sqlite3')) as db:
+            check(db.execute("SELECT COUNT(*) FROM messages WHERE role='user' AND lower(content)='skin'").fetchone()[0]>=1,'full-page chat receives native typing and persists the actual message')
     close(pet)
     # New dynamic objects use actual moving coordinates; legacy mask/drag test above pins its fixture.
     life_data=json.loads(life_path.read_text(encoding='utf-8'))

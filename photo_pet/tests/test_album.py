@@ -94,7 +94,7 @@ def test_album_ui_import_filter_navigation_and_sizes(tmp_path,app):
  assert set(install_fonts(app))=={'body','title','script'}
  pet=PetWindow(Settings(tmp_path/'profile/settings.json'));pet.timer.stop();pet.open_life();ui=pet.life_window
  assert ui.stack.count()==9 and ui.nav.item(7).text()=='性格与设置' and ui.nav.item(8).text()=='宠物相册'
- ui.nav.setCurrentRow(8);app.processEvents();album=ui.album_widget
+ ui.show_classic(8);app.processEvents();album=ui.album_widget
  album.manual.setChecked(True);album.day.setDate(QDate(2024,2,29));source=picture(tmp_path/'uploaded.png')
  album.import_paths([str(source)]);assert album.busy and not album.import_button.isEnabled()
  for _ in range(300):

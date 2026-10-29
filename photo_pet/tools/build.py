@@ -8,6 +8,13 @@ staging=root/"build"/"runtime-assets"
 shutil.rmtree(staging,ignore_errors=True)
 shutil.copytree(root/"assets",staging,ignore=shutil.ignore_patterns("*.blend","*.blend1","models","niangao-work.webp"))
 
+# The exact full-page originals replace older scene proposals in the executable.
+# Keep the source archive untouched and retain the compact classic UI essentials;
+# its other image helpers already fall back to the existing functional SVG props.
+for path in (staging/'ui').glob('*.webp'):path.unlink()
+for path in (staging/'ui/botanical').glob('*'):
+    if path.is_file() and path.name not in {'poses.webp','border.webp','paper.webp','candidate-standing.webp'}:path.unlink()
+
 shutil.copytree(root.parent/'fonts',staging/'fonts',dirs_exist_ok=True)
 
 subprocess.run([sys.executable,'-m','PyInstaller','--noconfirm','--clean','--onefile','--windowed',
