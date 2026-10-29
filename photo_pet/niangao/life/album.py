@@ -97,7 +97,7 @@ class AlbumStore:
         if not source.is_file() or source.stat().st_size>MAX_BYTES:raise ValueError('文件不存在或超过64MB')
         day,origin=(date.fromisoformat(override).isoformat(),'手动指定日期') if override else photo_date(source)
         id=uuid.uuid4().hex;temporary=self.root/(id+'.tmp');thumb=self.root/'thumbnails'/(id+'.webp')
-        destination=None;committed=False
+        destination=None;committed=False;reader=None
         try:
             digest=hashlib.sha256();size=0
             with source.open('rb') as src,temporary.open('wb') as out:
@@ -116,7 +116,7 @@ class AlbumStore:
             if fmt not in ('jpeg','jpg','png','webp','bmp','gif'):raise ValueError('支持 JPG、PNG、WebP、BMP、GIF（首帧）')
             if dimensions.width()>640 or dimensions.height()>480:reader.setScaledSize(dimensions.scaled(QSize(640,480),Qt.AspectRatioMode.KeepAspectRatio))
             try:image=reader.read()
-            finally:del reader  # Release Qt's file handle before moving on Windows.
+            finally:reader=None  # Release Qt's file handle before moving on Windows.
             if cancel is not None and cancel.is_set():raise InterruptedError('导入已取消')
             if image.isNull():raise ValueError('无法生成预览，图片可能损坏或超过解码内存限制')
             thumb.parent.mkdir(exist_ok=True)
@@ -129,6 +129,9 @@ class AlbumStore:
                  (id,sha,relative,thumb.relative_to(self.root).as_posix(),day,origin,source.stem[:120],'日常',source.name[:250],self.now().isoformat(timespec='seconds')))
             committed=True;return id,True
         finally:
+            # Header/format validation can fail before read(). On Windows the Qt
+            # reader still owns the staging file in those early error paths.
+            reader=None
             temporary.unlink(missing_ok=True)
             if not committed:
                 thumb.unlink(missing_ok=True)
