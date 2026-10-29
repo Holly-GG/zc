@@ -1,0 +1,68 @@
+[
+  {
+    "file": "candidate-standing.webp",
+    "sha256": "eed73d38a08e2e47e4b851c7d77ae36674e46d0c774239340bbfb34193dde387",
+    "type": "candidate",
+    "usage": "UI decoration only; no embedded controls or runtime data"
+  },
+  {
+    "file": "objects-extra.webp",
+    "sha256": "f0722c297cac982d969fc6123738dba8510da7f8556326654ef7bed48ed73d9f",
+    "type": "ornament",
+    "usage": "UI decoration only; no embedded controls or runtime data"
+  },
+  {
+    "file": "objects.webp",
+    "sha256": "5fa71a73e5bbac3ad5b07c75a6d8b8328e321dd2b7144bcdff0fefb30271f530",
+    "type": "ornament",
+    "usage": "UI decoration only; no embedded controls or runtime data"
+  },
+  {
+    "file": "scene-album.webp",
+    "sha256": "ffd81d84aa2826d680fa5bc41e5e27996a3126eb96e978f16bb0cd8bc4134660",
+    "type": "ornament",
+    "usage": "UI decoration only; no embedded controls or runtime data"
+  },
+  {
+    "file": "scene-backpack.webp",
+    "sha256": "8def19fd0a8a4a4db02e7ad936be027f3938472a73fa17ab7916164766ec2284",
+    "type": "ornament",
+    "usage": "UI decoration only; no embedded controls or runtime data"
+  },
+  {
+    "file": "scene-care.webp",
+    "sha256": "7311e4bb16634396855b9318bbbd52d2582d2fee48e6efdff8cbcfb422175338",
+    "type": "ornament",
+    "usage": "UI decoration only; no embedded controls or runtime data"
+  },
+  {
+    "file": "scene-chat.webp",
+    "sha256": "9e8cfcc3a856dae5d7b061e0f20fe75bf81ce7bca5436aaa063c169aa3f3c0a8",
+    "type": "ornament",
+    "usage": "UI decoration only; no embedded controls or runtime data"
+  },
+  {
+    "file": "scene-diary.webp",
+    "sha256": "10c01a479d22925a0965a55ae4074eb8369c63040d8412ba060e3dff5ca360e8",
+    "type": "ornament",
+    "usage": "UI decoration only; no embedded controls or runtime data"
+  },
+  {
+    "file": "scene-home.webp",
+    "sha256": "fef40cafdb772f34090ba933439398a640847841e1a5f8130a0e18d8782ca272",
+    "type": "ornament",
+    "usage": "UI decoration only; no embedded controls or runtime data"
+  },
+  {
+    "file": "scene-settings.webp",
+    "sha256": "576b51200b541ec9bc4d8f928439b66db1bac82931488e9e2872ef49c6e641d1",
+    "type": "ornament",
+    "usage": "UI decoration only; no embedded controls or runtime data"
+  },
+  {
+    "file": "scene-status.webp",
+    "sha256": "b7f21d0e7038b23ae1052c7bf49b64b892b074785d5f43495dae997664c398fa",
+    "type": "ornament",
+    "usage": "UI decoration only; no embedded controls or runtime data"
+  }
+]

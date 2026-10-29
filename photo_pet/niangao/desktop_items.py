@@ -1,13 +1,13 @@
 """Owned transparent desktop props; never creates files on the user's desktop."""
 import math,time,uuid,random
-from PySide6.QtCore import Qt,QPoint,QTimer,QRectF,QObject,Signal
+from PySide6.QtCore import Qt,QPoint,QTimer,QRectF,QObject,Signal,QSize
 from PySide6.QtGui import QPainter,QColor,QPen,QRegion,QFont
-from PySide6.QtWidgets import QWidget,QMenu,QApplication,QFrame,QVBoxLayout,QLabel,QPushButton
+from PySide6.QtWidgets import QWidget,QMenu,QApplication,QFrame,QVBoxLayout,QBoxLayout,QLabel,QPushButton
 from .geometry import Rect,nearest_area,clamp_position
 from .life.catalog import BY_ID,is_placeable,desktop_width
 from .prop_physics import Body,accepts
 from .dialogue import choose
-from .life.item_art import item_pixmap
+from .life.item_art import item_pixmap,illustrated_item_pixmap
 from .desktop_routines import PACKETS,SMALL_FOOD,MEAL_BOWLS,DesktopRoutine
 WATER={"water_bowl","water_fountain"}
 CARE_OBJECT={"food_bowl":("meal","feed"),"bowl":("meal","feed"),"water_bowl":("water","feed"),"water_fountain":("water","feed"),
@@ -320,13 +320,19 @@ class ItemDragCard(QFrame):
     def __init__(self,id,pet,host,action_text=None,callback=None):
         super().__init__();self.id=id;self.pet=pet;self.host=host;self.start=None;self.ghost=None;self.cancelled=False
         self.setObjectName("itemCard");self.setFocusPolicy(Qt.FocusPolicy.StrongFocus);self.setMinimumWidth(145)
-        layout=QVBoxLayout(self);layout.setContentsMargins(10,8,10,8)
-        self.picture=QLabel();self.picture.setAlignment(Qt.AlignmentFlag.AlignCenter);self.picture.setPixmap(item_pixmap(id,100));self.picture.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents);layout.addWidget(self.picture)
+        self.card_row=QBoxLayout(QBoxLayout.Direction.TopToBottom,self);self.card_row.setContentsMargins(12,10,12,10);self.card_row.setSpacing(10)
+        layout=self.card_row
+        self.picture=QLabel();self.picture.setAlignment(Qt.AlignmentFlag.AlignCenter);self.picture.setPixmap(illustrated_item_pixmap(id,112));self.picture.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents);layout.addWidget(self.picture)
+        info=QWidget();layout.addWidget(info);layout=QVBoxLayout(info);layout.setContentsMargins(0,0,0,0);layout.setSpacing(6)
         self.name=QLabel(BY_ID[id]["name"]);self.name.setObjectName("productName");self.name.setAlignment(Qt.AlignmentFlag.AlignCenter);self.name.setWordWrap(True);self.name.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents);layout.addWidget(self.name)
         self.detail=QLabel();self.detail.setObjectName("productDetail");self.detail.setAlignment(Qt.AlignmentFlag.AlignCenter);self.detail.setWordWrap(True);self.detail.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents);layout.addWidget(self.detail)
         if action_text:
             self.button=QPushButton(action_text);self.button.clicked.connect(lambda _checked=False:callback());layout.addWidget(self.button)
         self.setToolTip("按住图像拖到生活馆窗口外摆放；Esc 取消。"+BY_ID[id]["note"])
+    def resizeEvent(self,event):
+        self.card_row.setDirection(QBoxLayout.Direction.LeftToRight if self.width()>=280 else QBoxLayout.Direction.TopToBottom)
+        super().resizeEvent(event)
+    def minimumSizeHint(self):return QSize(145,self.card_row.minimumSize().height())
     def mousePressEvent(self,event):
         if event.button()==Qt.MouseButton.LeftButton:
             self.pet.autonomy.click();self.start=event.globalPosition().toPoint();self.cancelled=False;self.setFocus();self.grabMouse();

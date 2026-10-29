@@ -47,6 +47,10 @@ QLineEdit,QTextEdit,QTextBrowser,QSpinBox,QDoubleSpinBox,QComboBox,QDateEdit {ba
 QLineEdit:focus,QTextEdit:focus,QComboBox:focus,QSpinBox:focus,QDateEdit:focus {border:2px solid ${focus};}
 QLineEdit:disabled,QComboBox:disabled,QDateEdit:disabled {background:#ECECE2;color:#6D7467;}
 QTextBrowser {padding:10px;}
+QTextBrowser#chatTranscript {background:#F4F8F8;border-color:#C3D5D8;}
+QToolButton {background:#FCFAF0;border:1px solid #ADB98C;border-radius:5px;padding:7px 10px;color:#3C582C;}
+QToolButton:hover,QToolButton:checked {background:#E8E9C0;}
+QToolButton:focus {border:2px solid #3E7197;}
 QListWidget {background:#FFFDF5;border:1px solid #B7C29D;border-radius:7px;padding:4px;outline:none;}
 QListWidget::item {padding:8px 6px;margin:2px;}
 QListWidget::item:selected {background:${vellum};color:${ink};border-radius:5px;}

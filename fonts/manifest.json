@@ -4,20 +4,20 @@
     "family": "Niangao UI Sans",
     "weight": 400,
     "source": "NotoSansSC.ttf",
-    "sha256": "0de1c127b062115aa599811436e75c109b47a0ee04480f288e535b8a98bb0052"
+    "sha256": "9df89cd3f494174837738b4836f11c915c6a8476ee19081ed786553575dd6477"
   },
   {
     "file": "NiangaoSerif.ttf",
     "family": "Niangao Journal Serif",
     "weight": 600,
     "source": "NotoSerifSC.ttf",
-    "sha256": "00cb771f739847e0b9b9fcb9bbc12c4886fa0c020871bab162e0a4d2f95de36d"
+    "sha256": "fe364960a04fe246137d8fb1af4f8e2a3332614db30e29fe86097f1d35189244"
   },
   {
     "file": "NiangaoScript.ttf",
     "family": "Niangao Journal Script",
     "weight": 400,
     "source": "Allura-Regular.ttf",
-    "sha256": "d381dbf0718095acc3935305b6d9186364815c8174a66273022e6060ce8b8493"
+    "sha256": "54b2c09596b9d2c4ce4e1edd5be1d64fc97a98778ccfd7cb1e22d393efa25078"
   }
 ]

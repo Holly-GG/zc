@@ -3,7 +3,7 @@ import os,subprocess,tempfile
 from pathlib import Path
 root=Path(__file__).resolve().parents[2]
 dist=root/'photo_pet/dist'
-assert (dist/'Niangao-PhotoPet.exe').stat().st_size<95_000_000,'EXE exceeds safe direct GitHub file limit'
+assert (dist/'Niangao-PhotoPet.exe').stat().st_size<104_000_000,'EXE exceeds 100 MiB GitHub blob limit with safety margin'
 def run(*args,**kwargs):return subprocess.check_output(['git',*args],cwd=root,**kwargs).decode().strip()
 run('config','user.name','github-actions[bot]');run('config','user.email','41898282+github-actions[bot]@users.noreply.github.com')
 with tempfile.TemporaryDirectory(prefix='niangao-publish-') as temporary:
