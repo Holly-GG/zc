@@ -17,24 +17,19 @@ from ..ui_controls import ClickSelectComboBox,ExplicitSpinBox
 from .ai import SecretVault,AIClient,checked_base
 from .jobs import run_job
 from ..theme import STYLE
-class PaperPage(QWidget):
-    def paintEvent(self,event):
-        p=QPainter(self);p.fillRect(self.rect(),QColor("#fbf7ef"));p.setPen(QColor("#e3e8dc"))
-        for x in range(0,self.width(),22):p.drawPoint(x,10)
-        for y in range(0,self.height(),22):
-            for x in range(10,self.width(),22):p.drawPoint(x,y)
-        p.end()
+from ..journal import PaperPage,ChapterHeading,JournalSidebar
+from ..theme import chapter_style
 from ..interaction.actions import ACTIONS as MOTIONS,MOOD_POOLS,SOUNDS
 ACTIONS={key:info.label for key,info in MOTIONS.items()}
 PENDING=["跳上真实家具","精确三维攀爬与肢体接触","服饰穿戴","幼猫/老年独立模型","更连贯的长帧动作"]
 class MoodCurve(QWidget):
     def __init__(self,engine):super().__init__();self.engine=engine;self.setMinimumHeight(110)
     def paintEvent(self,event):
-        p=QPainter(self);p.setRenderHint(QPainter.RenderHint.Antialiasing);p.fillRect(self.rect(),QColor("#e0eee7"))
+        p=QPainter(self);p.setRenderHint(QPainter.RenderHint.Antialiasing);p.fillRect(self.rect(),QColor("#E8E9C0"))
         values=[e["value"] for e in self.engine.data["mood_history"][-80:]]
-        if len(values)<2:p.setPen(QColor("#305E63"));p.drawText(self.rect(),Qt.AlignmentFlag.AlignCenter,"陪伴一会儿，心情曲线就会长出来")
+        if len(values)<2:p.setPen(QColor("#2A472F"));p.drawText(self.rect(),Qt.AlignmentFlag.AlignCenter,"陪伴一会儿，心情曲线就会长出来")
         else:
-            p.setPen(QColor("#40A387"))
+            p.setPen(QColor("#3C582C"))
             from PySide6.QtCore import QPointF
             for i in range(1,len(values)):
                 p.drawLine(QPointF(10+(i-1)*(self.width()-20)/(len(values)-1),self.height()-10-values[i-1]*(self.height()-20)/100),
@@ -51,35 +46,35 @@ class LifeWindow(QMainWindow):
         for text,callback in [("随机待机",lambda:self.pet.set_work_mode(not self.pet.work_mode)),("专注小窗",self.pet.open_focus),("整理桌面",self.pet.desktop.clear)]:
             button=QPushButton(text);button.setObjectName("quiet");button.clicked.connect(callback);top.addWidget(button)
         outer.addWidget(header);row=QHBoxLayout();row.setSpacing(12);outer.addLayout(row,1)
-        sidebar=QFrame();sidebar.setObjectName("sidebar");sidebar.setFixedWidth(142);side=QVBoxLayout(sidebar);side.setContentsMargins(9,13,9,9)
-        mark=QLabel();mark.setAlignment(Qt.AlignmentFlag.AlignCenter);mark.setPixmap(QPixmap(str(asset_path("ui/niangao-mark.svg"))).scaled(64,64,Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation));side.addWidget(mark)
+        sidebar=JournalSidebar();sidebar.setObjectName("sidebar");sidebar.setFixedWidth(142);side=QVBoxLayout(sidebar);side.setContentsMargins(9,13,9,9)
+        mark=QLabel();mark.setAlignment(Qt.AlignmentFlag.AlignCenter);mark.setPixmap(self.chapter_portrait(0).scaled(74,74,Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation));side.addWidget(mark)
         label=QLabel("小棕点值班室");label.setAlignment(Qt.AlignmentFlag.AlignCenter);label.setObjectName("eyebrow");side.addWidget(label)
         self.nav=QListWidget();self.nav.setObjectName("navigation");side.addWidget(self.nav,1);self.stack=QStackedWidget();row.addWidget(sidebar);row.addWidget(self.stack,1)
         self.status=QLabel("本地陪伴 · 档案随时保存 · 今天也慢慢来");self.status.setObjectName("sub");self.status.setWordWrap(True);outer.addWidget(self.status)
         builders=[("陪伴总览",self.overview),("照料与动作",self.care_page),("年糕小铺",self.shop_page),("我的背包",self.backpack_page),
                   ("专注与待办",self.focus_page),("和年糕聊天",self.chat_page),("年糕日记",self.diary_page),("性格与设置",self.settings_page)]
-        for name,builder in builders:
-            self.nav.addItem(name);page=PaperPage();layout=QVBoxLayout(page);builder(layout);layout.addStretch()
+        for index,(name,builder) in enumerate(builders):
+            self._chapter_index=index
+            self.nav.addItem(name);page=PaperPage(index);page.setStyleSheet(chapter_style(page.chapter));layout=QVBoxLayout(page);layout.setContentsMargins(14,10,14,16);layout.setSpacing(12);builder(layout);layout.addStretch()
             scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setWidget(page);self.stack.addWidget(scroll)
         self.nav.currentRowChanged.connect(self.stack.setCurrentIndex);self.nav.setCurrentRow(0)
         self.pet.desktop.changed.connect(self.refresh_inventory)
         self.timer=QTimer(self);self.timer.timeout.connect(self.refresh);self.timer.start(1000);self.refresh()
+    def chapter_portrait(self,index):
+        # Reuse the same Niangao pose resources as the pet; never substitute a generic cat.
+        poses=('idle','groom','idle','sleep','sleep','idle','stretch','idle')
+        frames=self.pet.art.frames.get(poses[index]) or self.pet.art.frames.get('idle')
+        return QPixmap.fromImage(frames[0]) if frames else QPixmap()
     def title(self,layout,title,subtitle=""):
-        row=QHBoxLayout();layout.addLayout(row);texts=QVBoxLayout();row.addLayout(texts,1)
-        label=QLabel(title);label.setObjectName("hero");texts.addWidget(label)
-        if subtitle:
-            label=QLabel(subtitle);label.setObjectName("sub");label.setWordWrap(True);texts.addWidget(label)
-        art="care" if any(v in title for v in ("照顾","水","照料")) else "shop" if any(v in title for v in ("补给","小铺","背包")) else "diary" if any(v in title for v in ("日记","专注","休息")) else "welcome"
-        image=QLabel();image.setFixedSize(84,80)
-        path=asset_path("ui/"+art+".webp")
-        image.setPixmap((QPixmap(str(path)) if path.exists() else item_pixmap("food_bowl",80)).scaled(84,80,Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation));row.addWidget(image)
+        index=self._chapter_index
+        layout.addWidget(ChapterHeading(index,title,subtitle,self.chapter_portrait(index)))
     def button(self,layout,text,callback):
         b=QPushButton(text);b.clicked.connect(lambda _checked=False:callback());layout.addWidget(b);return b
     def notice(self,text):self.status.setText(str(text))
     def result(self,result):self.notice(result[1]);self.refresh()
     def overview(self,l):
         self.title(l,"你好，今天也有年糕陪你","真实生日 · 照料记录 · 小小的陪伴奖励")
-        row=QHBoxLayout();l.addLayout(row);photo=QLabel();photo.setPixmap((QPixmap(str(asset_path("ui/welcome.webp"))) if asset_path("ui/welcome.webp").exists() else item_pixmap("food_bowl",130)).scaled(135,155,Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation));row.addWidget(photo)
+        row=QHBoxLayout();l.addLayout(row);photo=QLabel();photo.setPixmap(self.chapter_portrait(0).scaled(135,155,Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation));row.addWidget(photo)
         box=QVBoxLayout();row.addLayout(box,1);self.age_label=QLabel();self.age_label.setWordWrap(True);box.addWidget(self.age_label)
         self.summary=QLabel();box.addWidget(self.summary);self.bars={}
         for key,name in STAT_NAMES.items():

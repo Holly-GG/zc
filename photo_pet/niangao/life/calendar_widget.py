@@ -3,6 +3,7 @@ from PySide6.QtCore import QDate, QLocale, Qt, QRect
 from PySide6.QtGui import QColor, QFont
 from PySide6.QtWidgets import QCalendarWidget
 from .calendar_cn import china_now,lunar_label
+from ..theme import TOKENS
 class ChineseCalendar(QCalendarWidget):
     def __init__(self,parent=None):
         super().__init__(parent)
@@ -11,18 +12,18 @@ class ChineseCalendar(QCalendarWidget):
         self.setDateRange(QDate(2020,1,1),QDate(2069,12,31))
         self.setVerticalHeaderFormat(self.VerticalHeaderFormat.NoVerticalHeader)
         day=china_now().date();self.setSelectedDate(QDate(day.year,day.month,day.day))
-        self.setStyleSheet("QWidget#qt_calendar_navigationbar{background:#b8dbca;} QToolButton{background:#b8dbca;color:#342d2b;border:0;padding:4px;}")
+        self.setStyleSheet("QWidget#qt_calendar_navigationbar{background:"+TOKENS["vellum"]+";} QToolButton{background:"+TOKENS["vellum"]+";color:"+TOKENS["ink"]+";border:0;padding:4px;}")
         self.setMinimumHeight(280)
     def paintCell(self,painter,rect,day):
         painter.save()
         selected=day==self.selectedDate()
-        painter.fillRect(rect,QColor("#b8dbca" if selected else "#fffaf0"))
-        painter.setPen(QColor("#342d2b" if day.month()==self.monthShown() else "#b5aaa0"))
+        painter.fillRect(rect,QColor(TOKENS["sky"] if selected else TOKENS["card"]))
+        painter.setPen(QColor(TOKENS["ink"] if day.month()==self.monthShown() else "#A3AA91"))
         font=QFont(painter.font());font.setPointSize(9);painter.setFont(font)
         painter.drawText(QRect(rect.x(),rect.y(),rect.width(),rect.height()//2),Qt.AlignmentFlag.AlignCenter,str(day.day()))
         value=date(day.year(),day.month(),day.day())
         try:label=lunar_label(value)
         except ValueError:label=""
-        font.setPointSize(7);painter.setFont(font);painter.setPen(QColor("#4d817b"))
+        font.setPointSize(7);painter.setFont(font);painter.setPen(QColor(TOKENS["forest"]))
         painter.drawText(QRect(rect.x(),rect.y()+rect.height()//2,rect.width(),rect.height()//2),Qt.AlignmentFlag.AlignCenter,label)
         painter.restore()
