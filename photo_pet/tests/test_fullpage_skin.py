@@ -11,7 +11,7 @@ from niangao.skin_view import rect
 ROOT=Path(__file__).resolve().parents[2]
 
 def test_all_eight_original_images_preserve_every_decoded_pixel():
- pack=SkinPack.bundled();manifest=json.loads((pack.root/'provenance.json').read_text())
+ pack=SkinPack.bundled();manifest=json.loads((pack.root/'provenance.json').read_text(encoding='utf-8'))
  assert len(manifest)==8
  with zipfile.ZipFile(ROOT/'docs/design-system/reference-originals.zip') as z:
   for row in manifest:
@@ -29,7 +29,7 @@ def test_import_original_zip_is_atomic_and_keeps_original_bytes(tmp_path):
  with pytest.raises(ValueError):import_skin_zip(invalid,tmp_path)
  assert old==(tmp_path/'page-skins/active.json').read_bytes() and not (tmp_path/'run.exe').exists()
  with zipfile.ZipFile(source) as z:
-  manifest=json.loads((SkinPack.bundled().root/'provenance.json').read_text())
+  manifest=json.loads((SkinPack.bundled().root/'provenance.json').read_text(encoding='utf-8'))
   for row in manifest:assert pack.pages[row['page']].read_bytes()==z.read(row['zip_entry'])
 
 def test_fullpage_navigation_real_typing_profile_save_and_portal_restore(tmp_path):
