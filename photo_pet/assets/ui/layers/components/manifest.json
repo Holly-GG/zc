@@ -1,0 +1,1637 @@
+{
+  "version": 1,
+  "components": [
+    {
+      "page": "home",
+      "component": "paper",
+      "file": "home/paper.png",
+      "width": 142,
+      "height": 141,
+      "sha256": "134b9af199457525ff1f2268bdebd78ab6b853ed090da7e589036458d4ab6990",
+      "source_sheet": "exec-a2728ae3-3369-4e39-8423-b60bbd297562.png",
+      "source_rect": [
+        0,
+        0,
+        396,
+        417
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "home",
+      "component": "frame",
+      "file": "home/frame.png",
+      "width": 385,
+      "height": 349,
+      "sha256": "889219c5b902edbbc0576e806f340e0fda0540d8d1bcacdb37b1da2daa43ae9e",
+      "source_sheet": "exec-a2728ae3-3369-4e39-8423-b60bbd297562.png",
+      "source_rect": [
+        396,
+        0,
+        396,
+        417
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "home",
+      "component": "header",
+      "file": "home/header.png",
+      "width": 388,
+      "height": 194,
+      "sha256": "6cdd83dc7a6f3ea1bf63010c5cfacff2ff520727f735aa9b62ce23d4169f17a9",
+      "source_sheet": "exec-a2728ae3-3369-4e39-8423-b60bbd297562.png",
+      "source_rect": [
+        793,
+        0,
+        396,
+        417
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "home",
+      "component": "card",
+      "file": "home/card.png",
+      "width": 360,
+      "height": 285,
+      "sha256": "1766983dc26ac21bf776afedf53bd4c596d712a0e932b342fc6256395b89b1fd",
+      "source_sheet": "exec-a2728ae3-3369-4e39-8423-b60bbd297562.png",
+      "source_rect": [
+        1190,
+        0,
+        396,
+        417
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "home",
+      "component": "button",
+      "file": "home/button.png",
+      "width": 340,
+      "height": 102,
+      "sha256": "fbcbbf77da31a264d993d3fcd532f2ffc27ce77d5e6211b85d2922184dd437d1",
+      "source_sheet": "exec-a2728ae3-3369-4e39-8423-b60bbd297562.png",
+      "source_rect": [
+        0,
+        417,
+        396,
+        169
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "home",
+      "component": "button-active",
+      "file": "home/button-active.png",
+      "width": 356,
+      "height": 109,
+      "sha256": "61c0033938042211601a11afad997a8bab1d6ce4cc3241bf883f68f4db4271f3",
+      "source_sheet": "exec-a2728ae3-3369-4e39-8423-b60bbd297562.png",
+      "source_rect": [
+        396,
+        417,
+        396,
+        169
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "home",
+      "component": "input",
+      "file": "home/input.png",
+      "width": 364,
+      "height": 98,
+      "sha256": "036eba2353643b46d4cccd77419e2141307832153fe86d1363766aa07ac2f295",
+      "source_sheet": "exec-a2728ae3-3369-4e39-8423-b60bbd297562.png",
+      "source_rect": [
+        793,
+        417,
+        396,
+        169
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "home",
+      "component": "navigation",
+      "file": "home/navigation.png",
+      "width": 347,
+      "height": 97,
+      "sha256": "77a695a13a56758512af0e5c29ad6e24293f1db263fd802f66c75781e9ae9517",
+      "source_sheet": "exec-a2728ae3-3369-4e39-8423-b60bbd297562.png",
+      "source_rect": [
+        1190,
+        417,
+        396,
+        169
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "home",
+      "component": "corner-top",
+      "file": "home/corner-top.png",
+      "width": 367,
+      "height": 330,
+      "sha256": "4a68085be8262dc3501f859a0e697898a5dcd9706b91a78774368b1c47da1ca0",
+      "source_sheet": "exec-a2728ae3-3369-4e39-8423-b60bbd297562.png",
+      "source_rect": [
+        0,
+        585,
+        396,
+        407
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "home",
+      "component": "corner-bottom",
+      "file": "home/corner-bottom.png",
+      "width": 396,
+      "height": 320,
+      "sha256": "37eb082ea69e0230dee5aa5dc31a336d193e8d317a02b6791d01d858e6b30dc7",
+      "source_sheet": "exec-a2728ae3-3369-4e39-8423-b60bbd297562.png",
+      "source_rect": [
+        396,
+        585,
+        396,
+        407
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "home",
+      "component": "character",
+      "file": "home/character.png",
+      "width": 396,
+      "height": 366,
+      "sha256": "7139f4b6bf62c782ae8952859df1a964acd66ae33d05f233d8c02e3c6358c392",
+      "source_sheet": "exec-a2728ae3-3369-4e39-8423-b60bbd297562.png",
+      "source_rect": [
+        793,
+        585,
+        396,
+        407
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "candidate-not-enabled"
+    },
+    {
+      "page": "home",
+      "component": "objects",
+      "file": "home/objects.png",
+      "width": 377,
+      "height": 363,
+      "sha256": "516b6f71f72514629eb0a24540e04521eab9d2b48d2adc00b722fc633814541f",
+      "source_sheet": "exec-a2728ae3-3369-4e39-8423-b60bbd297562.png",
+      "source_rect": [
+        1190,
+        585,
+        396,
+        407
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "chat",
+      "component": "paper",
+      "file": "chat/paper.png",
+      "width": 171,
+      "height": 167,
+      "sha256": "859a6a93cef4d12a6131377db5a5a6404f1c5e05de3b6c26215eb47bd73ae14f",
+      "source_sheet": "exec-9f8c9009-36e5-44c7-96c2-82256cf1394b.png",
+      "source_rect": [
+        0,
+        0,
+        396,
+        417
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "chat",
+      "component": "frame",
+      "file": "chat/frame.png",
+      "width": 378,
+      "height": 340,
+      "sha256": "ceb1ac50f6e3a95acb01d906951c968676a3ed6819096abb6ec62b89a1d57f40",
+      "source_sheet": "exec-9f8c9009-36e5-44c7-96c2-82256cf1394b.png",
+      "source_rect": [
+        396,
+        0,
+        396,
+        417
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "chat",
+      "component": "header",
+      "file": "chat/header.png",
+      "width": 391,
+      "height": 149,
+      "sha256": "97a5a4d35777eeecf6b543c05242b1ab09b5d16c8ac197c5c2c22ff715c491bf",
+      "source_sheet": "exec-9f8c9009-36e5-44c7-96c2-82256cf1394b.png",
+      "source_rect": [
+        792,
+        0,
+        396,
+        417
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "chat",
+      "component": "card",
+      "file": "chat/card.png",
+      "width": 355,
+      "height": 299,
+      "sha256": "6f92ca738532b549b164052c65849b59e42b7b88ceb0bad23db3e6e6762fdb76",
+      "source_sheet": "exec-9f8c9009-36e5-44c7-96c2-82256cf1394b.png",
+      "source_rect": [
+        1189,
+        0,
+        396,
+        417
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "chat",
+      "component": "button",
+      "file": "chat/button.png",
+      "width": 362,
+      "height": 119,
+      "sha256": "976fbe8e3ee0fdf238fd047ec8d3aa08a92f5cd6791d96a797f850c9ed24594f",
+      "source_sheet": "exec-9f8c9009-36e5-44c7-96c2-82256cf1394b.png",
+      "source_rect": [
+        0,
+        417,
+        396,
+        179
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "chat",
+      "component": "button-active",
+      "file": "chat/button-active.png",
+      "width": 392,
+      "height": 118,
+      "sha256": "9b9c9a356d79cbe4da3e25a72203cb11c73e52150dc1ecf9fefca79beeea9760",
+      "source_sheet": "exec-9f8c9009-36e5-44c7-96c2-82256cf1394b.png",
+      "source_rect": [
+        396,
+        417,
+        396,
+        179
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "chat",
+      "component": "input",
+      "file": "chat/input.png",
+      "width": 379,
+      "height": 102,
+      "sha256": "6a61157560859acf6cc02c70d54bb64c070a62b3c52ed1b92b9aefcd7fd2d148",
+      "source_sheet": "exec-9f8c9009-36e5-44c7-96c2-82256cf1394b.png",
+      "source_rect": [
+        792,
+        417,
+        396,
+        179
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "chat",
+      "component": "navigation",
+      "file": "chat/navigation.png",
+      "width": 375,
+      "height": 124,
+      "sha256": "618c5ce5deb5754f7d09ef265fb7580717f26379bfa2c96bc7ceaa56aa58a9dd",
+      "source_sheet": "exec-9f8c9009-36e5-44c7-96c2-82256cf1394b.png",
+      "source_rect": [
+        1189,
+        417,
+        396,
+        179
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "chat",
+      "component": "corner-top",
+      "file": "chat/corner-top.png",
+      "width": 336,
+      "height": 323,
+      "sha256": "916bba414a07689d36bfc59b7fd0bd5a2ddfb7615023f529426b5330938a81f3",
+      "source_sheet": "exec-9f8c9009-36e5-44c7-96c2-82256cf1394b.png",
+      "source_rect": [
+        0,
+        595,
+        396,
+        397
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "chat",
+      "component": "corner-bottom",
+      "file": "chat/corner-bottom.png",
+      "width": 369,
+      "height": 325,
+      "sha256": "4691672f947073ec7ca627c1c1f355431ccec1be7e98b5f31750170f7c478b32",
+      "source_sheet": "exec-9f8c9009-36e5-44c7-96c2-82256cf1394b.png",
+      "source_rect": [
+        396,
+        595,
+        396,
+        397
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "chat",
+      "component": "character",
+      "file": "chat/character.png",
+      "width": 389,
+      "height": 264,
+      "sha256": "5a291510d3ea51932906a85ffb6b14b9594089cd9cb2dd5af240b6be7f08c49e",
+      "source_sheet": "exec-9f8c9009-36e5-44c7-96c2-82256cf1394b.png",
+      "source_rect": [
+        792,
+        595,
+        396,
+        397
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "candidate-not-enabled"
+    },
+    {
+      "page": "chat",
+      "component": "objects",
+      "file": "chat/objects.png",
+      "width": 369,
+      "height": 342,
+      "sha256": "a765adc268cfd7d9f014538c9f81da5a91a4d593e6713e69825be9ac7156471a",
+      "source_sheet": "exec-9f8c9009-36e5-44c7-96c2-82256cf1394b.png",
+      "source_rect": [
+        1189,
+        595,
+        396,
+        397
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "care",
+      "component": "paper",
+      "file": "care/paper.png",
+      "width": 163,
+      "height": 162,
+      "sha256": "ef6f84e0281dc5bda264c1b27317a1825ae633d8459ff61db49feadf49a06768",
+      "source_sheet": "exec-58858527-3fe5-4a46-88e7-e6be67246049.png",
+      "source_rect": [
+        0,
+        0,
+        362,
+        478
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "care",
+      "component": "frame",
+      "file": "care/frame.png",
+      "width": 352,
+      "height": 352,
+      "sha256": "d9c379ca716a2ceba1b49bdb00babb832e05ca44da1f31bbf0c068e796788959",
+      "source_sheet": "exec-58858527-3fe5-4a46-88e7-e6be67246049.png",
+      "source_rect": [
+        362,
+        0,
+        362,
+        478
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "care",
+      "component": "header",
+      "file": "care/header.png",
+      "width": 353,
+      "height": 156,
+      "sha256": "ca043b08b7007c9db40b609f6961461bcec398c8ee2f67252790b4c2f253f6fc",
+      "source_sheet": "exec-58858527-3fe5-4a46-88e7-e6be67246049.png",
+      "source_rect": [
+        724,
+        0,
+        362,
+        478
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "care",
+      "component": "card",
+      "file": "care/card.png",
+      "width": 313,
+      "height": 249,
+      "sha256": "9ff2a2c60e0fd707403b3aa7e698e8237203754995995f8e3b26d45fa987e846",
+      "source_sheet": "exec-58858527-3fe5-4a46-88e7-e6be67246049.png",
+      "source_rect": [
+        1109,
+        87,
+        337,
+        348
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "care",
+      "component": "button",
+      "file": "care/button.png",
+      "width": 337,
+      "height": 103,
+      "sha256": "ef64b308524496eae970ade7a19276af072a2c6beafee89c2a989d9657e91627",
+      "source_sheet": "exec-58858527-3fe5-4a46-88e7-e6be67246049.png",
+      "source_rect": [
+        0,
+        478,
+        362,
+        157
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "care",
+      "component": "button-active",
+      "file": "care/button-active.png",
+      "width": 344,
+      "height": 101,
+      "sha256": "001617ead5cbabb952c43c8174339f1323b7ab76344b4d3346b57c132a30aec7",
+      "source_sheet": "exec-58858527-3fe5-4a46-88e7-e6be67246049.png",
+      "source_rect": [
+        362,
+        478,
+        362,
+        157
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "care",
+      "component": "input",
+      "file": "care/input.png",
+      "width": 343,
+      "height": 90,
+      "sha256": "02aa4ca9f7c63a8dfe770e39357312a779712ca8723a8f00203186c3a76763ff",
+      "source_sheet": "exec-58858527-3fe5-4a46-88e7-e6be67246049.png",
+      "source_rect": [
+        724,
+        478,
+        362,
+        157
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "care",
+      "component": "navigation",
+      "file": "care/navigation.png",
+      "width": 323,
+      "height": 89,
+      "sha256": "ff70e1b4a4ec830c77fb0f5f20deba51d358d93b1380b645b2c1e554673d0789",
+      "source_sheet": "exec-58858527-3fe5-4a46-88e7-e6be67246049.png",
+      "source_rect": [
+        1086,
+        478,
+        362,
+        157
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "care",
+      "component": "corner-top",
+      "file": "care/corner-top.png",
+      "width": 344,
+      "height": 366,
+      "sha256": "d4c5c73eb92346bb51030c2cddcc7a7e0385d8fc574b83d3ce5195357ac3c109",
+      "source_sheet": "exec-58858527-3fe5-4a46-88e7-e6be67246049.png",
+      "source_rect": [
+        0,
+        635,
+        362,
+        451
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "care",
+      "component": "corner-bottom",
+      "file": "care/corner-bottom.png",
+      "width": 362,
+      "height": 322,
+      "sha256": "62f2ebc3295dd99f1603bf34ff3468fc6ea2522fc98739283146d86d10e68483",
+      "source_sheet": "exec-58858527-3fe5-4a46-88e7-e6be67246049.png",
+      "source_rect": [
+        362,
+        635,
+        362,
+        451
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "care",
+      "component": "character",
+      "file": "care/character.png",
+      "width": 362,
+      "height": 405,
+      "sha256": "102d080fecb59a56671280413d509c8f77564970a1d4545ceecd5613d908923f",
+      "source_sheet": "exec-58858527-3fe5-4a46-88e7-e6be67246049.png",
+      "source_rect": [
+        724,
+        635,
+        362,
+        451
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "candidate-not-enabled"
+    },
+    {
+      "page": "care",
+      "component": "objects",
+      "file": "care/objects.png",
+      "width": 347,
+      "height": 401,
+      "sha256": "56e82179958af9b6780d2c0c7f674c2290af251524f923127e6c58202254982f",
+      "source_sheet": "exec-58858527-3fe5-4a46-88e7-e6be67246049.png",
+      "source_rect": [
+        1086,
+        635,
+        362,
+        451
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "backpack",
+      "component": "paper",
+      "file": "backpack/paper.png",
+      "width": 168,
+      "height": 156,
+      "sha256": "a2e4a2df31612b740f05af74f1d7a4112a48fdec18469773ee8c574785673d95",
+      "source_sheet": "exec-9e7805e0-f45b-43d8-9170-ebc69b0d0499.png",
+      "source_rect": [
+        0,
+        0,
+        362,
+        478
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "backpack",
+      "component": "frame",
+      "file": "backpack/frame.png",
+      "width": 362,
+      "height": 332,
+      "sha256": "0f3caa678be0b72646cfc24a6969270e0e11eb482eace9e008e37012d0706f6a",
+      "source_sheet": "exec-9e7805e0-f45b-43d8-9170-ebc69b0d0499.png",
+      "source_rect": [
+        362,
+        0,
+        362,
+        478
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "backpack",
+      "component": "header",
+      "file": "backpack/header.png",
+      "width": 362,
+      "height": 183,
+      "sha256": "16ac3bc0b8b8e37f9e506814b7c9b767071be030642ccdb80f68a4971a3042c8",
+      "source_sheet": "exec-9e7805e0-f45b-43d8-9170-ebc69b0d0499.png",
+      "source_rect": [
+        724,
+        0,
+        362,
+        478
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "backpack",
+      "component": "card",
+      "file": "backpack/card.png",
+      "width": 350,
+      "height": 298,
+      "sha256": "77f5362e0d272b4be2bf84b1ce8a3db9672851676ffbd683e80a88c5d32fd72a",
+      "source_sheet": "exec-9e7805e0-f45b-43d8-9170-ebc69b0d0499.png",
+      "source_rect": [
+        1086,
+        0,
+        362,
+        478
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "backpack",
+      "component": "button",
+      "file": "backpack/button.png",
+      "width": 343,
+      "height": 135,
+      "sha256": "086835c50a62b93eb30e070430e429022eeed702e6efb5fc6571dbb29646da60",
+      "source_sheet": "exec-9e7805e0-f45b-43d8-9170-ebc69b0d0499.png",
+      "source_rect": [
+        0,
+        478,
+        362,
+        157
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "backpack",
+      "component": "button-active",
+      "file": "backpack/button-active.png",
+      "width": 339,
+      "height": 100,
+      "sha256": "b584fbaacfff7089d36e005bf10ac0573ce304fa2a444a64e01198c6f787338c",
+      "source_sheet": "exec-9e7805e0-f45b-43d8-9170-ebc69b0d0499.png",
+      "source_rect": [
+        362,
+        478,
+        362,
+        157
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "backpack",
+      "component": "input",
+      "file": "backpack/input.png",
+      "width": 339,
+      "height": 94,
+      "sha256": "4071677cba949e1341b17010b9261c3cd857214bc50e81ce8c13a44d20848f41",
+      "source_sheet": "exec-9e7805e0-f45b-43d8-9170-ebc69b0d0499.png",
+      "source_rect": [
+        724,
+        478,
+        362,
+        157
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "backpack",
+      "component": "navigation",
+      "file": "backpack/navigation.png",
+      "width": 336,
+      "height": 102,
+      "sha256": "cf416f150a352f4244392498c3f69502809a14b7ce4a3a56f3ad9ea029563938",
+      "source_sheet": "exec-9e7805e0-f45b-43d8-9170-ebc69b0d0499.png",
+      "source_rect": [
+        1086,
+        478,
+        362,
+        157
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "backpack",
+      "component": "corner-top",
+      "file": "backpack/corner-top.png",
+      "width": 349,
+      "height": 379,
+      "sha256": "90e85ef536328103a9e8fbcacd50fb31f687acaa53c68e748ed74cc6f26be2ed",
+      "source_sheet": "exec-9e7805e0-f45b-43d8-9170-ebc69b0d0499.png",
+      "source_rect": [
+        0,
+        635,
+        362,
+        451
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "backpack",
+      "component": "corner-bottom",
+      "file": "backpack/corner-bottom.png",
+      "width": 362,
+      "height": 373,
+      "sha256": "8275313c266bee44ef1c1e7929396acceb5304d493fc88770fc3fc6954b78d0d",
+      "source_sheet": "exec-9e7805e0-f45b-43d8-9170-ebc69b0d0499.png",
+      "source_rect": [
+        362,
+        635,
+        362,
+        451
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "backpack",
+      "component": "character",
+      "file": "backpack/character.png",
+      "width": 362,
+      "height": 311,
+      "sha256": "ac73d8c0e462aa06d2364e20f54e79eda015315f5cddf70ba569d3b880054ed0",
+      "source_sheet": "exec-9e7805e0-f45b-43d8-9170-ebc69b0d0499.png",
+      "source_rect": [
+        724,
+        635,
+        362,
+        451
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "candidate-not-enabled"
+    },
+    {
+      "page": "backpack",
+      "component": "objects",
+      "file": "backpack/objects.png",
+      "width": 358,
+      "height": 371,
+      "sha256": "ef026f0e0faa74af8f1c070291cf2713a10103b829900e07e007448308fe3d01",
+      "source_sheet": "exec-9e7805e0-f45b-43d8-9170-ebc69b0d0499.png",
+      "source_rect": [
+        1086,
+        635,
+        362,
+        451
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "diary",
+      "component": "paper",
+      "file": "diary/paper.png",
+      "width": 173,
+      "height": 169,
+      "sha256": "8f0ec636bfa3082b6960ceaf768029b02021c53586f1d6abedb4916aa0dd6c0e",
+      "source_sheet": "exec-86d5c8db-0d8b-45ef-b306-b110abd2515d.png",
+      "source_rect": [
+        0,
+        0,
+        384,
+        461
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "diary",
+      "component": "frame",
+      "file": "diary/frame.png",
+      "width": 374,
+      "height": 379,
+      "sha256": "c9f70f35c411c39780b569e1e78e0d69be34d2b08cfecafa40bf3cd51ae26470",
+      "source_sheet": "exec-86d5c8db-0d8b-45ef-b306-b110abd2515d.png",
+      "source_rect": [
+        384,
+        0,
+        384,
+        461
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "diary",
+      "component": "header",
+      "file": "diary/header.png",
+      "width": 384,
+      "height": 159,
+      "sha256": "1d71f4fcedc7124c447839c0e0a9a81727b4ce20f77d6c9e5efb65b1f7cd150d",
+      "source_sheet": "exec-86d5c8db-0d8b-45ef-b306-b110abd2515d.png",
+      "source_rect": [
+        768,
+        0,
+        384,
+        461
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "diary",
+      "component": "card",
+      "file": "diary/card.png",
+      "width": 347,
+      "height": 318,
+      "sha256": "cce6ea888f32f24455a1179fb651b14915df564df67a0071328f42cd6660c2ae",
+      "source_sheet": "exec-86d5c8db-0d8b-45ef-b306-b110abd2515d.png",
+      "source_rect": [
+        1152,
+        0,
+        384,
+        461
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "diary",
+      "component": "button",
+      "file": "diary/button.png",
+      "width": 356,
+      "height": 108,
+      "sha256": "dcde7d11ee240b1cebcd0c660edb51387744efad1dfc530481078630e9c22685",
+      "source_sheet": "exec-86d5c8db-0d8b-45ef-b306-b110abd2515d.png",
+      "source_rect": [
+        0,
+        461,
+        384,
+        164
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "diary",
+      "component": "button-active",
+      "file": "diary/button-active.png",
+      "width": 366,
+      "height": 111,
+      "sha256": "c882030a8ccaa907c8cc06883347807dea8dda1066c59b3a09e4e0dc9863a7a4",
+      "source_sheet": "exec-86d5c8db-0d8b-45ef-b306-b110abd2515d.png",
+      "source_rect": [
+        384,
+        461,
+        384,
+        164
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "diary",
+      "component": "input",
+      "file": "diary/input.png",
+      "width": 369,
+      "height": 104,
+      "sha256": "cd1acdeb99d68a928476629fa79b5ea4778a1bde8ad6094ccbea3e2609001497",
+      "source_sheet": "exec-86d5c8db-0d8b-45ef-b306-b110abd2515d.png",
+      "source_rect": [
+        768,
+        461,
+        384,
+        164
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "diary",
+      "component": "navigation",
+      "file": "diary/navigation.png",
+      "width": 352,
+      "height": 116,
+      "sha256": "844f5195e7d2a37090bd6f26577d7b4b673b6fd627480e70d04540639610415e",
+      "source_sheet": "exec-86d5c8db-0d8b-45ef-b306-b110abd2515d.png",
+      "source_rect": [
+        1152,
+        461,
+        384,
+        164
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "diary",
+      "component": "corner-top",
+      "file": "diary/corner-top.png",
+      "width": 362,
+      "height": 316,
+      "sha256": "1186e1a777d8bc7967b3b24279e3beb5102e96704a042661a2bc05dea4a5b992",
+      "source_sheet": "exec-86d5c8db-0d8b-45ef-b306-b110abd2515d.png",
+      "source_rect": [
+        0,
+        625,
+        384,
+        399
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "diary",
+      "component": "corner-bottom",
+      "file": "diary/corner-bottom.png",
+      "width": 384,
+      "height": 362,
+      "sha256": "9132be4413c06f56a7b1417412d0a38de739f8c1f1fd9276f9aa97d2d934a10a",
+      "source_sheet": "exec-86d5c8db-0d8b-45ef-b306-b110abd2515d.png",
+      "source_rect": [
+        384,
+        625,
+        384,
+        399
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "diary",
+      "component": "character",
+      "file": "diary/character.png",
+      "width": 384,
+      "height": 169,
+      "sha256": "a837980f41615d65dbc623a5bdd5b5cb88941bd49563b75984c3a7c9358928cd",
+      "source_sheet": "exec-86d5c8db-0d8b-45ef-b306-b110abd2515d.png",
+      "source_rect": [
+        768,
+        625,
+        384,
+        399
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "candidate-not-enabled"
+    },
+    {
+      "page": "diary",
+      "component": "objects",
+      "file": "diary/objects.png",
+      "width": 365,
+      "height": 369,
+      "sha256": "89c1f96bc216e2ebb9a5598d259f8028c7cf19db4e731ca6af657744ebeeb6e7",
+      "source_sheet": "exec-86d5c8db-0d8b-45ef-b306-b110abd2515d.png",
+      "source_rect": [
+        1152,
+        625,
+        384,
+        399
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "settings",
+      "component": "paper",
+      "file": "settings/paper.png",
+      "width": 176,
+      "height": 167,
+      "sha256": "b158af3b8c085caf7b248fb585e313ab82735661532c29878ba36f78db20760b",
+      "source_sheet": "exec-4a4cad50-0e06-4e09-bc4d-2a881873c6b0.png",
+      "source_rect": [
+        0,
+        0,
+        396,
+        427
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "settings",
+      "component": "frame",
+      "file": "settings/frame.png",
+      "width": 395,
+      "height": 380,
+      "sha256": "8f4bc1e078d5b5433d1c7a49a05cafa28362a0cdf3c982f8577f0e434f57a1a1",
+      "source_sheet": "exec-4a4cad50-0e06-4e09-bc4d-2a881873c6b0.png",
+      "source_rect": [
+        396,
+        0,
+        396,
+        427
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "settings",
+      "component": "header",
+      "file": "settings/header.png",
+      "width": 393,
+      "height": 185,
+      "sha256": "1e5ec78fb3435db9a89b6d0d73088f650625174a3e54630ff861e69837b5d784",
+      "source_sheet": "exec-4a4cad50-0e06-4e09-bc4d-2a881873c6b0.png",
+      "source_rect": [
+        792,
+        0,
+        396,
+        427
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "settings",
+      "component": "card",
+      "file": "settings/card.png",
+      "width": 362,
+      "height": 252,
+      "sha256": "97f96dbf2ccad2bbb592744ad46c621addb572c1825cb6f296a199c0da660b91",
+      "source_sheet": "exec-4a4cad50-0e06-4e09-bc4d-2a881873c6b0.png",
+      "source_rect": [
+        1189,
+        0,
+        396,
+        427
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "settings",
+      "component": "button",
+      "file": "settings/button.png",
+      "width": 347,
+      "height": 93,
+      "sha256": "5780e7dc8dfd791b6639fffdc22a9f720aebd6df439890355af99841ae179dd3",
+      "source_sheet": "exec-4a4cad50-0e06-4e09-bc4d-2a881873c6b0.png",
+      "source_rect": [
+        0,
+        427,
+        396,
+        149
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "settings",
+      "component": "button-active",
+      "file": "settings/button-active.png",
+      "width": 343,
+      "height": 99,
+      "sha256": "9a172a977c0b7e24f4ac494ae54e1e85c8388c3cf8f5586213215d7170df16cc",
+      "source_sheet": "exec-4a4cad50-0e06-4e09-bc4d-2a881873c6b0.png",
+      "source_rect": [
+        396,
+        427,
+        396,
+        149
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "settings",
+      "component": "input",
+      "file": "settings/input.png",
+      "width": 375,
+      "height": 87,
+      "sha256": "0232d5dc77c2020fe3ee91d31498aebba492b6529b33dabb9280481f8885b2bf",
+      "source_sheet": "exec-4a4cad50-0e06-4e09-bc4d-2a881873c6b0.png",
+      "source_rect": [
+        792,
+        427,
+        396,
+        149
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "settings",
+      "component": "navigation",
+      "file": "settings/navigation.png",
+      "width": 339,
+      "height": 110,
+      "sha256": "a25b2f331b8d5aed15e2b7bfc12b267dd43cc416c45b39ebf371c04323e95ff2",
+      "source_sheet": "exec-4a4cad50-0e06-4e09-bc4d-2a881873c6b0.png",
+      "source_rect": [
+        1189,
+        427,
+        396,
+        149
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "settings",
+      "component": "corner-top",
+      "file": "settings/corner-top.png",
+      "width": 303,
+      "height": 319,
+      "sha256": "4a5e2ce900c930f1abd3f106ff926715d90d2d4ff8ad72555380e8fbd4bc97a0",
+      "source_sheet": "exec-4a4cad50-0e06-4e09-bc4d-2a881873c6b0.png",
+      "source_rect": [
+        0,
+        575,
+        396,
+        417
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "settings",
+      "component": "corner-bottom",
+      "file": "settings/corner-bottom.png",
+      "width": 371,
+      "height": 363,
+      "sha256": "85f77ed862d37b78a673d8fece4d2e40d2c91b36474c7a50103149cc4696feb8",
+      "source_sheet": "exec-4a4cad50-0e06-4e09-bc4d-2a881873c6b0.png",
+      "source_rect": [
+        396,
+        575,
+        396,
+        417
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "settings",
+      "component": "character",
+      "file": "settings/character.png",
+      "width": 380,
+      "height": 374,
+      "sha256": "6d5ea43befc4950a48db978d318a4d805394a9f0d345294f090d21316ad8df01",
+      "source_sheet": "exec-4a4cad50-0e06-4e09-bc4d-2a881873c6b0.png",
+      "source_rect": [
+        792,
+        575,
+        396,
+        417
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "candidate-not-enabled"
+    },
+    {
+      "page": "settings",
+      "component": "objects",
+      "file": "settings/objects.png",
+      "width": 378,
+      "height": 337,
+      "sha256": "5bc24a2b796178b47dd3b536ad5165a88a223e43c5d1642e823a833631add87b",
+      "source_sheet": "exec-4a4cad50-0e06-4e09-bc4d-2a881873c6b0.png",
+      "source_rect": [
+        1189,
+        575,
+        396,
+        417
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "album",
+      "component": "paper",
+      "file": "album/paper.png",
+      "width": 156,
+      "height": 157,
+      "sha256": "e623a0639b76c32ea617efda12874c5ffe15b501c03ce3a413e6a5e7bf275a6c",
+      "source_sheet": "exec-863a5773-6620-4fc9-b35d-0a3d79419c4a.png",
+      "source_rect": [
+        0,
+        0,
+        362,
+        462
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "album",
+      "component": "frame",
+      "file": "album/frame.png",
+      "width": 358,
+      "height": 366,
+      "sha256": "1e8ee50c9e9e4da84c5ec7f3688aecbf5243c11bacf9bc972098986f9afdb160",
+      "source_sheet": "exec-863a5773-6620-4fc9-b35d-0a3d79419c4a.png",
+      "source_rect": [
+        362,
+        0,
+        362,
+        462
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "album",
+      "component": "header",
+      "file": "album/header.png",
+      "width": 354,
+      "height": 197,
+      "sha256": "4af1ffc93ba5fc478cec94072b12fe9b83c32fdc5bedb0378122d0e2334db044",
+      "source_sheet": "exec-863a5773-6620-4fc9-b35d-0a3d79419c4a.png",
+      "source_rect": [
+        724,
+        0,
+        362,
+        462
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "album",
+      "component": "card",
+      "file": "album/card.png",
+      "width": 339,
+      "height": 311,
+      "sha256": "ca81254284b2fb5cd4b019ce593fd3869f4d906b4f10f143b4293d9c290953f8",
+      "source_sheet": "exec-863a5773-6620-4fc9-b35d-0a3d79419c4a.png",
+      "source_rect": [
+        1086,
+        0,
+        362,
+        462
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "album",
+      "component": "button",
+      "file": "album/button.png",
+      "width": 318,
+      "height": 111,
+      "sha256": "41c1c0f4941859f23cd8b86cc536e46be88bc2278ea2464bafe980b2924e10c9",
+      "source_sheet": "exec-863a5773-6620-4fc9-b35d-0a3d79419c4a.png",
+      "source_rect": [
+        0,
+        462,
+        362,
+        168
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "album",
+      "component": "button-active",
+      "file": "album/button-active.png",
+      "width": 317,
+      "height": 111,
+      "sha256": "6014bd6d0b50b62a7401d60ed5c81e7a68b67a71e5d674c0581eac8c28e735f3",
+      "source_sheet": "exec-863a5773-6620-4fc9-b35d-0a3d79419c4a.png",
+      "source_rect": [
+        362,
+        462,
+        362,
+        168
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "album",
+      "component": "input",
+      "file": "album/input.png",
+      "width": 329,
+      "height": 93,
+      "sha256": "5118c47ddc53c3ed6d7b5ede5306bd5e849ea4020c713a242b5bc008942fda8b",
+      "source_sheet": "exec-863a5773-6620-4fc9-b35d-0a3d79419c4a.png",
+      "source_rect": [
+        724,
+        462,
+        362,
+        168
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "album",
+      "component": "navigation",
+      "file": "album/navigation.png",
+      "width": 314,
+      "height": 113,
+      "sha256": "3899f458efc7fb781e8a9d93166b4021a4bc446ef8b0653712ea6f2c35bdfce3",
+      "source_sheet": "exec-863a5773-6620-4fc9-b35d-0a3d79419c4a.png",
+      "source_rect": [
+        1086,
+        462,
+        362,
+        168
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "album",
+      "component": "corner-top",
+      "file": "album/corner-top.png",
+      "width": 344,
+      "height": 363,
+      "sha256": "3344db606fe62b91c9610781a632ec47e2c0e6e6121e787de6b28695e48ef6fd",
+      "source_sheet": "exec-863a5773-6620-4fc9-b35d-0a3d79419c4a.png",
+      "source_rect": [
+        0,
+        630,
+        362,
+        456
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "album",
+      "component": "corner-bottom",
+      "file": "album/corner-bottom.png",
+      "width": 354,
+      "height": 359,
+      "sha256": "8c0a3329969babd97693c7b1a63aec313d7df20a71059505ed24ebfb7bc2f8c6",
+      "source_sheet": "exec-863a5773-6620-4fc9-b35d-0a3d79419c4a.png",
+      "source_rect": [
+        362,
+        630,
+        362,
+        456
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "album",
+      "component": "character",
+      "file": "album/character.png",
+      "width": 362,
+      "height": 381,
+      "sha256": "78784e257679621a785759704b266580c398817c01c4e463ee6a394ebd080dcf",
+      "source_sheet": "exec-863a5773-6620-4fc9-b35d-0a3d79419c4a.png",
+      "source_rect": [
+        724,
+        630,
+        362,
+        456
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "candidate-not-enabled"
+    },
+    {
+      "page": "album",
+      "component": "objects",
+      "file": "album/objects.png",
+      "width": 341,
+      "height": 398,
+      "sha256": "3edaceb4a39b0d86dce5dbea610f98547bb42da19e62a429ad897995577efa55",
+      "source_sheet": "exec-863a5773-6620-4fc9-b35d-0a3d79419c4a.png",
+      "source_rect": [
+        1086,
+        630,
+        362,
+        456
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "status",
+      "component": "paper",
+      "file": "status/paper.png",
+      "width": 166,
+      "height": 164,
+      "sha256": "d221f5f3b92f9300494388a1f06e8695e4e945491dd0375619d3c8f70f689e37",
+      "source_sheet": "exec-4c772f1c-0391-45a6-a573-17d96d0fd05c.png",
+      "source_rect": [
+        0,
+        0,
+        384,
+        435
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "status",
+      "component": "frame",
+      "file": "status/frame.png",
+      "width": 379,
+      "height": 345,
+      "sha256": "1f83c782ab420921c67ae070cf44969325504e1ab0d9418e1b742b9aad730d82",
+      "source_sheet": "exec-4c772f1c-0391-45a6-a573-17d96d0fd05c.png",
+      "source_rect": [
+        384,
+        0,
+        384,
+        435
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "status",
+      "component": "header",
+      "file": "status/header.png",
+      "width": 384,
+      "height": 175,
+      "sha256": "1891112994ad3853a106eb36c66c65e17c47f7ebc6f4e98707b87a6384df7174",
+      "source_sheet": "exec-4c772f1c-0391-45a6-a573-17d96d0fd05c.png",
+      "source_rect": [
+        768,
+        0,
+        384,
+        435
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "status",
+      "component": "card",
+      "file": "status/card.png",
+      "width": 364,
+      "height": 289,
+      "sha256": "1ab3d3abb45006c8496a961ea51e49fca77bc242c2ffcf056e6dce8803d1c019",
+      "source_sheet": "exec-4c772f1c-0391-45a6-a573-17d96d0fd05c.png",
+      "source_rect": [
+        1152,
+        0,
+        384,
+        435
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "status",
+      "component": "button",
+      "file": "status/button.png",
+      "width": 353,
+      "height": 107,
+      "sha256": "fe7b9d28cb743867529c3c2a0768d58a73d0973fa677c18aa47f766294ced1cb",
+      "source_sheet": "exec-4c772f1c-0391-45a6-a573-17d96d0fd05c.png",
+      "source_rect": [
+        0,
+        435,
+        384,
+        148
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "status",
+      "component": "button-active",
+      "file": "status/button-active.png",
+      "width": 352,
+      "height": 108,
+      "sha256": "4fc873b769b54d3ce8ec7d50d17a596ed32d5fbfad270ef6a65d158916bc16e0",
+      "source_sheet": "exec-4c772f1c-0391-45a6-a573-17d96d0fd05c.png",
+      "source_rect": [
+        384,
+        435,
+        384,
+        148
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "status",
+      "component": "input",
+      "file": "status/input.png",
+      "width": 371,
+      "height": 91,
+      "sha256": "05e342a1736b056c72d39b3150e4a7ea24b0d5e34266df9fc520cf3bbb3099a2",
+      "source_sheet": "exec-4c772f1c-0391-45a6-a573-17d96d0fd05c.png",
+      "source_rect": [
+        768,
+        435,
+        384,
+        148
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "status",
+      "component": "navigation",
+      "file": "status/navigation.png",
+      "width": 350,
+      "height": 113,
+      "sha256": "ce4632715219bf2441370261b43ee5eb5ee6d0f252edf68605b1a96ab59714af",
+      "source_sheet": "exec-4c772f1c-0391-45a6-a573-17d96d0fd05c.png",
+      "source_rect": [
+        1152,
+        435,
+        384,
+        148
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "status",
+      "component": "corner-top",
+      "file": "status/corner-top.png",
+      "width": 356,
+      "height": 364,
+      "sha256": "d4ed1cf60e59cec9fea7a689d3b18a3a3918e541430c61b7854b01be4a3b3236",
+      "source_sheet": "exec-4c772f1c-0391-45a6-a573-17d96d0fd05c.png",
+      "source_rect": [
+        0,
+        584,
+        384,
+        440
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "status",
+      "component": "corner-bottom",
+      "file": "status/corner-bottom.png",
+      "width": 384,
+      "height": 298,
+      "sha256": "6c670663311b6622029ed2b3d6d7864deafc065c0471121f04a192c09f0e1d3c",
+      "source_sheet": "exec-4c772f1c-0391-45a6-a573-17d96d0fd05c.png",
+      "source_rect": [
+        384,
+        584,
+        384,
+        440
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "status",
+      "component": "character",
+      "file": "status/character.png",
+      "width": 384,
+      "height": 400,
+      "sha256": "2c22bfc85d507f209e4b624f7cce7f61e3bc48f1c291e963b918998b0eacaa44",
+      "source_sheet": "exec-4c772f1c-0391-45a6-a573-17d96d0fd05c.png",
+      "source_rect": [
+        768,
+        584,
+        384,
+        440
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "candidate-not-enabled"
+    },
+    {
+      "page": "status",
+      "component": "objects",
+      "file": "status/objects.png",
+      "width": 364,
+      "height": 404,
+      "sha256": "f04aae4badf526b238bae8befbbf24ab2012555393f424bf57fbebb70181f09a",
+      "source_sheet": "exec-4c772f1c-0391-45a6-a573-17d96d0fd05c.png",
+      "source_rect": [
+        1152,
+        584,
+        384,
+        440
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    }
+  ]
+}

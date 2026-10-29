@@ -83,7 +83,7 @@ def transcript_html(store,id):
         name={'user':'你','assistant':'年糕','system':'承接摘要'}.get(r['role'],r['role'])
         state={'pending':'等待回复','failed':'请求未完成','transferred':'已转入新会话','complete':''}.get(r['state'],'')
         marker='[API] ' if r['source'] in ('api','summary') and r['role']!='user' else '[本地回应] ' if r['source']=='local' and r['role']=='assistant' else ''
-        body='<span style="font-size:11px;color:#66745C">'+html.escape(name+' · '+r['created'][11:19]+' '+state)+'</span><br>'+marker+html.escape(r['content']).replace('\n','<br>')
+        body='<span style="font-size:12px;color:#66745C">'+html.escape(name+' · '+r['created'][11:19]+' '+state)+'</span><br>'+marker+html.escape(r['content']).replace('\n','<br>')
         color='#E1EFF7' if r['role']=='user' else '#EDF0DA' if r['role']=='assistant' else '#F4F0E2'
         cell='<td width="76%" bgcolor="'+color+'" style="color:#2A472F">'+body+'</td>';space='<td width="24%"></td>'
         parts.append('<table width="100%" cellpadding="10" cellspacing="0"><tr>'+(space+cell if r['role']=='user' else cell+space)+'</tr></table><p style="margin:6px"></p>')

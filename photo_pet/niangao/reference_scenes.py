@@ -9,7 +9,8 @@ SCENES = ('home', 'care', 'backpack', 'backpack', 'diary', 'chat', 'diary', 'set
 
 @lru_cache(maxsize=12)
 def scene_image(name):
-    return QPixmap(str(asset_path('ui/botanical/scene-' + name + '.webp')))
+    from .layers import layer
+    return layer('scene-'+name)
 
 def fit_art(p, image, rect):
     if image.isNull(): return
@@ -21,6 +22,36 @@ def cover_art(p, image, rect):
     scale = max(rect.width()/image.width(), rect.height()/image.height())
     source = QRectF((image.width()-rect.width()/scale)/2, (image.height()-rect.height()/scale)/2, rect.width()/scale, rect.height()/scale)
     p.drawPixmap(rect, image, source)
+
+class ChapterArtwork(QWidget):
+    """Small, independent PNG composition with its own reserved layout space."""
+    def __init__(self,index):
+        super().__init__();self.index=index
+        self.setFixedSize(88,72) if index in (4,7) else self.setFixedSize(160,120)
+        self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        self.setAccessibleName('章节植物插画')
+    def paintEvent(self,event):
+        from .layers import layer
+        from .life.item_art import illustrated_item_pixmap
+        p=QPainter(self);p.setRenderHints(QPainter.RenderHint.Antialiasing|QPainter.RenderHint.SmoothPixmapTransform)
+        box=QRectF(self.rect()).adjusted(2,2,-2,-2)
+        from .component_skin import ready,piece,PAGE_KEYS
+        key=PAGE_KEYS[self.index]
+        if ready(key):
+            fit_art(p,piece(key,'objects'),box);p.end();return
+        path=QPainterPath();path.addRoundedRect(box,8,8);p.setClipPath(path)
+        names={0:'moon-window',1:'scene-care',2:'scene-backpack',3:'scene-backpack',
+               4:'scene-album',6:'scene-diary',7:'scene-settings',8:'scene-album'}
+        image=layer(names.get(self.index,'scene-chat'));cover_art(p,image,box)
+        if self.index in (1,2):
+            # Existing functional object art; decorative copies own no input.
+            ids=('water_bowl','brush') if self.index==1 else ('food_bowl','bed')
+            for i,id in enumerate(ids):
+                icon=illustrated_item_pixmap(id,58)
+                fit_art(p,icon,QRectF(12+i*72,43,60,62))
+        elif self.index==3:
+            fit_art(p,layer('forest-collection'),box.adjusted(4,15,-4,-4))
+        p.setClipping(False);p.setBrush(Qt.BrushStyle.NoBrush);p.setPen(QPen(QColor('#B9AE7A'),1));p.drawRoundedRect(box,8,8);p.end()
 
 def paper_border(p, rect, name, quiet=False):
     """Nine-slice scene margins, preserving rich corners without stretching a page."""
@@ -47,7 +78,8 @@ class ScenePortrait(QWidget):
     def __init__(self, name='home', pose=None, height=350):
         super().__init__(); self.name=name; self.pose=pose
         if pose is not None and name in ('home','status','settings'):
-            candidate=QPixmap(str(asset_path('ui/botanical/candidate-standing.webp')))
+            from .layers import layer
+            candidate=layer('candidate-standing')
             if not candidate.isNull():self.pose=candidate
         self.setMinimumWidth(0); self.setMinimumHeight(height)
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
@@ -62,7 +94,7 @@ class ScenePortrait(QWidget):
             p.drawPixmap(QRectF(self.rect()),scene,source)
         if self.pose is not None:
             fit_art(p,self.pose,QRectF(12,30,self.width()-24,self.height()-58))
-        p.setPen(QColor('#66745C'));f=p.font();f.setPixelSize(10);p.setFont(f)
+        p.setPen(QColor('#66745C'));f=p.font();f.setPixelSize(12);p.setFont(f)
         p.fillRect(QRectF(8,self.height()-27,self.width()-16,21),QColor(250,247,233,235))
         p.drawText(QRectF(8,self.height()-27,self.width()-16,21),Qt.AlignmentFlag.AlignCenter,'年糕专属插画 · 待确认');p.end()
 
@@ -70,25 +102,37 @@ class SpecimenStrip(QWidget):
     def __init__(self):
         super().__init__();self.setMinimumWidth(0);self.setFixedHeight(116)
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
-        self.setAccessibleName('装饰：迷迭香、鼠尾草与蕨叶植物标本')
+        self.setAccessibleName('装饰：蓝花纸片、手账植物与森林蕨叶插画')
     def paintEvent(self,event):
-        from .journal import branch
+        from .layers import layer
         p=QPainter(self);p.setRenderHint(QPainter.RenderHint.Antialiasing)
-        names=('迷迭香 / Rosemary','鼠尾草 / Sage','蕨叶 / Fern')
+        p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+        names=('蓝花纸片 / Blue Petals','手账植物 / Field Notes','森林蕨叶 / Ferns')
         width=(self.width()-16)/3
         for i,name in enumerate(names):
             r=QRectF(i*(width+8),2,width,110)
             p.setPen(QPen(QColor('#B9AE7A'),.8));p.setBrush(QColor('#FCF8E9'));p.drawRoundedRect(r,4,4)
-            branch(p,r.center().x()-5,83,68,-12,'#687F48',i==2)
+            image=layer(('scene-care','scene-diary','scene-backpack')[i])
+            from .component_skin import ready,piece
+            key=('care','diary','backpack')[i]
+            if ready(key):
+                fit_art(p,piece(key,'corner-top'),QRectF(r.x()+8,12,width-16,72))
+            elif not image.isNull():
+                # Sample only ornamental botanical corners, never UI or data.
+                source=QRectF(0,0,image.width()*.26,image.height()*.34)
+                size=source.size().scaled(width-16,72,Qt.AspectRatioMode.KeepAspectRatio)
+                p.drawPixmap(QRectF(r.center().x()-size.width()/2,12,size.width(),size.height()),image,source)
             p.fillRect(QRectF(r.center().x()-16,3,32,8),QColor(180,211,236,130))
-            p.setPen(QColor('#3C582C'));f=p.font();f.setPixelSize(10);p.setFont(f)
-            p.drawText(QRectF(r.x()+3,88,width-6,20),Qt.AlignmentFlag.AlignCenter,name)
+            p.setPen(QColor('#3C582C'));f=p.font();f.setPixelSize(12);p.setFont(f)
+            p.drawText(QRectF(r.x()+3,88,width-6,20),Qt.AlignmentFlag.AlignCenter,p.fontMetrics().elidedText(name,Qt.TextElideMode.ElideRight,max(1,int(width-6))))
         p.end()
 
 class StatusChapter(QWidget):
     """Reference R05 rendered from existing live stats/events, without a new data model."""
     def __init__(self, engine):
         super().__init__();self.engine=engine;self.setMinimumWidth(0)
+        from .component_skin import stylesheet
+        self.setStyleSheet(stylesheet('status'))
         from .journal import portrait
         from .journal_components import PaperCard, ResponsiveColumns, StateRing, CardGrid
         from .life.engine import STAT_NAMES

@@ -22,7 +22,8 @@ CHAPTERS=(
 
 @lru_cache(maxsize=20)
 def decorative_asset(name):
-    return QPixmap(str(asset_path('ui/botanical/'+name+'.webp')))
+    from .layers import layer
+    return layer(name)
 
 def portrait(index):
     if index==8:return QPixmap()
@@ -61,12 +62,15 @@ class HeroIllustration(QLabel):
         super().__init__();self.setMinimumWidth(165);self.setMinimumHeight(440)
     def paintEvent(self,event):
         p=QPainter(self);p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform);image=decorative_asset('candidate-standing')
-        scene=decorative_asset('scene-home')
-        if not scene.isNull():p.setOpacity(.75);p.drawPixmap(QRectF(self.rect()),scene,QRectF(0,0,scene.width()*.48,scene.height()));p.setOpacity(1)
+        scene=decorative_asset('moon-window')
+        if not scene.isNull():
+            from .reference_scenes import cover_art
+            p.setOpacity(.85);cover_art(p,scene,QRectF(self.rect()));p.setOpacity(1)
         # Keep the full artwork and natural anatomy; no stretched character images.
         if not image.isNull():
             size=image.size();size.scale(self.size(),Qt.AspectRatioMode.KeepAspectRatio);r=QRectF((self.width()-size.width())/2,(self.height()-size.height())/2,size.width(),size.height());p.drawPixmap(r,image,QRectF(image.rect()))
-        p.setPen(QColor('#66745C'));font=p.font();font.setPixelSize(11);p.setFont(font);p.drawText(QRectF(4,self.height()-22,self.width()-8,20),Qt.AlignmentFlag.AlignCenter,'年糕专属插画预览 · 待确认');p.end()
+        note=QRectF(8,self.height()-26,self.width()-16,22)
+        p.fillRect(note,QColor(252,250,240,245));p.setPen(QColor('#2A472F'));font=p.font();font.setPixelSize(12);p.setFont(font);p.drawText(note,Qt.AlignmentFlag.AlignCenter,'年糕专属插画 · 待确认');p.end()
 
 def branch(p,x,y,size=70,angle=-25,color='#839D45',fern=False):
     p.save();p.translate(x,y);p.rotate(angle)
@@ -93,6 +97,14 @@ class PaperPage(QWidget):
     def __init__(self,index=0):
         super().__init__();self.index=index;self.chapter=CHAPTERS[index];self.setObjectName('journalPage');self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground,False)
     def paintEvent(self,event):
+        from .component_skin import ready,piece,nine_patch,PAGE_KEYS
+        key=PAGE_KEYS[self.index]
+        if ready(key):
+            p=QPainter(self);p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+            p.fillRect(self.rect(),QColor(self.chapter['paper']))
+            p.save();p.setOpacity(.20);p.drawTiledPixmap(self.rect(),piece(key,'paper'));p.restore()
+            nine_patch(p,piece(key,'frame'),QRectF(self.rect()).adjusted(1,1,-1,-1),18,center=False)
+            p.end();return
         p=QPainter(self);p.setRenderHint(QPainter.RenderHint.Antialiasing);c=self.chapter;p.fillRect(self.rect(),QColor(c['paper']))
         if c['density']:
             p.save();p.setOpacity(.14);p.drawTiledPixmap(self.rect(),decorative_asset('paper'));p.restore()
@@ -128,32 +140,49 @@ class PaperPage(QWidget):
 
 class ChapterHeading(QFrame):
     def __init__(self,index,title,subtitle,pixmap=None):
-        super().__init__();self.index=index;self.chapter=CHAPTERS[index];self.setObjectName('chapterHeading');self.setMinimumHeight(126 if index==0 else 310 if index==1 else 180 if index in (3,6,8) else 150 if index==5 else 164)
-        row=QHBoxLayout(self);row.setContentsMargins(22,18,20,18);text=QVBoxLayout();text.setSpacing(4);text.setAlignment(Qt.AlignmentFlag.AlignVCenter);row.addLayout(text,3)
+        super().__init__();self.index=index;self.chapter=CHAPTERS[index];self.setObjectName('chapterHeading');self.setMinimumWidth(0);self.wrapped_labels=[]
+        row=QHBoxLayout(self);row.setContentsMargins(16,16,16,32 if index not in (4,5,7) else 16);row.setSpacing(16);text=QVBoxLayout();text.setSpacing(8);text.setAlignment(Qt.AlignmentFlag.AlignVCenter);row.addLayout(text,3)
         eyebrow=QLabel(self.chapter['number']+'  /  NIANGAO JOURNAL');eyebrow.setObjectName('eyebrow');text.addWidget(eyebrow)
-        label=QLabel(title);label.setWordWrap(True);label.setObjectName('hero');text.addWidget(label)
+        label=QLabel(title);label.setWordWrap(True);label.setMinimumWidth(0);label.setObjectName('hero');text.addWidget(label);self.wrapped_labels.append(label)
         english=('Daily Life','Care & Play','The Little Shop','Forest Collection','Quiet Hours','Chat with Niangao','Magic Diary','Profile & Settings','Collected Days')[index]
         script=QLabel(english);script.setObjectName('scriptTitle');text.addWidget(script)
         if subtitle:
-            label=QLabel(subtitle);label.setWordWrap(True);label.setObjectName('sub');text.addWidget(label)
-        if pixmap is not None and not pixmap.isNull() and index!=0:
-            art_column=QVBoxLayout();art_column.setSpacing(0);row.addLayout(art_column,2)
-            art=QLabel();art.setObjectName('chapterPortrait');art.setFixedSize(190,170 if index==1 else 112);art.setAlignment(Qt.AlignmentFlag.AlignCenter);art.setPixmap(pixmap.scaled(art.size(),Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation));art_column.addWidget(art)
-            badge=QLabel('插画待确认');badge.setObjectName('candidate');badge.setFixedHeight(21);badge.setAlignment(Qt.AlignmentFlag.AlignCenter);art_column.addWidget(badge)
-        elif index==8:
-            pending=QLabel('年糕专属相册插画\n待制作');pending.setObjectName('candidate');pending.setAlignment(Qt.AlignmentFlag.AlignCenter);pending.setFixedWidth(125);row.addWidget(pending)
+            label=QLabel(subtitle);label.setWordWrap(True);label.setMinimumWidth(0);label.setObjectName('sub');text.addWidget(label);self.wrapped_labels.append(label)
+        from .reference_scenes import ChapterArtwork
+        self.art_panel=ChapterArtwork(index)
+        if index in (0,5):self.art_panel.hide()
+        row.addWidget(self.art_panel)
+    def minimumSizeHint(self):
+        from PySide6.QtCore import QSize
+        return QSize(0,self.layout().minimumSize().height())
+    def resizeEvent(self,event):
+        # Readable labels retain their pixel size; decoration yields first.
+        self.art_panel.setVisible(self.index not in (0,5) and self.width()>=(420 if self.index in (4,7) else 480))
+        margins=self.layout().contentsMargins()
+        width=max(1,self.width()-margins.left()-margins.right()-(self.art_panel.width()+self.layout().spacing() if not self.art_panel.isHidden() else 0))
+        for label in self.wrapped_labels:
+            label.setMinimumHeight(max(label.fontMetrics().height(),label.heightForWidth(width)))
+        self.setMinimumHeight(self.layout().minimumSize().height());self.updateGeometry()
+        super().resizeEvent(event)
     def paintEvent(self,event):
-        from .reference_scenes import scene_image,paper_border,SCENES,cover_art
+        from .layers import layer
+        from .component_skin import ready,piece,nine_patch,PAGE_KEYS
         p=QPainter(self);p.setRenderHints(QPainter.RenderHint.Antialiasing|QPainter.RenderHint.SmoothPixmapTransform)
-        r=QRectF(self.rect()).adjusted(1,1,-1,-1);image=scene_image(SCENES[self.index])
-        cover_art(p,image,r)
-        # An opaque writing slip under live labels; scenery stays visible at the sides.
-        width=self.width()*(.60 if self.index else .94)
-        paper=QRectF(10,12,width-10,self.height()-25)
-        p.setPen(QPen(QColor('#B9AE7A'),.8));p.setBrush(QColor(252,250,240,239));p.drawRoundedRect(paper,7,7)
-        p.setPen(QPen(QColor('#E1D3AA'),.7));p.setBrush(Qt.BrushStyle.NoBrush);p.drawRoundedRect(paper.adjusted(5,5,-5,-5),5,5)
-        p.fillRect(QRectF(29,5,49,11),QColor(180,211,236,170))
-        # Banner margins are scenery; keep the writing slip free of corner art.
+        key=PAGE_KEYS[self.index]
+        if ready(key):
+            p.fillRect(self.rect(),QColor('#FCFAF0'))
+            p.save();p.setOpacity(.15);p.drawTiledPixmap(self.rect(),piece(key,'paper'));p.restore()
+            nine_patch(p,piece(key,'header'),QRectF(self.rect()),20,center=False,fractions=(.34,.42))
+            p.end();return
+        paper=QRectF(self.rect()).adjusted(1,1,-1,-1)
+        p.setPen(QPen(QColor('#B9AE7A'),1));p.setBrush(QColor('#FCFAF0'));p.drawRoundedRect(paper,8,8)
+        p.save();p.setOpacity(.08);p.drawTiledPixmap(self.rect(),layer('paper'));p.restore()
+        # Separate PNG ornament stays beneath an opaque writing area.
+        if self.index not in (4,5,7) and self.art_panel.isHidden():
+            image=layer('header-ornament')
+            if not image.isNull():
+                size=image.size().scaled(72,24,Qt.AspectRatioMode.KeepAspectRatio)
+                p.drawPixmap(QRectF(self.width()-size.width()-12,self.height()-size.height()-4,size.width(),size.height()),image,QRectF(image.rect()))
         p.end()
 
 class JournalSidebar(QFrame):

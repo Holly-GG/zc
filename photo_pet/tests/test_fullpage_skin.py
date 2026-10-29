@@ -36,6 +36,8 @@ def test_fullpage_navigation_real_typing_profile_save_and_portal_restore(tmp_pat
  from niangao.config import Settings
  from niangao.pet import PetWindow
  app=QApplication.instance() or QApplication([]);pet=PetWindow(Settings(tmp_path/'settings.json'));pet.timer.stop();pet.open_life();ui=pet.life_window;view=ui.skin_view
+ assert ui.presentation.currentIndex()==0
+ ui.enter_skin()
  def click(key):
   point=view.mapFromScene(rect(view.hotspots[key][1]).center());QTest.mouseClick(view.viewport(),Qt.MouseButton.LeftButton,pos=point);app.processEvents()
  assert ui.presentation.currentIndex()==1 and view.page=='home'

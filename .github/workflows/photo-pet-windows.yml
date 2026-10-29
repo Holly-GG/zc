@@ -97,7 +97,8 @@ jobs:
           python tools/test_windows_desktop.py --exe dist/Niangao-PhotoPet.exe --output test-results/native 2>&1 | Tee-Object test-results/windows-desktop.log
           if ($LASTEXITCODE -ne 0) { throw 'Native desktop acceptance failed; inspect annotation and logs' }
       - name: Package validated Windows zip
-        run: python tools/package.py
+        id: package
+        run: python tools/package.py --allow-large
       - name: Upload build and validation
         if: always()
         uses: actions/upload-artifact@v4
@@ -110,10 +111,19 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
       - name: Publish direct download
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && steps.package.outputs.direct_download == 'true'
         run: python tools/publish.py
       - name: Download summary
         run: |
+          if ('${{ steps.package.outputs.direct_download }}' -ne 'true') {
+            @"
+          ## 年糕照片桌宠
+          本次完整图层包超过 GitHub 原始文件大小限制，下载本次运行的 **Niangao-PhotoPet-Windows** Artifact：
+          $env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID
+          旧 windows-download 分支链接未更新，不代表本次构建。
+          "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8
+            exit 0
+          }
           @'
           ## 年糕照片桌宠
           [直接下载 Windows ZIP](https://github.com/Holly-GG/zc/raw/refs/heads/windows-download/Niangao-PhotoPet-windows.zip)

@@ -1,8 +1,8 @@
 """Compact work conversation and independent focus/todo desktop cards."""
 import html,time
-from PySide6.QtCore import Qt,QTimer,QPoint
-from PySide6.QtGui import QPixmap,QRegion
-from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QLabel,QPushButton,QLineEdit,QTextBrowser,QListWidget,QListWidgetItem,QSpinBox,QTabWidget,QCheckBox
+from PySide6.QtCore import Qt,QTimer,QPoint,QRectF
+from PySide6.QtGui import QPixmap,QRegion,QPainter,QColor
+from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QLabel,QPushButton,QLineEdit,QTextBrowser,QListWidget,QListWidgetItem,QSpinBox,QTabWidget,QCheckBox,QScrollArea,QFrame
 from .art import asset_path
 from .dialogue import choose,respond,context_for
 from .geometry import Rect,nearest_area,clamp_position
@@ -10,10 +10,18 @@ from .theme import STYLE as PAPER
 class DeskPanel(QWidget):
     def __init__(self,pet,title,size,key):
         super().__init__(None,Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
-        self.pet=pet;self.key=key;self.setObjectName("lifeRoot");self.setWindowTitle(title);area=self.screen().availableGeometry();self.resize(min(size[0],area.width()-24),min(size[1],area.height()-60));self.setStyleSheet(PAPER)
-        self.layout=QVBoxLayout(self);self.layout.setContentsMargins(12,10,12,10)
+        from .component_skin import stylesheet
+        self.page_key='chat' if key=='work_panel_position' else 'album'
+        self.pet=pet;self.key=key;self.setObjectName("lifeRoot");self.setWindowTitle(title);area=self.screen().availableGeometry();self.resize(min(size[0],area.width()-24),min(size[1],area.height()-60));self.setStyleSheet(PAPER+stylesheet(self.page_key))
+        self.layout=QVBoxLayout(self);self.layout.setContentsMargins(16,16,16,16);self.layout.setSpacing(8)
         self.heading=QLabel(title);self.heading.setToolTip('拖动标题栏移动，关闭后保留桌宠');self.heading.setObjectName("brand");self.layout.addWidget(self.heading)
         self.last_pos=None
+    def paintEvent(self,event):
+        from .component_skin import ready,piece,nine_patch
+        if not ready(self.page_key):super().paintEvent(event);return
+        p=QPainter(self);p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform);p.fillRect(self.rect(),QColor('#F5F2E4'))
+        p.save();p.setOpacity(.22);p.drawTiledPixmap(self.rect(),piece(self.page_key,'paper'));p.restore()
+        nine_patch(p,piece(self.page_key,'frame'),QRectF(self.rect()).adjusted(1,1,-1,-1),12,center=False);p.end()
     def showEvent(self,event):
         point=self.pet.settings.data.get(self.key)
         if isinstance(point,list) and len(point)==2:x,y=point
@@ -32,22 +40,25 @@ class WorkPanel(DeskPanel):
         self.busy=False;self.history=[];self.sent_count=0;self.channel=pet.chat_channels['work']
         self.status=QLabel();self.status.setWordWrap(True);self.layout.addWidget(self.status)
         self.tabs=QTabWidget();self.layout.addWidget(self.tabs,1)
-        chat=QWidget();chat.setObjectName("workTabPage");c=QVBoxLayout(chat);c.setContentsMargins(5,7,5,4)
+        chat=QWidget();chat.setObjectName("workTabPage");chat_layout=QVBoxLayout(chat);chat_layout.setContentsMargins(4,4,4,4);chat_layout.setSpacing(8)
+        chat_scroll=QScrollArea();chat_scroll.setWidgetResizable(True);chat_scroll.setMinimumHeight(80);chat_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        details=QWidget();details.setObjectName('workTabPage');c=QVBoxLayout(details);c.setContentsMargins(4,4,4,4);c.setSpacing(8);detail_layout=c;chat_scroll.setWidget(details);chat_layout.addWidget(chat_scroll,1)
         self.ai_enabled=QCheckBox('使用已配置 API 对话');self.ai_enabled.setChecked(pet.life.data['ai']['enabled']);self.ai_enabled.toggled.connect(self.set_api);c.addWidget(self.ai_enabled)
         from .chat_widgets import TokenMeter,SessionChooser,HistoryBrowser
         self.session_chooser=SessionChooser(pet,self.channel,self.load_conversation,lambda:self.busy);c.addWidget(self.session_chooser)
         self.log=QTextBrowser();self.log.setMinimumHeight(110);c.addWidget(self.log,1)
+        composer=QFrame();composer.setObjectName('chatComposer');c=QVBoxLayout(composer);c.setContentsMargins(8,8,8,8);c.setSpacing(8);chat_layout.addWidget(composer)
         label=QLabel('对话输入');label.setObjectName('eyebrow');c.addWidget(label)
         self.text=QLineEdit();self.text.setObjectName('workChatInput');self.text.setMaxLength(65536);self.text.setPlaceholderText('输入问题，按回车发送给年糕…');self.text.returnPressed.connect(self.send);c.addWidget(self.text)
         row=QHBoxLayout();c.addLayout(row)
         self.send_button=QPushButton('发送对话');self.send_button.clicked.connect(self.send);row.addWidget(self.send_button,1)
         self.clear_button=QPushButton('新建一轮');self.clear_button.clicked.connect(self.clear_chat);row.addWidget(self.clear_button)
-        self.token_meter=TokenMeter(pet,self.channel,self.text);c.addWidget(self.token_meter)
+        self.token_meter=TokenMeter(pet,self.channel,self.text);detail_layout.addWidget(self.token_meter)
         self.tabs.addTab(chat,'API 对话')
         finder=QWidget();finder.setObjectName("workTabPage");s=QVBoxLayout(finder);s.setContentsMargins(5,7,5,4)
         hint=QLabel('搜索应用功能、物品、动作和你填写的待办。');hint.setWordWrap(True);hint.setObjectName('sub');s.addWidget(hint)
         self.search_input=QLineEdit();self.search_input.setObjectName('workSearchInput');self.search_input.setPlaceholderText('例如：喝水、猫砂、DeepSeek、工作');self.search_input.textChanged.connect(self.find);s.addWidget(self.search_input)
-        self.search_results=QListWidget();self.search_results.itemClicked.connect(self.open_result);s.addWidget(self.search_results,1)
+        self.search_results=QListWidget();self.search_results.setWordWrap(True);self.search_results.itemClicked.connect(self.open_result);s.addWidget(self.search_results,1)
         self.search_notice=QLabel('搜索在本机完成，点击结果打开对应页面。');self.search_notice.setWordWrap(True);self.search_notice.setObjectName('sub');s.addWidget(self.search_notice)
         self.tabs.addTab(finder,'应用搜索')
         self.archive=HistoryBrowser(pet);self.tabs.addTab(self.archive,'聊天历史')
@@ -71,7 +82,7 @@ class WorkPanel(DeskPanel):
     def set_api(self,enabled):
         self.pet.life.data['ai']['enabled']=bool(enabled);self.pet.life.save();self.refresh_status()
         if self.pet.life_window:self.pet.life_window.ai_enabled.setChecked(bool(enabled))
-    def open_settings(self):self.pet.open_life();self.pet.life_window.nav.setCurrentRow(7)
+    def open_settings(self):self.pet.open_life();self.pet.life_window.show_classic(7)
     def find(self,query):
         from .work_search import search
         self.search_results.clear();results=search(query,self.pet.life.data['tasks'])
@@ -81,7 +92,7 @@ class WorkPanel(DeskPanel):
     def open_result(self,item):
         result=item.data(Qt.ItemDataRole.UserRole)
         if not result:return
-        self.pet.open_life();ui=self.pet.life_window;ui.nav.setCurrentRow(result['page'])
+        self.pet.open_life();ui=self.pet.life_window;ui.show_classic(result['page'])
         if result['kind']=='action':
             ui.motion_group.setCurrentText('全部')
             if result['id'] in ui.motion_ids:ui.motion_list.setCurrentRow(ui.motion_ids.index(result['id']))
@@ -129,12 +140,13 @@ class WorkPanel(DeskPanel):
         run_job(lambda:self.channel.send(client,text,self.pet.life.mood),done,failed)
 class FocusPanel(DeskPanel):
     def __init__(self,pet):
-        super().__init__(pet,'年糕 · 专注与待办',(300,360),'focus_position')
+        super().__init__(pet,'年糕 · 专注与待办',(340,440),'focus_position')
         self.clock=QLabel();self.clock.setObjectName('focusClock');self.layout.addWidget(self.clock)
-        row=QHBoxLayout();self.layout.addLayout(row);self.minutes=QSpinBox();self.minutes.setRange(1,180);self.minutes.setValue(25);self.minutes.setSuffix(' 分');row.addWidget(self.minutes)
+        self.minutes=QSpinBox();self.minutes.setRange(1,180);self.minutes.setValue(25);self.minutes.setSuffix(' 分钟');self.layout.addWidget(self.minutes)
+        row=QHBoxLayout();row.setSpacing(8);self.layout.addLayout(row)
         for title,fn in [('开始',lambda:pet.life.focus_start(self.minutes.value())),('暂停',pet.life.focus_pause),('继续',pet.life.focus_resume)]:
             button=QPushButton(title);button.clicked.connect(fn);row.addWidget(button)
-        self.tasks=QListWidget();self.tasks.itemChanged.connect(self.complete);self.layout.addWidget(self.tasks)
+        self.tasks=QListWidget();self.tasks.setWordWrap(True);self.tasks.itemChanged.connect(self.complete);self.layout.addWidget(self.tasks,1)
         self.entry=QLineEdit();self.entry.setPlaceholderText('添加待办，按回车');self.entry.returnPressed.connect(self.add);self.layout.addWidget(self.entry)
         hint=QLabel('仅匹配你填写的待办关键词，不读取屏幕内容。');hint.setWordWrap(True);self.layout.addWidget(hint)
         self.signature=None;self.encounters=set();self.next_encounter=0
@@ -151,7 +163,7 @@ class FocusPanel(DeskPanel):
         if signature!=self.signature:
             self.signature=signature;self.tasks.blockSignals(True);self.tasks.clear()
             for task in tasks:
-                item=QListWidgetItem(task['text']);item.setData(Qt.ItemDataRole.UserRole,task['id']);item.setFlags(item.flags()|Qt.ItemFlag.ItemIsUserCheckable);item.setCheckState(Qt.CheckState.Checked if task['done'] else Qt.CheckState.Unchecked);self.tasks.addItem(item)
+                item=QListWidgetItem(task['text']);item.setToolTip(task['text']);item.setData(Qt.ItemDataRole.UserRole,task['id']);item.setFlags(item.flags()|Qt.ItemFlag.ItemIsUserCheckable);item.setCheckState(Qt.CheckState.Checked if task['done'] else Qt.CheckState.Unchecked);self.tasks.addItem(item)
             self.tasks.blockSignals(False)
         if not self.isVisible() or self.pet.work_mode or time.monotonic()<self.next_encounter:return
         distance=(self.geometry().center()-self.pet.geometry().center()).manhattanLength()

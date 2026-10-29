@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "layers": [
+    {
+      "id": "border",
+      "file": "border.png",
+      "source": "../botanical/border.webp",
+      "origin": "existing-independent-art",
+      "sha256": "5dc7bdbda32f51b1b383745ac1748667a3db0b0dd59b468c430c7985807d98be"
+    },
+    {
+      "id": "candidate-standing",
+      "file": "candidate-standing.png",
+      "source": "../botanical/candidate-standing.webp",
+      "origin": "existing-independent-art",
+      "sha256": "cb867fe28053ed0324a95934ac0a0a368bb9da0a1d9c3f6ae9631368d4665d87"
+    },
+    {
+      "id": "forest-collection",
+      "file": "forest-collection.png",
+      "source": "../botanical/forest-collection.webp",
+      "origin": "existing-independent-art",
+      "sha256": "6a9338e9bdc8bfb61966bedd279c38f6daec3aa15a64ed331092d1be446afc82"
+    },
+    {
+      "id": "hero",
+      "file": "hero.png",
+      "source": "../botanical/hero.webp",
+      "origin": "existing-independent-art",
+      "sha256": "0cd9d01da802807ac16dfbd5307ca509a41d9bbf4624853c7a7e712a10f7c873"
+    },
+    {
+      "id": "moon-window",
+      "file": "moon-window.png",
+      "source": "../botanical/moon-window.webp",
+      "origin": "existing-independent-art",
+      "sha256": "adfab1e3d7b4f3c0bb413773f0975719961e3ba070ba99cf8da4de9d57832ecf"
+    },
+    {
+      "id": "objects-extra",
+      "file": "objects-extra.png",
+      "source": "../botanical/objects-extra.webp",
+      "origin": "existing-independent-art",
+      "sha256": "7275cb2116e46b0fa20d58923fcc881e988f01dd7f3a8e2c21cd1a238caccf9c"
+    },
+    {
+      "id": "objects",
+      "file": "objects.png",
+      "source": "../botanical/objects.webp",
+      "origin": "existing-independent-art",
+      "sha256": "44749c610b1a38d9761c2ec86a90c07fec9573a1230264e12bfb64a320f06f24"
+    },
+    {
+      "id": "paper",
+      "file": "paper.png",
+      "source": "../botanical/paper.webp",
+      "origin": "existing-independent-art",
+      "sha256": "f6eec0b5e229cb92b3eddade5f64cb81c50389c9e09f7d611aa6acdd1ed28613"
+    },
+    {
+      "id": "poses",
+      "file": "poses.png",
+      "source": "../botanical/poses.webp",
+      "origin": "existing-independent-art",
+      "sha256": "5281ca572df6768c34c462788729b4f398e46308126c504a1444b6cf5e91f46a"
+    },
+    {
+      "id": "scene-album",
+      "file": "scene-album.png",
+      "source": "../botanical/scene-album.webp",
+      "origin": "existing-independent-art",
+      "sha256": "259ffc19f894ccdebd09296a8c4bc065d81d1e30c4dbb99b76c2a44045d79534"
+    },
+    {
+      "id": "scene-backpack",
+      "file": "scene-backpack.png",
+      "source": "../botanical/scene-backpack.webp",
+      "origin": "existing-independent-art",
+      "sha256": "397a1a7ba02d959348f986568a37d6548a5ca9c73fc57b5148317e9b813969dd"
+    },
+    {
+      "id": "scene-care",
+      "file": "scene-care.png",
+      "source": "../botanical/scene-care.webp",
+      "origin": "existing-independent-art",
+      "sha256": "73a1edf6843e750bce5efffd8ee8d44440a5ba2a2735d661164804a8d549ba12"
+    },
+    {
+      "id": "scene-chat",
+      "file": "scene-chat.png",
+      "source": "../botanical/scene-chat.webp",
+      "origin": "existing-independent-art",
+      "sha256": "80bcfaddddd52238363478d5b6d80128fdd0ceb69c8f5e9b2a12b9cf55236dc1"
+    },
+    {
+      "id": "scene-diary",
+      "file": "scene-diary.png",
+      "source": "../botanical/scene-diary.webp",
+      "origin": "existing-independent-art",
+      "sha256": "155c8a265c87d3887861f0973ec7ba0db375feb8aa0ebaf77357def1138148a2"
+    },
+    {
+      "id": "scene-home",
+      "file": "scene-home.png",
+      "source": "../botanical/scene-home.webp",
+      "origin": "existing-independent-art",
+      "sha256": "c730952061ef4761094d4d414ed1a19ab283dad492abc42e7ad95a436066feab"
+    },
+    {
+      "id": "scene-settings",
+      "file": "scene-settings.png",
+      "source": "../botanical/scene-settings.webp",
+      "origin": "existing-independent-art",
+      "sha256": "2c8e56b568a03fb756ba666275dfbe146ec398f7d40dfc2692b4706f0f99ff5c"
+    },
+    {
+      "id": "scene-status",
+      "file": "scene-status.png",
+      "source": "../botanical/scene-status.webp",
+      "origin": "existing-independent-art",
+      "sha256": "746cb39bf09d9cd65f6229af4fb4479313a2248fdbc97e8ee030859f93b4c7b7"
+    },
+    {
+      "id": "header-ornament",
+      "file": "header-ornament.png",
+      "origin": "ai-generated-ornament",
+      "source": "imagegen exec-3c6e1266-9544-48bf-be33-98da660616b7",
+      "sha256": "e09b8ac991b81f17683d9c4773f4baa3adc2c7ac9cf1075b5e5e44a20167782b",
+      "usage": "Botanical header only; no character, text or controls."
+    }
+  ]
+}

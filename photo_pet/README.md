@@ -43,6 +43,8 @@ Windows 10/11 x64，先退出旧版再双击新版，无需安装 Python、Godot
 
 ## 开发与构建
 
+最新组件界面：八套参考主题拆为96个独立PNG组件，51个商品独立PNG；按钮、输入、标题和运行数据由真实Qt控件与字体绘制。工作台、专注小窗和气泡沿用同一风格。字体可在根目录 `fonts/roles.json` 修改。素材清单与验证说明见 [组件图层系统](../docs/design-system/COMPONENT_LAYERS.md)。
+
 Python 3.12、lunar-python 1.4.8（MIT）、PySide6 6.8.3、PyInstaller 6.13.0、pytest 8.3.5。
 
     cd photo_pet
@@ -50,7 +52,7 @@ Python 3.12、lunar-python 1.4.8（MIT）、PySide6 6.8.3、PyInstaller 6.13.0�
     python main.py
     python -m pytest -q
     python tools/build.py
-    python tools/package.py
+    python tools/package.py --allow-large
 
 测试可设置 QT_QPA_PLATFORM=offscreen；正常桌面运行前移除此变量。Windows 原生交互验收会在独立配置下创建测试窗口并移动测试机鼠标：
 

@@ -1,0 +1,872 @@
+{
+  "version": 1,
+  "components": [
+    {
+      "page": "items",
+      "component": "milk",
+      "file": "items/milk.png",
+      "width": 304,
+      "height": 330,
+      "sha256": "0b2a33c97a099c38eae11bf5d48026e5c2b70dcc099e38ea0acf8001f67a77f3",
+      "source_sheet": "exec-ad3b8033-874c-4346-9b17-3dd12df59720.png",
+      "source_rect": [
+        0,
+        0,
+        362,
+        396
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "kitten_food",
+      "file": "items/kitten_food.png",
+      "width": 268,
+      "height": 326,
+      "sha256": "d5d814fd89d1e73b864ff89f56381b55d2cf082d21046baf3904e1aeb7a7d7ab",
+      "source_sheet": "exec-ad3b8033-874c-4346-9b17-3dd12df59720.png",
+      "source_rect": [
+        362,
+        0,
+        362,
+        396
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "food",
+      "file": "items/food.png",
+      "width": 282,
+      "height": 347,
+      "sha256": "46e2922c7e6b9c41a6111c31597f7f7116e137ee0a269ed4e04fa52bce540f12",
+      "source_sheet": "exec-ad3b8033-874c-4346-9b17-3dd12df59720.png",
+      "source_rect": [
+        724,
+        0,
+        362,
+        396
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "freeze_dried",
+      "file": "items/freeze_dried.png",
+      "width": 300,
+      "height": 316,
+      "sha256": "7f99ee9b8e86c708284926e1f5c383110f83d68daf052fbb4c611d9c153830a2",
+      "source_sheet": "exec-ad3b8033-874c-4346-9b17-3dd12df59720.png",
+      "source_rect": [
+        1086,
+        0,
+        362,
+        396
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "cat_strip",
+      "file": "items/cat_strip.png",
+      "width": 231,
+      "height": 333,
+      "sha256": "cc24595b71746d0fb1c9ae68a4e0805f3b3d5ec1af5c8007f345b704cbcc4a04",
+      "source_sheet": "exec-ad3b8033-874c-4346-9b17-3dd12df59720.png",
+      "source_rect": [
+        0,
+        396,
+        362,
+        353
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "senior_food",
+      "file": "items/senior_food.png",
+      "width": 291,
+      "height": 334,
+      "sha256": "d29b26c99e56f068581c43fbdba6d2262e6822ecfea29e8fbaa3f319d907fd71",
+      "source_sheet": "exec-ad3b8033-874c-4346-9b17-3dd12df59720.png",
+      "source_rect": [
+        362,
+        396,
+        362,
+        353
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "happy_snack",
+      "file": "items/happy_snack.png",
+      "width": 330,
+      "height": 317,
+      "sha256": "0a2ec7c6ceb4197dbdb04b391d492ba65afa5ea700fc1be3d0c164c5dd896055",
+      "source_sheet": "exec-ad3b8033-874c-4346-9b17-3dd12df59720.png",
+      "source_rect": [
+        724,
+        396,
+        362,
+        353
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "energy_snack",
+      "file": "items/energy_snack.png",
+      "width": 309,
+      "height": 292,
+      "sha256": "7efd775620de9a357900908e1254f9eec41ac0eea174bf89f065f6ce470535e3",
+      "source_sheet": "exec-ad3b8033-874c-4346-9b17-3dd12df59720.png",
+      "source_rect": [
+        1086,
+        396,
+        362,
+        353
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "clean_snack",
+      "file": "items/clean_snack.png",
+      "width": 297,
+      "height": 293,
+      "sha256": "7f714bdf9f0379088a309d8ef0b51f1cca733575e384d3188d40da725edb81da",
+      "source_sheet": "exec-ad3b8033-874c-4346-9b17-3dd12df59720.png",
+      "source_rect": [
+        0,
+        749,
+        362,
+        337
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "mouse",
+      "file": "items/mouse.png",
+      "width": 357,
+      "height": 206,
+      "sha256": "fed6ac3fad7a3b607286d9e870bbdd727c69c48594d44618fa1d015beb8462e0",
+      "source_sheet": "exec-ad3b8033-874c-4346-9b17-3dd12df59720.png",
+      "source_rect": [
+        362,
+        749,
+        362,
+        337
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "feather",
+      "file": "items/feather.png",
+      "width": 362,
+      "height": 290,
+      "sha256": "c3cd6d1ee5787cda32806c42b411ddcbfbf4b27d77163917aa99cba91f9e4fcf",
+      "source_sheet": "exec-ad3b8033-874c-4346-9b17-3dd12df59720.png",
+      "source_rect": [
+        724,
+        749,
+        362,
+        337
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "bell_ball",
+      "file": "items/bell_ball.png",
+      "width": 344,
+      "height": 271,
+      "sha256": "16017f28f1ea54933505ba810eecf653c9a60e13466f04a4ad769c80947b9f8d",
+      "source_sheet": "exec-ad3b8033-874c-4346-9b17-3dd12df59720.png",
+      "source_rect": [
+        1086,
+        749,
+        362,
+        337
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "catnip",
+      "file": "items/catnip.png",
+      "width": 305,
+      "height": 252,
+      "sha256": "314af5f308a350cdf321a754bf5187ad3433168cf282f93550a72f894a3c7018",
+      "source_sheet": "exec-8aab50ff-c061-4de5-8851-8097fe3be7f4.png",
+      "source_rect": [
+        0,
+        0,
+        362,
+        362
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "rug",
+      "file": "items/rug.png",
+      "width": 360,
+      "height": 223,
+      "sha256": "c1fd96de0a0b5fa43750286d52bbc49a4887d83b331d858d125e512698fe0c68",
+      "source_sheet": "exec-8aab50ff-c061-4de5-8851-8097fe3be7f4.png",
+      "source_rect": [
+        362,
+        0,
+        362,
+        362
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "plant",
+      "file": "items/plant.png",
+      "width": 362,
+      "height": 288,
+      "sha256": "8e74fd613a422a7cf6d8b7936201fca1277f61645529d80ea7f1ded69690226d",
+      "source_sheet": "exec-8aab50ff-c061-4de5-8851-8097fe3be7f4.png",
+      "source_rect": [
+        724,
+        0,
+        362,
+        362
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "lamp",
+      "file": "items/lamp.png",
+      "width": 314,
+      "height": 333,
+      "sha256": "edf7abd42f154f07ee2940faca8442c38397c37333fb898c6236759dd142e15a",
+      "source_sheet": "exec-8aab50ff-c061-4de5-8851-8097fe3be7f4.png",
+      "source_rect": [
+        1086,
+        0,
+        362,
+        362
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "tree",
+      "file": "items/tree.png",
+      "width": 300,
+      "height": 348,
+      "sha256": "7dda540f8a18a9829d15bbcba9a9b7bc0f7c6b5e05a4e01a1e72a56570b9b484",
+      "source_sheet": "exec-8aab50ff-c061-4de5-8851-8097fe3be7f4.png",
+      "source_rect": [
+        0,
+        362,
+        362,
+        362
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "bow",
+      "file": "items/bow.png",
+      "width": 346,
+      "height": 292,
+      "sha256": "120221c524b88561359d85120fd3e2fc6dc6638bc29e12111ef50c7ef63abbf6",
+      "source_sheet": "exec-8aab50ff-c061-4de5-8851-8097fe3be7f4.png",
+      "source_rect": [
+        362,
+        362,
+        362,
+        362
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "scarf",
+      "file": "items/scarf.png",
+      "width": 349,
+      "height": 323,
+      "sha256": "bce79bc4588c525a119b249a2987eb853c22a62d0513d6069038ec4a05bb4d44",
+      "source_sheet": "exec-8aab50ff-c061-4de5-8851-8097fe3be7f4.png",
+      "source_rect": [
+        724,
+        362,
+        362,
+        362
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "crown",
+      "file": "items/crown.png",
+      "width": 318,
+      "height": 217,
+      "sha256": "6fa4b6aff52c9185b597c8d104a346fc7f9cceec2094c97469f61ee387b38dbc",
+      "source_sheet": "exec-8aab50ff-c061-4de5-8851-8097fe3be7f4.png",
+      "source_rect": [
+        1086,
+        362,
+        362,
+        362
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "freeze_age",
+      "file": "items/freeze_age.png",
+      "width": 270,
+      "height": 320,
+      "sha256": "c04e19e74d1113e59ee9a054403d3b9abc0b09e691229e0c1867a9840213e51a",
+      "source_sheet": "exec-8aab50ff-c061-4de5-8851-8097fe3be7f4.png",
+      "source_rect": [
+        0,
+        724,
+        362,
+        362
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "kitten_candy",
+      "file": "items/kitten_candy.png",
+      "width": 313,
+      "height": 244,
+      "sha256": "6e744a661d1e833b2c6eaac3806a27fd813196f2ffe82d4c3f8f422747fb6107",
+      "source_sheet": "exec-8aab50ff-c061-4de5-8851-8097fe3be7f4.png",
+      "source_rect": [
+        362,
+        724,
+        362,
+        362
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "comfort",
+      "file": "items/comfort.png",
+      "width": 353,
+      "height": 320,
+      "sha256": "047925faf74f048ffe454cdd97475bd23544867ff559bff3ea8c1abb3837e490",
+      "source_sheet": "exec-8aab50ff-c061-4de5-8851-8097fe3be7f4.png",
+      "source_rect": [
+        724,
+        724,
+        362,
+        362
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "cleaner",
+      "file": "items/cleaner.png",
+      "width": 273,
+      "height": 330,
+      "sha256": "8624ebf9bb20f235c0a082528f7c4c8465b5821ff916c2d5cb6fce076a58b07d",
+      "source_sheet": "exec-8aab50ff-c061-4de5-8851-8097fe3be7f4.png",
+      "source_rect": [
+        1086,
+        724,
+        362,
+        362
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "affection",
+      "file": "items/affection.png",
+      "width": 287,
+      "height": 273,
+      "sha256": "28761a567ab146281d814dd99964bc7bcddeebfb41b49543772cf29b003bbf6d",
+      "source_sheet": "exec-509140b5-0cd6-4092-a28b-2c0d28583f07.png",
+      "source_rect": [
+        0,
+        0,
+        362,
+        396
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "stars",
+      "file": "items/stars.png",
+      "width": 342,
+      "height": 282,
+      "sha256": "faf754744bd3a233120e43b70bf1a1b52078e72d195129888b12e8a381819988",
+      "source_sheet": "exec-509140b5-0cd6-4092-a28b-2c0d28583f07.png",
+      "source_rect": [
+        362,
+        0,
+        362,
+        396
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "petals",
+      "file": "items/petals.png",
+      "width": 349,
+      "height": 287,
+      "sha256": "3d1f437815fa1807efa127443a54c24a830b2606bfa8ab9386f781f8b560465f",
+      "source_sheet": "exec-509140b5-0cd6-4092-a28b-2c0d28583f07.png",
+      "source_rect": [
+        724,
+        0,
+        362,
+        396
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "material_pack",
+      "file": "items/material_pack.png",
+      "width": 266,
+      "height": 330,
+      "sha256": "2722f6fea0d67182870cf7001924af1eb1d51aec307d5d31af2e7d7ac8cfd709",
+      "source_sheet": "exec-509140b5-0cd6-4092-a28b-2c0d28583f07.png",
+      "source_rect": [
+        1086,
+        0,
+        362,
+        396
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "health_kit",
+      "file": "items/health_kit.png",
+      "width": 345,
+      "height": 267,
+      "sha256": "eea9e06cba0e19a943dde6a90657207b2cee7334588e4867f09a2f7abe20211b",
+      "source_sheet": "exec-509140b5-0cd6-4092-a28b-2c0d28583f07.png",
+      "source_rect": [
+        0,
+        396,
+        362,
+        353
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "water_bottle",
+      "file": "items/water_bottle.png",
+      "width": 155,
+      "height": 329,
+      "sha256": "b555a36bcee640f663093f962624ba9a273bb65ac2bce6d4a58b3d2afaa53977",
+      "source_sheet": "exec-509140b5-0cd6-4092-a28b-2c0d28583f07.png",
+      "source_rect": [
+        362,
+        396,
+        362,
+        353
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "laser",
+      "file": "items/laser.png",
+      "width": 317,
+      "height": 244,
+      "sha256": "6ed64c11d93f1113df5033c3a5b699670e94f8e3c6af0740f4c7e43f7020192f",
+      "source_sheet": "exec-509140b5-0cd6-4092-a28b-2c0d28583f07.png",
+      "source_rect": [
+        724,
+        396,
+        362,
+        353
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "soft_bed",
+      "file": "items/soft_bed.png",
+      "width": 331,
+      "height": 250,
+      "sha256": "01a0537e4b43f603657e3e03675072766346be4832c619ccfead71717fe381d7",
+      "source_sheet": "exec-509140b5-0cd6-4092-a28b-2c0d28583f07.png",
+      "source_rect": [
+        1086,
+        396,
+        362,
+        353
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "blanket",
+      "file": "items/blanket.png",
+      "width": 344,
+      "height": 270,
+      "sha256": "884fe860b400e97fd5a68b3b634a7ea09587c0c9beeee89c9fefc0444f1fbb1c",
+      "source_sheet": "exec-509140b5-0cd6-4092-a28b-2c0d28583f07.png",
+      "source_rect": [
+        0,
+        749,
+        362,
+        337
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "garden_patch",
+      "file": "items/garden_patch.png",
+      "width": 362,
+      "height": 219,
+      "sha256": "772e2729f520c32244bb2d4ec58c5cd14cd0d5d039c09b80c91faf50e815cc05",
+      "source_sheet": "exec-509140b5-0cd6-4092-a28b-2c0d28583f07.png",
+      "source_rect": [
+        362,
+        749,
+        362,
+        337
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "freeze_piece",
+      "file": "items/freeze_piece.png",
+      "width": 298,
+      "height": 231,
+      "sha256": "fc755b7a6c6e9d4d0a9f3157f70c3abe4a6969ca33a7debd1837d09f62942fa5",
+      "source_sheet": "exec-509140b5-0cd6-4092-a28b-2c0d28583f07.png",
+      "source_rect": [
+        724,
+        749,
+        362,
+        337
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "kibble_piece",
+      "file": "items/kibble_piece.png",
+      "width": 163,
+      "height": 163,
+      "sha256": "fdd0183d6a7f18adbb283735a05073056ec9a135d287c38ebdbbd98959812f01",
+      "source_sheet": "exec-509140b5-0cd6-4092-a28b-2c0d28583f07.png",
+      "source_rect": [
+        1086,
+        749,
+        362,
+        337
+      ],
+      "origin": "ai-reconstructed-from-reference",
+      "status": "ui-ornament"
+    },
+    {
+      "page": "items",
+      "component": "food_bowl",
+      "file": "items/food_bowl.png",
+      "width": 414,
+      "height": 266,
+      "source_sheet": "objects.png",
+      "source_rect": [
+        0,
+        0,
+        443,
+        443
+      ],
+      "origin": "existing-independent-art-split",
+      "status": "ui-ornament",
+      "sha256": "d54d07ce2d543fce6ea006db359876e05923527d03a0c3410e9ddc2a934ed469"
+    },
+    {
+      "page": "items",
+      "component": "bowl",
+      "file": "items/bowl.png",
+      "width": 414,
+      "height": 266,
+      "source_sheet": "objects.png",
+      "source_rect": [
+        0,
+        0,
+        443,
+        443
+      ],
+      "origin": "existing-independent-art-split",
+      "status": "ui-ornament",
+      "sha256": "d54d07ce2d543fce6ea006db359876e05923527d03a0c3410e9ddc2a934ed469"
+    },
+    {
+      "page": "items",
+      "component": "water_bowl",
+      "file": "items/water_bowl.png",
+      "width": 413,
+      "height": 257,
+      "source_sheet": "objects.png",
+      "source_rect": [
+        443,
+        0,
+        443,
+        443
+      ],
+      "origin": "existing-independent-art-split",
+      "status": "ui-ornament",
+      "sha256": "f8f9c977766d3568c99d9ac8de8d9179252980f3e7821a8c30ad4c71e5123abd"
+    },
+    {
+      "page": "items",
+      "component": "wand",
+      "file": "items/wand.png",
+      "width": 407,
+      "height": 416,
+      "source_sheet": "objects.png",
+      "source_rect": [
+        886,
+        0,
+        443,
+        443
+      ],
+      "origin": "existing-independent-art-split",
+      "status": "ui-ornament",
+      "sha256": "04d767756fd5f508279e5c6caa1622d7ee4b5f553ccf24087d54da9f23f488f1"
+    },
+    {
+      "page": "items",
+      "component": "brush",
+      "file": "items/brush.png",
+      "width": 385,
+      "height": 383,
+      "source_sheet": "objects.png",
+      "source_rect": [
+        1329,
+        0,
+        443,
+        443
+      ],
+      "origin": "existing-independent-art-split",
+      "status": "ui-ornament",
+      "sha256": "ff38c2efb522dce265f7eb4d5e194279f400bcf25de97e23e908edb28ac694a5"
+    },
+    {
+      "page": "items",
+      "component": "bed",
+      "file": "items/bed.png",
+      "width": 421,
+      "height": 365,
+      "source_sheet": "objects.png",
+      "source_rect": [
+        0,
+        443,
+        443,
+        443
+      ],
+      "origin": "existing-independent-art-split",
+      "status": "ui-ornament",
+      "sha256": "9876f5ccd2788f433e31a7941a4ef641225d4d30b20ef2919f76cde326cbfc68"
+    },
+    {
+      "page": "items",
+      "component": "fish",
+      "file": "items/fish.png",
+      "width": 377,
+      "height": 331,
+      "source_sheet": "objects.png",
+      "source_rect": [
+        479,
+        443,
+        407,
+        443
+      ],
+      "origin": "existing-independent-art-split",
+      "status": "ui-ornament",
+      "sha256": "162bd9734f67972a7ea9c87459c45957bae3f13902439adfbbcd2d7e29bc3230"
+    },
+    {
+      "page": "items",
+      "component": "wet_food",
+      "file": "items/wet_food.png",
+      "width": 423,
+      "height": 376,
+      "source_sheet": "objects.png",
+      "source_rect": [
+        886,
+        443,
+        443,
+        443
+      ],
+      "origin": "existing-independent-art-split",
+      "status": "ui-ornament",
+      "sha256": "174f6d8e09e40c02351d6248864d14a5bfcae9ff62d4e4b4a9b558f8454fcf7f"
+    },
+    {
+      "page": "items",
+      "component": "water_fountain",
+      "file": "items/water_fountain.png",
+      "width": 356,
+      "height": 297,
+      "source_sheet": "objects-extra.png",
+      "source_rect": [
+        14,
+        14,
+        415,
+        415
+      ],
+      "origin": "existing-independent-art-split",
+      "status": "ui-ornament",
+      "sha256": "e2f6474cb08f6d7e141c55029b912dc59041ddecb606973b4f7c2f20243170fd"
+    },
+    {
+      "page": "items",
+      "component": "ball",
+      "file": "items/ball.png",
+      "width": 250,
+      "height": 246,
+      "source_sheet": "objects-extra.png",
+      "source_rect": [
+        457,
+        14,
+        415,
+        415
+      ],
+      "origin": "existing-independent-art-split",
+      "status": "ui-ornament",
+      "sha256": "fa018f8894087bcdb3a7d3f80b3b91050d0961321c2a8b4dfb43bf690846c555"
+    },
+    {
+      "page": "items",
+      "component": "wash_basin",
+      "file": "items/wash_basin.png",
+      "width": 413,
+      "height": 246,
+      "source_sheet": "objects-extra.png",
+      "source_rect": [
+        900,
+        14,
+        415,
+        415
+      ],
+      "origin": "existing-independent-art-split",
+      "status": "ui-ornament",
+      "sha256": "5bdeec1b4ce3a772a77e5bd2194da67cd0799ecf10eb24603d015409e0fcaa8a"
+    },
+    {
+      "page": "items",
+      "component": "scratcher",
+      "file": "items/scratcher.png",
+      "width": 403,
+      "height": 309,
+      "source_sheet": "objects-extra.png",
+      "source_rect": [
+        1343,
+        14,
+        415,
+        415
+      ],
+      "origin": "existing-independent-art-split",
+      "status": "ui-ornament",
+      "sha256": "26ee599f53559d410df120f384c4d16ef87a3b74be2fe568097de580896b86ed"
+    },
+    {
+      "page": "items",
+      "component": "hammock",
+      "file": "items/hammock.png",
+      "width": 411,
+      "height": 213,
+      "source_sheet": "objects-extra.png",
+      "source_rect": [
+        14,
+        457,
+        415,
+        415
+      ],
+      "origin": "existing-independent-art-split",
+      "status": "ui-ornament",
+      "sha256": "082ea1626b23b22a6214092136b020a76bd9faac1cb2db4cd7b0f9ce7075abdc"
+    },
+    {
+      "page": "items",
+      "component": "litter",
+      "file": "items/litter.png",
+      "width": 406,
+      "height": 277,
+      "source_sheet": "objects-extra.png",
+      "source_rect": [
+        457,
+        457,
+        415,
+        415
+      ],
+      "origin": "existing-independent-art-split",
+      "status": "ui-ornament",
+      "sha256": "790dfa1f096c43705482875f7588cc2910b5b6a904cabaffdfb92a41c14287c6"
+    },
+    {
+      "page": "items",
+      "component": "tunnel",
+      "file": "items/tunnel.png",
+      "width": 398,
+      "height": 291,
+      "source_sheet": "objects-extra.png",
+      "source_rect": [
+        1343,
+        457,
+        415,
+        415
+      ],
+      "origin": "existing-independent-art-split",
+      "status": "ui-ornament",
+      "sha256": "f2fa7f2b342827e6c065791ad0c8439d9de394686d49be8d91f60b67227d96c8"
+    }
+  ]
+}

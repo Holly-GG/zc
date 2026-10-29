@@ -16,14 +16,15 @@ QLabel#sectionTitle {font-family:"${title_font}";font-size:17px;font-weight:600;
 QLabel#sub {color:${muted};font-size:12px;}
 QLabel#sub[severity="error"] {color:${error};}
 QLabel#sub[severity="warning"] {color:#7A5A31;}
-QLabel#eyebrow {color:${muted};font-size:11px;letter-spacing:.5px;}
+QLabel#eyebrow {color:${muted};font-size:12px;letter-spacing:.5px;}
 QLabel#chip {background:${vellum};padding:5px 9px;border-radius:10px;color:${forest};}
-QLabel#candidate {color:#716A54;font-size:11px;background:#F2EDD9;padding:3px 6px;border-radius:5px;}
+QLabel#candidate {color:#716A54;font-size:12px;background:#F2EDD9;padding:4px 8px;border-radius:5px;}
 QLabel#emptyState {background:${card};border:1px dashed ${line};border-radius:8px;padding:22px;color:${muted};}
 QFrame#header {background:#FAF7E9;border:1px solid ${line};border-top:2px solid ${olive};border-radius:7px;}
 QFrame#sidebar {background:#ECEED7;border:1px solid #A8B180;border-radius:7px;}
+QFrame#chatComposer {background:${card};border:1px solid ${line};border-radius:8px;}
 QListWidget#navigation {background:transparent;border:0;padding:0;outline:none;}
-QListWidget#navigation::item {padding:9px 5px;margin:2px 0;border-bottom:1px solid #D1D7B9;min-height:19px;}
+QListWidget#navigation::item {padding:4px 4px;margin:1px 0;border-bottom:1px solid #D1D7B9;min-height:20px;}
 QListWidget#navigation::item:hover {background:#F4F4E4;border-radius:7px;}
 QListWidget#navigation::item:selected {background:#DCE3C5;border-left:3px solid ${forest};border-radius:7px;color:${ink};font-weight:600;}
 QFrame#paperCard,QFrame#itemCard,QFrame#photoCard {background:#FCF8E9;border:1px solid ${line};border-radius:8px;}
@@ -40,6 +41,9 @@ QPushButton#primary {background:${forest};color:${card};border-color:${forest};}
 QPushButton#primary:hover {background:${ink};color:${card};}
 QPushButton#primary:disabled {background:#ECECE2;color:#6D7467;border-color:#C5C9B5;}
 QPushButton#quiet {background:${card};padding:5px 9px;border:1px solid #ADB98C;}
+QPushButton#pageLink {background:transparent;border:0;border-bottom:1px solid ${line};border-radius:0;padding:8px 4px;text-align:left;}
+QPushButton#pageLink:hover {background:${vellum};color:${forest};}
+QPushButton#pageLink:focus {border:2px solid ${focus};}
 QPushButton#danger {background:${card};color:${error};border-color:${error};}
 QPushButton#danger:hover {background:#F5EAE4;}
 QPushButton#photoPreview {background:#F5F1DE;border:1px solid #D6C9A4;border-radius:2px;padding:2px;}
@@ -56,7 +60,7 @@ QListWidget::item {padding:8px 6px;margin:2px;}
 QListWidget::item:selected {background:${vellum};color:${ink};border-radius:5px;}
 QGroupBox {background:#FCF9EC;border:1px solid ${line};border-radius:8px;margin-top:18px;padding:14px;}
 QGroupBox::title {subcontrol-origin:margin;left:14px;padding:0 6px;background:${paper};font-family:"${title_font}";font-size:16px;font-weight:600;}
-QProgressBar {background:#E0E5CC;border:1px solid #BCC5A1;border-radius:5px;min-height:14px;text-align:center;font-size:11px;}
+QProgressBar {background:#E0E5CC;border:1px solid #BCC5A1;border-radius:5px;min-height:14px;text-align:center;font-size:12px;}
 QProgressBar::chunk {background:#A4CAB8;border-radius:4px;}
 QTabWidget::pane {background:${card};border:1px solid #B7C29D;border-radius:6px;}
 QTabBar::tab {background:#E9EED8;color:${forest};border:1px solid #B7C29D;padding:7px 12px;margin-right:3px;border-top-left-radius:6px;border-top-right-radius:6px;}

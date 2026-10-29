@@ -35,13 +35,28 @@ def main():
                 from niangao.life.album import AlbumStore
                 assert set(loaded_fonts)=={'body','title','script'}
                 window.open_life();ui=window.life_window;assert ui.stack.count()==9
-                assert ui.skin_view is not None and ui.presentation.currentIndex()==1
+                assert ui.skin_view is not None and ui.presentation.currentIndex()==0
+                import json,hashlib
+                from niangao.art import asset_path
+                for folder,count in (('components',96),('products',51)):
+                    root=asset_path('ui/layers/'+folder);rows=json.loads((root/'manifest.json').read_text(encoding='utf-8'))['components']
+                    assert len(rows)==count
+                    for row in rows:
+                        path=root/row['file'];assert hashlib.sha256(path.read_bytes()).hexdigest()==row['sha256']
+                        assert not QImage(str(path)).isNull()
+                window.open_work();window.open_focus();app.processEvents()
+                assert window.work_panel.text.isVisible() and window.work_panel.send_button.isVisible()
+                assert window.focus_panel.entry.isVisible()
+                window.work_panel.hide();window.focus_panel.hide()
+                print('COMPONENT_SMOKE passed: 96 independent component PNGs, 51 item PNGs, real work/focus inputs',flush=True)
+                ui.enter_skin()
                 import json,hashlib
                 pack=ui.skin_view.pack
                 for row in json.loads((pack.root/'provenance.json').read_text(encoding='utf-8')):
                     assert hashlib.sha256(pack.pages[row['page']].read_bytes()).hexdigest()==row['webp_sha256']
                 for page in ('home','chat','diary','album','backpack','care','status','settings'):
                     ui.skin_view.show_page(page);app.processEvents();assert len(ui.skin_view.hotspots)>=12
+                ui.show_classic(8)
                 print('FULLPAGE_SMOKE passed: 8 original artwork hashes, live portals and aligned navigation',flush=True)
                 assert ui.nav.item(7).text()=='性格与设置' and ui.nav.item(8).text()=='宠物相册'
                 ui.nav.setCurrentRow(8);album=ui.album_widget

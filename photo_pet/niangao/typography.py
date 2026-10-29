@@ -4,7 +4,7 @@ from pathlib import Path
 from PySide6.QtGui import QFont,QFontDatabase
 from .art import asset_path
 
-DEFAULT={'body':{'family':'Niangao UI Sans','file':'NiangaoSans.ttf','size':13},
+DEFAULT={'body':{'family':'Niangao UI Sans','file':'NiangaoSans.ttf','size':14},
  'title':{'family':'Niangao Journal Serif','file':'NiangaoSerif.ttf','size':24},
  'script':{'family':'Niangao Journal Script','file':'NiangaoScript.ttf','size':24}}
 

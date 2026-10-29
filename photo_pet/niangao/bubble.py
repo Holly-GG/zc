@@ -21,10 +21,14 @@ class SpeechBubble(QWidget):
         self.move(round(position[0]),round(position[1]));return True
     def paintEvent(self,event):
         p=QPainter(self);p.setRenderHint(QPainter.RenderHint.Antialiasing)
-        p.setPen(QColor("#342d2b"));p.setBrush(QColor("#fffaf0"))
-        p.drawRoundedRect(QRectF(1,1,self.width()-2,self.height()-2),13,13)
-        p.setPen(QColor(PALETTE["jade"]));p.setFont(QFont("Microsoft YaHei",9,QFont.Weight.Bold))
+        from .component_skin import ready,piece,nine_patch
+        from .typography import roles
+        p.setPen(QColor('#B9AE7A'));p.setBrush(QColor('#FCFAF0'));p.drawRoundedRect(QRectF(1,1,self.width()-2,self.height()-2),8,8)
+        if ready('chat'):
+            p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform);nine_patch(p,piece('chat','card'),QRectF(self.rect()),10)
+        font=QFont(roles()['body']['family']);font.setPixelSize(13);font.setBold(True)
+        p.setPen(QColor('#3C582C'));p.setFont(font)
         p.drawText(16,24,"年糕 · NIANGAO")
-        p.setPen(QColor(PALETTE["ink"]));p.setFont(QFont("Microsoft YaHei",9))
+        font.setBold(False);p.setPen(QColor('#2A472F'));p.setFont(font)
         p.drawText(QRectF(12,29,self.width()-32,self.height()-34),Qt.TextFlag.TextWordWrap,self.text)
         p.end()

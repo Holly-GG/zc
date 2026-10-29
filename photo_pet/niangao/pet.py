@@ -91,11 +91,15 @@ class PetWindow(QWidget):
     def open_work(self):
         from .desk_panels import WorkPanel
         if self.work_panel is None:self.work_panel=WorkPanel(self)
-        self.work_panel.show();self.work_panel.raise_();self.work_panel.activateWindow();(self.work_panel.text if self.work_panel.tabs.currentIndex()==0 else self.work_panel.search_input).setFocus()
+        from .desktop_focus import present_window
+        present_window(self.work_panel)
+        if self.work_panel.tabs.currentIndex()==0:self.work_panel.text.setFocus()
+        elif self.work_panel.tabs.currentIndex()==1:self.work_panel.search_input.setFocus()
     def open_focus(self):
         from .desk_panels import FocusPanel
         if self.focus_panel is None:self.focus_panel=FocusPanel(self)
-        self.focus_panel.show();self.focus_panel.raise_()
+        from .desktop_focus import present_window
+        present_window(self.focus_panel)
     def pose_state(self,state):
         key=("walk_left" if self.behaviour.facing_left else "walk") if state in ("walk","perch","play","elegant_walk") else state
         return self.art.ensure(ACTIONS[key].resource if key in ACTIONS else key)
@@ -171,7 +175,8 @@ class PetWindow(QWidget):
         if self.life_window is None:
             from .life.window import LifeWindow
             self.life_window=LifeWindow(self)
-        self.life_window.show();self.life_window.raise_();self.life_window.activateWindow()
+        from .desktop_focus import present_window
+        present_window(self.life_window)
     def areas(self):
         result=[]
         for screen in QApplication.screens():

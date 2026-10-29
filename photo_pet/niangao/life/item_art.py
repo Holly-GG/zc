@@ -6,9 +6,14 @@ from ..art import asset_path
 @lru_cache(maxsize=128)
 def illustrated_item_pixmap(id,size=112):
     """Presentation atlas only; desktop collision masks and empty-bowl states stay intact."""
+    path=asset_path('ui/layers/products/items/'+id+'.png')
+    if path.is_file():
+        image=QPixmap(str(path))
+        if not image.isNull():return image.scaled(size,size,Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation)
     cells={'food_bowl':0,'bowl':0,'water_bowl':1,'wand':2,'brush':3,'bed':4,'fish':5,'wet_food':6}
     extra={'water_fountain':0,'ball':1,'wash_basin':2,'scratcher':3,'hammock':4,'litter':5,'tunnel':7}
-    atlas=QPixmap(str(asset_path('ui/botanical/objects-extra.webp' if id in extra else 'ui/botanical/objects.webp')))
+    from ..layers import layer
+    atlas=layer('objects-extra' if id in extra else 'objects')
     if id in extra:cells=extra
     if id not in cells or atlas.isNull():return item_pixmap(id,size)
     cell=cells[id];w,h=atlas.width()//4,atlas.height()//2

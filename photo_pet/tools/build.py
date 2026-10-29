@@ -8,16 +8,16 @@ staging=root/"build"/"runtime-assets"
 shutil.rmtree(staging,ignore_errors=True)
 shutil.copytree(root/"assets",staging,ignore=shutil.ignore_patterns("*.blend","*.blend1","models","niangao-work.webp"))
 
-# The exact full-page originals replace older scene proposals in the executable.
-# Keep the source archive untouched and retain the compact classic UI essentials;
-# its other image helpers already fall back to the existing functional SVG props.
+# Default pages use independent component/product PNGs and live Qt typography.
+# Keep original artwork only for the separately labelled legacy compatibility view.
 for path in (staging/'ui').glob('*.webp'):path.unlink()
-for path in (staging/'ui/botanical').glob('*'):
-    if path.is_file() and path.name not in {'poses.webp','border.webp','paper.webp','candidate-standing.webp'}:path.unlink()
+# Independent PNG layers are part of the default responsive interface. Keep the
+# legacy originals for the optional reference view, and the complete layer pack.
 
 shutil.copytree(root.parent/'fonts',staging/'fonts',dirs_exist_ok=True)
 
-subprocess.run([sys.executable,'-m','PyInstaller','--noconfirm','--clean','--onefile','--windowed',
+version_args=['--version-file',str(root/'version_info.txt')] if sys.platform=='win32' else []
+subprocess.run([sys.executable,'-m','PyInstaller','--noconfirm','--clean','--onefile','--windowed',*version_args,
     '--name','Niangao-PhotoPet','--add-data',f'{staging}{os.pathsep}assets',
     '--exclude-module','PySide6.QtQml','--exclude-module','PySide6.QtQuick',
     '--exclude-module','PySide6.QtWebEngineCore','--exclude-module','PySide6.QtWebEngineWidgets',
