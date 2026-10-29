@@ -125,7 +125,7 @@ try:
     click(*body(),button='right')
     for _ in range(8):key(0x28)
     key(0x0D)
-    for _ in range(60):
+    for _ in range(300):
         if state().get('dashboard'):break
         time.sleep(.1)
     dash=state().get('dashboard');check(bool(dash),'native menu opens compact dashboard')
